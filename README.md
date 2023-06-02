@@ -18,7 +18,7 @@ DoriBottle is a [Spring Boot](https://spring.io/guides/gs/spring-boot) applicati
    jdbc:h2:~/doribottle-h2-local
    ```
 4) Verify .mv.db file is created in the home directory.
-5) After disconnecting from the h2 database, modify the JDBC URL.
+5) After disconnecting from the h2 database, modify the JDBC URL and re-connect database.
    ```
    jdbc:h2:tcp://localhost/~/doribottle-h2-local
    ```
