@@ -2,6 +2,7 @@ package com.liah.doribottle.user
 
 import com.liah.doribottle.common.jpa.PrimaryKeyEntity
 import jakarta.persistence.*
+import java.util.*
 
 @Entity
 @Table(
@@ -12,7 +13,7 @@ class User(
     loginId: String,
     name: String,
     phoneNumber: String,
-    role: Role
+    role: UserRole
 ) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -29,14 +30,20 @@ class User(
     var phoneNumber: String = phoneNumber
         private set
 
+    @Column(nullable = false, unique = true)
+    val invitationKey: UUID = UUID.randomUUID()
+
     @Column(nullable = false)
     var active: Boolean = true
         private set
 
+    @Column(nullable = false)
+    var blocked: Boolean = false
+        private set
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val role: Role = role
+    val role: UserRole = role
 
     fun toDto() = UserDto(loginId, name, phoneNumber, active, role)
-
 }
