@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
+@Transactional
 class UserServiceTest {
     companion object {
         const val LOGIN_ID = "010-0000-0000"
