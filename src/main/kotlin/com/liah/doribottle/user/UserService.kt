@@ -1,40 +1,53 @@
 package com.liah.doribottle.user
 
-import com.liah.doribottle.user.Role.ROLE_USER
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Service
 @Transactional(readOnly = true)
 class UserService(
     private val userRepository: UserRepository
 ) {
+    /**
+     * Join user
+     *
+     * @param phoneNumber for loginId
+     * @param name
+     * @param role
+     * @return result user's id
+     * @throws IllegalArgumentException if duplicate phoneNumber(loginId)
+     */
     @Transactional
     fun join(
         phoneNumber: String,
-        name: String
+        name: String,
+        role: UserRole
     ): UUID {
-        validateDuplicateLoginId(phoneNumber)
+        verifyDuplicateLoginId(phoneNumber)
         val user = userRepository.save(
             User(
                 loginId = phoneNumber,
                 name = name,
                 phoneNumber = phoneNumber,
-                role = ROLE_USER
+                role = role
             )
         )
 
         return user.id
     }
 
-    private fun validateDuplicateLoginId(loginId: String) {
+    /**
+     * Verify user's loginId is duplicated
+     *
+     * @param loginId
+     * @throws IllegalArgumentException if duplicate loginId
+     */
+    private fun verifyDuplicateLoginId(
+        loginId: String
+    ) {
         if (userRepository.findByLoginId(loginId).isPresent) {
             throw IllegalArgumentException("이미 존재하는 회원입니다.")
         }
-    }
-
-    fun findUserByLoginId(loginId: String): UserDto? {
-        return userRepository.findByLoginId(loginId).orElse(null)?.toDto()
     }
 }

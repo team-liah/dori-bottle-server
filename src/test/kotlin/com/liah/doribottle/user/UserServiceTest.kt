@@ -1,5 +1,6 @@
 package com.liah.doribottle.user
 
+import com.liah.doribottle.user.UserRole.ROLE_USER
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +35,7 @@ class UserServiceTest {
     @Test
     fun joinTest() {
         //when
-        val id = userService.join(LOGIN_ID, NAME)
+        val id = userService.join(LOGIN_ID, NAME, ROLE_USER)
         clear()
 
         //then
@@ -42,40 +43,21 @@ class UserServiceTest {
         assertThat(findUser.loginId).isEqualTo(LOGIN_ID)
         assertThat(findUser.phoneNumber).isEqualTo(LOGIN_ID)
         assertThat(findUser.name).isEqualTo(NAME)
-        assertThat(findUser.role).isEqualTo(Role.ROLE_USER)
+        assertThat(findUser.role).isEqualTo(ROLE_USER)
         assertThat(findUser.active).isTrue
     }
 
-    @DisplayName("일반유저_회원가입_중복예외")
+    @DisplayName("일반유저_회원가입_예외")
     @Test
     fun joinExceptionTest() {
         //given
-        userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, Role.ROLE_USER))
+        userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, ROLE_USER))
         clear()
 
         //when, then
         val exception = assertThrows<IllegalArgumentException> {
-            userService.join(LOGIN_ID, "Test User 2")
+            userService.join(LOGIN_ID, "Test User 2", ROLE_USER)
         }
         assertThat(exception.message).isEqualTo("이미 존재하는 회원입니다.")
     }
-
-    @DisplayName("일반유저_조회")
-    @Test
-    fun findUserByLoginIdTest() {
-        //given
-        userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, Role.ROLE_USER))
-        clear()
-
-        //when
-        val findUser = userService.findUserByLoginId(LOGIN_ID)
-
-        //then
-        assertThat(findUser?.loginId).isEqualTo(LOGIN_ID)
-        assertThat(findUser?.phoneNumber).isEqualTo(LOGIN_ID)
-        assertThat(findUser?.name).isEqualTo(NAME)
-        assertThat(findUser?.role).isEqualTo(Role.ROLE_USER)
-        assertThat(findUser?.active).isTrue
-    }
-
 }

@@ -5,5 +5,5 @@ data class UserDto(
     val name: String,
     val phoneNumber: String,
     val active: Boolean,
-    val role: Role
+    val role: UserRole
 )
