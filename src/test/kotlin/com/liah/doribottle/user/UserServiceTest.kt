@@ -1,5 +1,7 @@
 package com.liah.doribottle.user
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -16,16 +18,24 @@ class UserServiceTest {
         const val NAME = "Test User"
     }
 
+    @PersistenceContext
+    private lateinit var entityManager: EntityManager
     @Autowired
     private lateinit var userRepository: UserRepository
     @Autowired
     private lateinit var userService: UserService
+
+    private fun clear() {
+        entityManager.flush()
+        entityManager.clear()
+    }
 
     @DisplayName("일반유저_회원가입")
     @Test
     fun joinTest() {
         //when
         val id = userService.join(LOGIN_ID, NAME)
+        clear()
 
         //then
         val findUser = userRepository.findById(id).orElse(null)
@@ -41,6 +51,7 @@ class UserServiceTest {
     fun joinExceptionTest() {
         //given
         userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, Role.ROLE_USER))
+        clear()
 
         //when, then
         val exception = assertThrows<IllegalArgumentException> {
@@ -54,6 +65,7 @@ class UserServiceTest {
     fun findUserByLoginIdTest() {
         //given
         userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, Role.ROLE_USER))
+        clear()
 
         //when
         val findUser = userService.findUserByLoginId(LOGIN_ID)
