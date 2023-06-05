@@ -1,4 +1,4 @@
-package com.liah.doribottle.admin
+package com.liah.doribottle.domain.admin
 
 enum class AdminRole(
     val title: String,

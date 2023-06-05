@@ -1,6 +1,7 @@
-package com.liah.doribottle.user
+package com.liah.doribottle.domain.user
 
-import com.liah.doribottle.common.jpa.PrimaryKeyEntity
+import com.liah.doribottle.domain.PrimaryKeyEntity
+import com.liah.doribottle.service.dto.UserDto
 import jakarta.persistence.*
 import java.util.*
 
@@ -45,5 +46,5 @@ class User(
     @Column(nullable = false)
     val role: UserRole = role
 
-    fun toDto() = UserDto(loginId, name, phoneNumber, active, role)
+    fun toDto() = UserDto(loginId, name, phoneNumber, invitationKey, active, blocked, role)
 }

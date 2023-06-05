@@ -1,5 +1,8 @@
-package com.liah.doribottle.user
+package com.liah.doribottle.service
 
+import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.domain.user.UserRepository
+import com.liah.doribottle.domain.user.UserRole
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
