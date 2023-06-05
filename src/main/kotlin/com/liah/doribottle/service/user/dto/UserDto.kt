@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.dto
+package com.liah.doribottle.service.user.dto
 
 import com.liah.doribottle.domain.user.UserRole
 import java.util.*

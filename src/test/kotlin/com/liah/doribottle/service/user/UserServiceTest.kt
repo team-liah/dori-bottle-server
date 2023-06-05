@@ -1,4 +1,4 @@
-package com.liah.doribottle.service
+package com.liah.doribottle.service.user
 
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository

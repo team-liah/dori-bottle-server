@@ -1,7 +1,7 @@
 package com.liah.doribottle.domain.user
 
-import com.liah.doribottle.domain.PrimaryKeyEntity
-import com.liah.doribottle.service.dto.UserDto
+import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
 import java.util.*
 
