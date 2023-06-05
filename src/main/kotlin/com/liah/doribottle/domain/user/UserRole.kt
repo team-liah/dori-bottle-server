@@ -1,4 +1,4 @@
-package com.liah.doribottle.user
+package com.liah.doribottle.domain.user
 
 enum class UserRole(
     val title: String
