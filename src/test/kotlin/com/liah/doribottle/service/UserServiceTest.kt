@@ -1,9 +1,8 @@
-package com.liah.doribottle.user
+package com.liah.doribottle.service
 
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
 import com.liah.doribottle.domain.user.UserRole.ROLE_USER
-import com.liah.doribottle.service.UserService
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
