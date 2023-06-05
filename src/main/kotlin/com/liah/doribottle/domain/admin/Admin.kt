@@ -1,6 +1,6 @@
 package com.liah.doribottle.domain.admin
 
-import com.liah.doribottle.domain.PrimaryKeyEntity
+import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import jakarta.persistence.*
 import java.util.*
 
