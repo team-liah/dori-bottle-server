@@ -33,7 +33,7 @@ class UserServiceTest {
         entityManager.clear()
     }
 
-    @DisplayName("일반유저_회원가입")
+    @DisplayName("일반유저 회원가입")
     @Test
     fun joinTest() {
         //when
@@ -49,7 +49,7 @@ class UserServiceTest {
         assertThat(findUser.active).isTrue
     }
 
-    @DisplayName("일반유저_회원가입_예외")
+    @DisplayName("일반유저 회원가입 예외")
     @Test
     fun joinExceptionTest() {
         //given
