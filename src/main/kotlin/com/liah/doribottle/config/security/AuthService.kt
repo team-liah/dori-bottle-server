@@ -20,8 +20,8 @@ import java.util.*
 class AuthService(
     private val userRepository: UserRepository,
 
-    @Value("\${jwt.user.secret}") val secretKey: String,
-    @Value("\${jwt.user.expiredMs}") val expiredMs: Long
+    @Value("\${jwt.secret}") val secretKey: String,
+    @Value("\${jwt.expiredMs}") val expiredMs: Long
 ) : UserDetailsService {
     override fun loadUserByUsername(loginId: String): UserDetails {
         return IdentityUser.fromUser(getUserByLoginId(loginId))

@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig {
-    @Value("\${jwt.user.secret}")
+    @Value("\${jwt.secret}")
     private lateinit var secretKey: String
 
     @Bean
