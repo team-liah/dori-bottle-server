@@ -14,37 +14,37 @@ class User(
     loginId: String,
     name: String,
     phoneNumber: String,
-    role: UserRole
+    role: Role
 ) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
-        private set
+        protected set
 
     var loginPassword: String? = null
-        private set
+        protected set
 
     @Column(nullable = false)
     var name: String = name
-        private set
+        protected set
 
     @Column(nullable = false)
     var phoneNumber: String = phoneNumber
-        private set
+        protected set
 
     @Column(nullable = false, unique = true)
     val invitationKey: UUID = UUID.randomUUID()
 
     @Column(nullable = false)
     var active: Boolean = true
-        private set
+        protected set
 
     @Column(nullable = false)
     var blocked: Boolean = false
-        private set
+        protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val role: UserRole = role
+    val role: Role = role
 
     fun toDto() = UserDto(loginId, name, phoneNumber, invitationKey, active, blocked, role)
 }
