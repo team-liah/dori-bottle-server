@@ -25,7 +25,7 @@ class Cup(
 
     @Column(nullable = false)
     var state: CupState = PENDING
-        private set
+        protected set
 
     fun toDto() = CupDto(id, rfid, state, deletedReason, deletedDate, deletedBy)
 
