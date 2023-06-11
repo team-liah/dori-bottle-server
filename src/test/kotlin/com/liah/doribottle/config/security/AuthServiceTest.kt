@@ -1,21 +1,21 @@
-package com.liah.doribottle.service.user
+package com.liah.doribottle.config.security
 
+import com.liah.doribottle.domain.user.Role.USER
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
-import com.liah.doribottle.domain.user.UserRole.ROLE_USER
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @Transactional
-class UserServiceTest {
+class AuthServiceTest {
     companion object {
         const val LOGIN_ID = "010-0000-0000"
         const val NAME = "Test User"
@@ -26,7 +26,7 @@ class UserServiceTest {
     @Autowired
     private lateinit var userRepository: UserRepository
     @Autowired
-    private lateinit var userService: UserService
+    private lateinit var authService: AuthService
 
     private fun clear() {
         entityManager.flush()
@@ -37,29 +37,29 @@ class UserServiceTest {
     @Test
     fun joinTest() {
         //when
-        val id = userService.join(LOGIN_ID, NAME, ROLE_USER)
-        clear()
+        val id = authService.join(LOGIN_ID, NAME, USER)
+        clear()x
 
         //then
         val findUser = userRepository.findById(id).orElse(null)
-        assertThat(findUser.loginId).isEqualTo(LOGIN_ID)
-        assertThat(findUser.phoneNumber).isEqualTo(LOGIN_ID)
-        assertThat(findUser.name).isEqualTo(NAME)
-        assertThat(findUser.role).isEqualTo(ROLE_USER)
-        assertThat(findUser.active).isTrue
+        Assertions.assertThat(findUser.loginId).isEqualTo(LOGIN_ID)
+        Assertions.assertThat(findUser.phoneNumber).isEqualTo(LOGIN_ID)
+        Assertions.assertThat(findUser.name).isEqualTo(NAME)
+        Assertions.assertThat(findUser.role).isEqualTo(USER)
+        Assertions.assertThat(findUser.active).isTrue
     }
 
     @DisplayName("일반유저 회원가입 예외")
     @Test
     fun joinExceptionTest() {
         //given
-        userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, ROLE_USER))
+        userRepository.save(User(LOGIN_ID, NAME, LOGIN_ID, USER))
         clear()
 
         //when, then
-        val exception = assertThrows<IllegalArgumentException> {
-            userService.join(LOGIN_ID, "Test User 2", ROLE_USER)
+        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            authService.join(LOGIN_ID, "Test User 2", USER)
         }
-        assertThat(exception.message).isEqualTo("이미 존재하는 회원입니다.")
+        Assertions.assertThat(exception.message).isEqualTo("이미 존재하는 회원입니다.")
     }
 }
