@@ -1,6 +1,7 @@
 package com.liah.doribottle.config.security
 
 import com.liah.doribottle.common.exhandler.ErrorResponse
+import com.liah.doribottle.extension.convertJsonToString
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
@@ -16,6 +17,6 @@ class RestAccessDeniedHandler : AccessDeniedHandler {
         val errorResponse = ErrorResponse(e.message, HttpStatus.FORBIDDEN.value())
         response.contentType = "application/json"
         response.status = HttpServletResponse.SC_FORBIDDEN
-//        response.writer?.write(errorResponse.convertJsonToString())
+        response.writer?.write(errorResponse.convertJsonToString())
     }
 }

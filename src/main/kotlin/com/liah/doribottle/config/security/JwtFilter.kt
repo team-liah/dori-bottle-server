@@ -1,6 +1,5 @@
 package com.liah.doribottle.config.security
 
-import com.liah.doribottle.utils.JwtUtil
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

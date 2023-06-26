@@ -1,4 +1,4 @@
-package com.liah.doribottle.utils
+package com.liah.doribottle.config.security
 
 import com.liah.doribottle.domain.user.Role
 import io.jsonwebtoken.ExpiredJwtException
