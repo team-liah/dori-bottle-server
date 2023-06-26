@@ -16,5 +16,5 @@ logging.level:
   org.hibernate.SQL: debug
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: 2fd4823a76513e910d1c5e1afd91820b01df568fd6b5c64b4c7cee61db3a5d5b73c51ae9add65da41ac7d7012f2fb26112a30524b9625e858b981b3a6b79d738
   expiredMs: 3600000 # 1hour
