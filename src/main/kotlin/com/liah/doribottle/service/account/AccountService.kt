@@ -2,12 +2,11 @@ package com.liah.doribottle.service.account
 
 import com.liah.doribottle.common.exception.BadRequestException
 import com.liah.doribottle.common.exception.NotFoundException
+import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
-import com.liah.doribottle.config.security.JwtUtil
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
@@ -18,23 +17,8 @@ import java.util.*
 @Transactional
 class AccountService(
     private val userRepository: UserRepository,
-
-    @Value("\${jwt.secret}") val secretKey: String,
-    @Value("\${jwt.expiredMs}") val expiredMs: Long
+    private val tokenProvider: TokenProvider
 ) {
-    @Transactional
-    fun auth(
-        loginId: String,
-        loginPassword: String
-    ): String {
-        val user = userRepository.findByLoginId(loginId)
-            ?: throw UsernameNotFoundException("User $loginId was not found in the database) }")
-
-        user.auth(loginPassword)
-
-        return JwtUtil.createJwt(user.id, user.role, secretKey, expiredMs)
-    }
-
     fun authRequest(
         loginId: String,
         loginPassword: String
@@ -45,6 +29,18 @@ class AccountService(
         user.authRequest(loginPassword)
 
         return user.id
+    }
+
+    fun auth(
+        loginId: String,
+        loginPassword: String
+    ): String {
+        val user = userRepository.findByLoginId(loginId)
+            ?: throw UsernameNotFoundException("User $loginId was not found in the database) }")
+
+        user.auth(loginPassword)
+
+        return tokenProvider.createToken(user.id, user.role)
     }
 
     fun register(
