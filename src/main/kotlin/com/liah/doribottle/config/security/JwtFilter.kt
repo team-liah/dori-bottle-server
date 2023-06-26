@@ -12,7 +12,7 @@ import org.springframework.security.web.context.RequestAttributeSecurityContextR
 import org.springframework.web.filter.OncePerRequestFilter
 
 class JwtFilter(
-    private val secretKey: String
+    private val tokenProvider: TokenProvider
 ) : OncePerRequestFilter() {
     private val repository = RequestAttributeSecurityContextRepository()
 
@@ -23,9 +23,9 @@ class JwtFilter(
     ) {
         val token = resolveToken(request)
 
-        if (!token.isNullOrEmpty() && JwtUtil.validateToken(secretKey, token)) {
-            val id = JwtUtil.getId(token, secretKey)
-            val role = JwtUtil.getRole(token, secretKey)
+        if (!token.isNullOrEmpty() && tokenProvider.validateToken(token)) {
+            val id = tokenProvider.getUserIdFromToken(token)
+            val role = tokenProvider.getUserRoleFromToken(token)
 
             val authenticationToken = UsernamePasswordAuthenticationToken(id, null, listOf(SimpleGrantedAuthority(role)))
 
