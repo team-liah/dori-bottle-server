@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.auth.vm
+package com.liah.doribottle.web.account.vm
 
 import java.util.*
 

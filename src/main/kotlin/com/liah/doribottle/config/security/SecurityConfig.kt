@@ -1,5 +1,6 @@
 package com.liah.doribottle.config.security
 
+import com.liah.doribottle.domain.user.Role
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -17,18 +18,22 @@ class SecurityConfig {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        return http
-            .httpBasic { it.disable() }
+        http
             .csrf { it.disable() }
-            .cors {  }
-            .authorizeHttpRequests {
-                it
-                    .requestMatchers("/api/v1/auth/join", "/api/v1/auth/token").permitAll()
-                    .anyRequest().authenticated()
-                // TODO: Separate by role
-            }
+            .formLogin { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(JwtFilter(secretKey), UsernamePasswordAuthenticationFilter::class.java)
-            .build()
+            .authorizeHttpRequests { authorize -> authorize
+                .requestMatchers("/", "/h2-console/**").permitAll()
+                .requestMatchers("/api/v1/account/auth", "/api/v1/account/auth/send-sms").permitAll()
+                .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
+                .anyRequest().authenticated()
+            }
+            .exceptionHandling { exception -> exception
+                .accessDeniedHandler(RestAccessDeniedHandler())
+                .authenticationEntryPoint(RestAuthenticationEntryPoint())
+            }
+
+        return http.build()
     }
 }

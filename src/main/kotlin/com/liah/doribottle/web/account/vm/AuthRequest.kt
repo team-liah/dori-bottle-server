@@ -1,10 +1,10 @@
-package com.liah.doribottle.web.auth.vm
+package com.liah.doribottle.web.account.vm
 
 import jakarta.validation.constraints.NotEmpty
 
-data class UserJoinRequest(
+data class AuthRequest(
     @field:NotEmpty
     val loginId: String?,
     @field:NotEmpty
-    val name: String?
+    val loginPassword: String?
 )
