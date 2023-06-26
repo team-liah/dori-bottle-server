@@ -6,7 +6,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
-import com.liah.doribottle.utils.JwtUtil
+import com.liah.doribottle.config.security.JwtUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.UsernameNotFoundException
