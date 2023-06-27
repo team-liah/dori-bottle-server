@@ -22,7 +22,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorize -> authorize
-                .requestMatchers("/", "/h2-console/**").permitAll()
+                .requestMatchers("/", "/docs/index.html", "/h2-console/**").permitAll()
                 .requestMatchers("/api/v1/account/auth", "/api/v1/account/auth/send-sms").permitAll()
                 .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
                 .anyRequest().authenticated()
