@@ -1,5 +1,6 @@
 package com.liah.doribottle.web
 
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,6 +16,7 @@ import org.springframework.restdocs.request.RequestDocumentation.parameterWithNa
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -42,9 +44,13 @@ class SampleControllerTest {
         mockMvc.perform(
             RestDocumentationRequestBuilders.get("/api/v1/sample/{id}", 1).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk)
-            .andDo(document("index",
-                pathParameters(
-                    parameterWithName("id").description("The id of the input to find")
-                )))
+            .andExpect(jsonPath("id", `is`("1")))
+            .andExpect(jsonPath("name", `is`("test-1")))
+            .andDo(
+                document(
+                "index",
+                    pathParameters(parameterWithName("id").description("The id of the input to find"))
+                )
+            )
     }
 }

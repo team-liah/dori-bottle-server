@@ -14,9 +14,9 @@ class SampleController {
     companion object {
         val mem = mapOf(
             1 to SampleResponse("1", "test-1"),
-            2 to SampleResponse("2", "test-1"),
-            3 to SampleResponse("3", "test-1"),
-            4 to SampleResponse("4", "test-1")
+            2 to SampleResponse("2", "test-2"),
+            3 to SampleResponse("3", "test-3"),
+            4 to SampleResponse("4", "test-4")
         )
     }
 
