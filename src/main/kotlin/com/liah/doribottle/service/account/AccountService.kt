@@ -8,16 +8,22 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
 @Transactional
 class AccountService(
     private val userRepository: UserRepository,
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val passwordEncoder: PasswordEncoder
 ) {
     fun authRequest(
         loginId: String,
@@ -26,7 +32,8 @@ class AccountService(
         val user = userRepository.findByLoginId(loginId)
             ?: userRepository.save(User(loginId, "일반 사용자", loginId, Role.GUEST))
 
-        user.authRequest(loginPassword)
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        user.authRequest(encryptedPassword)
 
         return user.id
     }
@@ -38,7 +45,13 @@ class AccountService(
         val user = userRepository.findByLoginId(loginId)
             ?: throw UsernameNotFoundException("User $loginId was not found in the database) }")
 
-        user.auth(loginPassword)
+        if (user.loginExpirationDate == null
+            || user.loginExpirationDate!! < Instant.now()) throw BadCredentialsException("인증시간이 초과되었습니다.")
+        if (!passwordEncoder.matches(loginPassword, user.loginPassword)) throw BadCredentialsException("잘못된 인증번호입니다.")
+        if (!user.active) throw DisabledException("비활성화된 계정입니다.")
+        if (user.blocked) throw LockedException("정지된 계정입니다.")
+
+        user.authSuccess()
 
         return tokenProvider.createToken(user.id, user.role)
     }
