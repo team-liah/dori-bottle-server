@@ -1,0 +1,11 @@
+= Sample API
+:toc:
+
+== [GET] /api/v1/sample
+
+=== Curl
+include::{snippets}/index/curl-request.adoc[]
+=== Request
+include::{snippets}/index/http-request.adoc[]
+=== Response
+include::{snippets}/index/http-response.adoc[]
