@@ -1,4 +1,4 @@
-package com.liah.doribottle.domain
+package com.liah.doribottle.domain.common
 
 import com.github.f4b6a3.ulid.UlidCreator
 import jakarta.persistence.*
