@@ -1,6 +1,6 @@
-package com.liah.doribottle.service.dto
+package com.liah.doribottle.service.user.dto
 
-import com.liah.doribottle.domain.user.UserRole
+import com.liah.doribottle.domain.user.Role
 import java.util.*
 
 data class UserDto(
@@ -10,5 +10,5 @@ data class UserDto(
     val invitationKey: UUID,
     val active: Boolean,
     val blocked: Boolean,
-    val role: UserRole
+    val role: Role
 )
