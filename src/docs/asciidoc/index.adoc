@@ -1,11 +1,25 @@
-= Sample API
-:toc:
+= Dori-Bottle Rest API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
 
-== [GET] /api/v1/sample
+[[resources-sample]]
+== Sample
+=== 샘플 API
+==== HTTP request
+include::{snippets}/sample/http-request.adoc[]
+==== HTTP response
+include::{snippets}/sample/http-response.adoc[]
 
-=== Curl
-include::{snippets}/index/curl-request.adoc[]
-=== Request
-include::{snippets}/index/http-request.adoc[]
-=== Response
-include::{snippets}/index/http-response.adoc[]
+[[resources-account]]
+== Account
+
+[[resources-account-auth]]
+=== 인증 요청
+==== HTTP request
+include::{snippets}/account/auth/send-sms/http-request.adoc[]
+==== HTTP response
+include::{snippets}/account/auth/send-sms/http-response.adoc[]

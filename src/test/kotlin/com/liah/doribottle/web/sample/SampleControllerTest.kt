@@ -1,4 +1,4 @@
-package com.liah.doribottle.web
+package com.liah.doribottle.web.sample
 
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
@@ -48,7 +48,7 @@ class SampleControllerTest {
             .andExpect(jsonPath("name", `is`("test-1")))
             .andDo(
                 document(
-                "index",
+                "sample",
                     pathParameters(parameterWithName("id").description("The id of the input to find"))
                 )
             )
