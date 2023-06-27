@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
@@ -23,8 +24,9 @@ import java.time.Instant
 class AccountServiceTest {
     @PersistenceContext private lateinit var entityManager: EntityManager
     @Autowired private lateinit var accountService: AccountService
-    @Autowired private lateinit var tokenProvider: TokenProvider
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var passwordEncoder: PasswordEncoder
+    @Autowired private lateinit var tokenProvider: TokenProvider
 
     private val loginId = "010-0000-0000"
 
@@ -40,14 +42,14 @@ class AccountServiceTest {
         val loginPassword = "123456"
 
         //when
-        val id = accountService.authRequest(loginId, "123456")
+        val id = accountService.authRequest(loginId, loginPassword)
         clear()
 
         //then
         val findUser = userRepository.findByIdOrNull(id)
         assertThat(findUser?.loginId).isEqualTo(loginId)
         assertThat(findUser?.phoneNumber).isEqualTo(loginId)
-        assertThat(findUser?.loginPassword).isEqualTo(loginPassword)
+        assertThat(passwordEncoder.matches(loginPassword, findUser?.loginPassword)).isTrue
         assertThat(findUser?.role).isEqualTo(Role.GUEST)
         assertThat(findUser?.loginExpirationDate).isAfter(Instant.now())
     }
@@ -58,7 +60,8 @@ class AccountServiceTest {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
-        saveUser.authRequest(loginPassword)
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        saveUser.authRequest(encryptedPassword)
         clear()
 
         //when
@@ -77,7 +80,8 @@ class AccountServiceTest {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
-        saveUser.authRequest(loginPassword)
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        saveUser.authRequest(encryptedPassword)
         clear()
 
         // TODO: DisabledException, LockedException
