@@ -67,13 +67,7 @@ class User(
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
     }
 
-    fun auth(loginPassword: String) {
-        if (this.loginExpirationDate == null
-            || this.loginExpirationDate!! < Instant.now()) throw BadCredentialsException("인증시간이 초과되었습니다.")
-        if (this.loginPassword != loginPassword) throw BadCredentialsException("잘못된 인증번호입니다.")
-        if (!this.active) throw DisabledException("비활성화된 계정입니다.")
-        if (this.blocked) throw LockedException("정지된 계정입니다.")
-
+    fun authSuccess() {
         this.loginPassword = null
         this.loginExpirationDate = null
     }
