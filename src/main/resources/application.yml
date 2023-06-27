@@ -18,3 +18,10 @@ logging.level:
 jwt:
   secret: ${JWT_SECRET}
   expiredMs: 3600000 # 1hour
+
+toast:
+  sms:
+    url: https://api-sms.cloud.toast.com/
+    appKey: ${TOAST_APP_KEY}
+    secretKey: ${TOAST_SECRET_KEY}
+    sendNo: ${TOAST_SEND_NO}

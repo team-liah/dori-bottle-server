@@ -2,6 +2,7 @@ package com.liah.doribottle.web.account
 
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.account.AccountService
+import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.account.vm.*
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
@@ -11,7 +12,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/account")
 class AccountController(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val smsService: SmsService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     @PostMapping("/auth/send-sms")
@@ -22,10 +24,7 @@ class AccountController(
 
         accountService.authRequest(request.loginId!!, authCode)
 
-        // Send SMS
-        log.info("===================")
-        log.info("PASSWORD: $authCode")
-        log.info("===================")
+        smsService.sendLoginAuthSms(request.loginId, authCode)
     }
 
     @PostMapping("/auth")
