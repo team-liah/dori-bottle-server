@@ -35,14 +35,14 @@ class AccountServiceTest {
         entityManager.clear()
     }
 
-    @DisplayName("인증 요청")
+    @DisplayName("비밀번호 업데이트")
     @Test
-    fun authRequest() {
+    fun updatePassword() {
         //given
         val loginPassword = "123456"
 
         //when
-        val id = accountService.authRequest(loginId, loginPassword)
+        val id = accountService.updatePassword(loginId, loginPassword)
         clear()
 
         //then
@@ -61,27 +61,27 @@ class AccountServiceTest {
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        saveUser.authRequest(encryptedPassword)
+        saveUser.updatePassword(encryptedPassword)
         clear()
 
         //when
-        val token = accountService.auth(loginId, loginPassword)
+        val authDto = accountService.auth(loginId, loginPassword)
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(token)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(token)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(token)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
     }
 
-    @DisplayName("인증 실패")
+    @DisplayName("인증 예외")
     @Test
-    fun authFailed() {
+    fun authException() {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        saveUser.authRequest(encryptedPassword)
+        saveUser.updatePassword(encryptedPassword)
         clear()
 
         // TODO: DisabledException, LockedException

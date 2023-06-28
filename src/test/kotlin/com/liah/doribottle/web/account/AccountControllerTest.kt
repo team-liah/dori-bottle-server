@@ -43,9 +43,9 @@ class AccountControllerTest {
     }
 
     @DisplayName("인증 요청 테스트")
-//    @Test
+    @Test
     fun sendSms() {
-        val body = SendSmsRequest("01000000000")
+        val body = SendSmsRequest("01056383316")
 
         mockMvc.perform(
             post("$endPoint/auth/send-sms")
