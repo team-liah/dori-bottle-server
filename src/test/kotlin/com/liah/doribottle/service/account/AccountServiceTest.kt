@@ -1,10 +1,8 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.domain.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -25,10 +23,11 @@ class AccountServiceTest {
     @PersistenceContext private lateinit var entityManager: EntityManager
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
-    private val loginId = "010-0000-0000"
+    private val loginId = "01000000000"
 
     private fun clear() {
         entityManager.flush()
@@ -72,6 +71,7 @@ class AccountServiceTest {
         assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(authDto.refreshToken).isNotNull
     }
 
     @DisplayName("인증 예외")
@@ -90,6 +90,25 @@ class AccountServiceTest {
             accountService.auth(loginId, "000000")
         }
         assertThat(badCredentialsException.message).isEqualTo("잘못된 인증번호입니다.")
+    }
+
+    @DisplayName("재인증")
+    @Test
+    fun refreshAuth() {
+        //given
+        val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser))
+        clear()
+
+        //when
+        val authDto = accountService.refreshAuth(saveUser.id, saveRefreshToken.token)
+        clear()
+
+        //then
+        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
     }
 
     @DisplayName("회원가입")
