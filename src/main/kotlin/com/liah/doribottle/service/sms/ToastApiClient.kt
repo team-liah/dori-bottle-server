@@ -5,7 +5,6 @@ import com.liah.doribottle.service.sms.dto.SendAuthSmsTemplateRequest
 import com.liah.doribottle.service.sms.dto.ToastRestApiResponse
 import com.liah.doribottle.service.sms.dto.ToastTemplate
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
@@ -25,9 +24,11 @@ class ToastApiClient(
         templateParameter: Map<String, String>
     ) {
         val recipient = Recipient(recipientNo, "82", templateParameter)
-        val headers = HttpHeaders()
-        headers["X-Secret-Key"] = smsSecretKey
-        val request = SendAuthSmsTemplateRequest(template.key, sendNo, listOf(recipient)).toHttpEntityForJson(headers)
+        val request = SendAuthSmsTemplateRequest(
+            templateId = template.id,
+            sendNo = sendNo,
+            recipientList = listOf(recipient)
+        ).toHttpEntityForJson(smsSecretKey)
 
         val response = RestTemplate()
             .postForEntity(authSmsSendRequestUrl, request, ToastRestApiResponse::class.java)
