@@ -16,12 +16,12 @@ logging.level:
   org.hibernate.SQL: debug
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: dummyKeyC928D0F74BF2705749E0A843A4E716D0F147D6C6476534C3B1FBC4717C9B4539
   expiredMs: 3600000 # 1hour
 
 toast:
   sms:
-    url: https://api-sms.cloud.toast.com/
-    appKey: ${TOAST_APP_KEY}
-    secretKey: ${TOAST_SECRET_KEY}
-    sendNo: ${TOAST_SEND_NO}
+    url: dummyUrl
+    appKey: dummyKey
+    secretKey: dummyKey
+    sendNo: dummyNo
