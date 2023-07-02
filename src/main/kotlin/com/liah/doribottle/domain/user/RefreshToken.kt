@@ -26,8 +26,8 @@ class RefreshToken(
     var expiredDate: Instant = Instant.now().plus(14, ChronoUnit.DAYS)
         protected set
 
-    fun refresh() {
+    fun refresh(millis: Long) {
         this.token = UUID.randomUUID().toString()
-        this.expiredDate = Instant.now().plus(14, ChronoUnit.DAYS)
+        this.expiredDate = Instant.now().plusMillis(millis)
     }
 }
