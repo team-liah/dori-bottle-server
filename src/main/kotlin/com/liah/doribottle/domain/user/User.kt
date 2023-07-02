@@ -2,9 +2,6 @@ package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import jakarta.persistence.*
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -62,7 +59,7 @@ class User(
     @Column(nullable = false)
     var role: Role = role
 
-    fun authRequest(loginPassword: String) {
+    fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
     }
