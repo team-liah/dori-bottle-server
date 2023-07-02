@@ -56,7 +56,8 @@ class AccountService(
 
     fun refreshAuth(
         loginId: String,
-        refreshToken: String?
+        refreshToken: String?,
+        millis: Long
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
             ?: throw NotFoundException("존재하지 않는 유저입니다.")
@@ -66,7 +67,7 @@ class AccountService(
 
         checkAccount(user)
 
-        validRefreshToken.refresh()
+        validRefreshToken.refresh(millis)
 
         val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
         val refreshedToken = validRefreshToken.token
