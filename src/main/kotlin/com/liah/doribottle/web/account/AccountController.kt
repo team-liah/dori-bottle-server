@@ -1,6 +1,6 @@
 package com.liah.doribottle.web.account
 
-import com.liah.doribottle.extension.currentUserId
+import com.liah.doribottle.extension.currentUserLoginId
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.account.vm.*
@@ -38,14 +38,14 @@ class AccountController(
         @Valid @RequestBody request: RegisterRequest
     ): AuthResponse {
         accountService.register(
-            id = currentUserId()!!,
+            loginId = currentUserLoginId()!!,
             phoneNumber = request.phoneNumber!!,
             name = request.name!!,
             birthDate = request.birthDate!!,
             gender = request.gender!!
         )
 
-        return accountService.refreshAuth(currentUserId()!!, refreshToken)
+        return accountService.refreshAuth(currentUserLoginId()!!, refreshToken)
             .toResponse()
     }
 }

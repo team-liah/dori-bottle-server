@@ -16,12 +16,13 @@ class TokenProvider(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun createToken(id: UUID, role: Role): String {
+    fun createToken(id: UUID, login: String, role: Role): String {
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
+                "login" to login,
                 "role" to role.key
             ))
             .setIssuedAt(now)
@@ -39,6 +40,15 @@ class TokenProvider(
             .subject
 
         return UUID.fromString(subject)
+    }
+
+    fun getUserLoginFromToken(token: String): String {
+        return Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+            .build()
+            .parseClaimsJws(token)
+            .body
+            .get("login", String::class.java)
     }
 
     fun getUserRoleFromToken(token: String): String {

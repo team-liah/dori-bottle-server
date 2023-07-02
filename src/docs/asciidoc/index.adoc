@@ -17,9 +17,20 @@ include::{snippets}/sample/http-response.adoc[]
 [[resources-account]]
 == Account
 
-[[resources-account-auth]]
 === 인증 요청
 ==== HTTP request
-include::{snippets}/account/auth/send-sms/http-request.adoc[]
+include::{snippets}/account/auth-send-sms/http-request.adoc[]
 ==== HTTP response
-include::{snippets}/account/auth/send-sms/http-response.adoc[]
+include::{snippets}/account/auth-send-sms/http-response.adoc[]
+
+=== 인증
+==== HTTP request
+include::{snippets}/account/auth/http-request.adoc[]
+==== HTTP response
+include::{snippets}/account/auth/http-response.adoc[]
+
+=== 회원가입
+==== HTTP request
+include::{snippets}/account/register/http-request.adoc[]
+==== HTTP response
+include::{snippets}/account/register/http-response.adoc[]

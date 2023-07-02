@@ -1,11 +1,15 @@
 package com.liah.doribottle.extension
 
+import com.liah.doribottle.config.security.DoriUser
 import org.springframework.security.core.context.SecurityContextHolder
-import java.util.*
 
-fun currentUserId(): UUID? {
+fun currentUserId() = getPrincipal()?.id
+
+fun currentUserLoginId() = getPrincipal()?.login
+
+private fun getPrincipal(): DoriUser? {
     val principal = SecurityContextHolder.getContext().authentication.principal
-    return if (principal is UUID?) {
+    return if (principal is DoriUser?) {
         principal
     } else {
         null

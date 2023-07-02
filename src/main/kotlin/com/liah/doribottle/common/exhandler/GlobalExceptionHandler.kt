@@ -1,9 +1,6 @@
 package com.liah.doribottle.common.exhandler
 
-import com.liah.doribottle.common.exception.BadRequestException
-import com.liah.doribottle.common.exception.ForbiddenException
-import com.liah.doribottle.common.exception.NotFoundException
-import com.liah.doribottle.common.exception.UnauthorizedException
+import com.liah.doribottle.common.exception.*
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -30,11 +27,11 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException::class)
-    protected fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> {
-        log.error("MissingServletRequestParameterException", e)
-        val response = ErrorResponse("${e.parameterName} - ${e.message}", HttpStatus.BAD_REQUEST.value())
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+    @ExceptionHandler(SmsSendingException::class)
+    protected fun handleSmsSendingException(e: SmsSendingException): ResponseEntity<ErrorResponse> {
+        log.error("SmsSendingException", e)
+        val response = ErrorResponse(e.message, HttpStatus.INTERNAL_SERVER_ERROR.value())
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
