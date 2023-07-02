@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.sms
 
+import com.liah.doribottle.common.exception.SmsSendingException
 import com.liah.doribottle.service.sms.dto.Recipient
 import com.liah.doribottle.service.sms.dto.SendAuthSmsTemplateRequest
 import com.liah.doribottle.service.sms.dto.ToastRestApiResponse
@@ -34,6 +35,6 @@ class ToastApiClient(
             .postForEntity(authSmsSendRequestUrl, request, ToastRestApiResponse::class.java)
 
         if (response.statusCode != HttpStatus.OK || response.body?.header?.isSuccessful == false)
-            throw Exception("SMS 발송 실패했습니다.")
+            throw SmsSendingException("SMS 발송 실패했습니다.")
     }
 }

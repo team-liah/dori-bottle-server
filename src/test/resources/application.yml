@@ -21,7 +21,7 @@ jwt:
 
 toast:
   sms:
-    url: dummyUrl
+    url: https://api-sms.cloud.toast.com/
     appKey: dummyKey
     secretKey: dummyKey
     sendNo: dummyNo
