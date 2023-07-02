@@ -1,11 +1,10 @@
 package com.liah.doribottle.web.account
 
-import com.liah.doribottle.extension.currentUserId
+import com.liah.doribottle.extension.currentUserLoginId
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.account.vm.*
 import jakarta.validation.Valid
-import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -15,14 +14,12 @@ class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
     @PostMapping("/auth/send-sms")
     fun sendSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
         val authCode = Random().nextInt(100000, 999999).toString()
-
-        accountService.authRequest(request.loginId!!, authCode)
+        accountService.updatePassword(request.loginId!!, authCode)
 
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
@@ -31,22 +28,24 @@ class AccountController(
     fun auth(
         @Valid @RequestBody request: AuthRequest
     ): AuthResponse {
-        val accessToken = accountService.auth(request.loginId!!, request.loginPassword!!)
-        return AuthResponse(accessToken)
+        return accountService.auth(request.loginId!!, request.loginPassword!!)
+            .toResponse()
     }
 
     @PostMapping("/register")
     fun register(
+        @CookieValue("refresh_token") refreshToken: String?,
         @Valid @RequestBody request: RegisterRequest
-    ) {
+    ): AuthResponse {
         accountService.register(
-            id = currentUserId()!!,
+            loginId = currentUserLoginId()!!,
             phoneNumber = request.phoneNumber!!,
             name = request.name!!,
             birthDate = request.birthDate!!,
             gender = request.gender!!
         )
 
-        // TODO: Refresh token
+        return accountService.refreshAuth(currentUserLoginId()!!, refreshToken)
+            .toResponse()
     }
 }

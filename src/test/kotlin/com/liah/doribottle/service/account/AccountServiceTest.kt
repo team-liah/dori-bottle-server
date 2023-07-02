@@ -1,10 +1,8 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.domain.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -25,24 +23,25 @@ class AccountServiceTest {
     @PersistenceContext private lateinit var entityManager: EntityManager
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
-    private val loginId = "010-0000-0000"
+    private val loginId = "01000000000"
 
     private fun clear() {
         entityManager.flush()
         entityManager.clear()
     }
 
-    @DisplayName("인증 요청")
+    @DisplayName("비밀번호 업데이트")
     @Test
-    fun authRequest() {
+    fun updatePassword() {
         //given
         val loginPassword = "123456"
 
         //when
-        val id = accountService.authRequest(loginId, loginPassword)
+        val id = accountService.updatePassword(loginId, loginPassword)
         clear()
 
         //then
@@ -61,27 +60,28 @@ class AccountServiceTest {
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        saveUser.authRequest(encryptedPassword)
+        saveUser.updatePassword(encryptedPassword)
         clear()
 
         //when
-        val token = accountService.auth(loginId, loginPassword)
+        val authDto = accountService.auth(loginId, loginPassword)
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(token)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(token)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(token)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(authDto.refreshToken).isNotNull
     }
 
-    @DisplayName("인증 실패")
+    @DisplayName("인증 예외")
     @Test
-    fun authFailed() {
+    fun authException() {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        saveUser.authRequest(encryptedPassword)
+        saveUser.updatePassword(encryptedPassword)
         clear()
 
         // TODO: DisabledException, LockedException
@@ -92,6 +92,25 @@ class AccountServiceTest {
         assertThat(badCredentialsException.message).isEqualTo("잘못된 인증번호입니다.")
     }
 
+    @DisplayName("재인증")
+    @Test
+    fun refreshAuth() {
+        //given
+        val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser))
+        clear()
+
+        //when
+        val authDto = accountService.refreshAuth(saveUser.loginId, saveRefreshToken.token)
+        clear()
+
+        //then
+        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
+    }
+
     @DisplayName("회원가입")
     @Test
     fun register() {
@@ -100,7 +119,7 @@ class AccountServiceTest {
         clear()
 
         //when
-        accountService.register(saveUser.id, loginId, "Tester", 19970224, MALE)
+        accountService.register(saveUser.loginId, loginId, "Tester", 19970224, MALE)
         clear()
 
         //then
