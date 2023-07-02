@@ -4,7 +4,9 @@ import com.liah.doribottle.extension.currentUserLoginId
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.account.vm.*
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -12,7 +14,9 @@ import java.util.*
 @RequestMapping("/api/v1/account")
 class AccountController(
     private val accountService: AccountService,
-    private val smsService: SmsService
+    private val smsService: SmsService,
+    @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
+    @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
     @PostMapping("/auth/send-sms")
     fun sendSms(
@@ -26,14 +30,31 @@ class AccountController(
 
     @PostMapping("/auth")
     fun auth(
+        httpRequest: HttpServletRequest,
         @Valid @RequestBody request: AuthRequest
     ): AuthResponse {
-        return accountService.auth(request.loginId!!, request.loginPassword!!)
-            .toResponse()
+        val result = accountService.auth(request.loginId!!, request.loginPassword!!)
+
+        // TODO: Set Cookie
+//        val accessTokenCookie = createCookie(
+//            url = httpRequest.requestURL.toString(),
+//            name = "access_token",
+//            value = result.accessToken,
+//            expiredMs = jwtExpiredMs
+//        )
+//        val refreshTokenCookie = createCookie(
+//            url = httpRequest.requestURL.toString(),
+//            name = "refresh_token",
+//            value = result.refreshToken,
+//            expiredMs = refreshTokenExpiredMs
+//        )
+
+        return result.toResponse()
     }
 
     @PostMapping("/register")
     fun register(
+        httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?,
         @Valid @RequestBody request: RegisterRequest
     ): AuthResponse {
@@ -44,8 +65,22 @@ class AccountController(
             birthDate = request.birthDate!!,
             gender = request.gender!!
         )
+        val result = accountService.refreshAuth(currentUserLoginId()!!, refreshToken, refreshTokenExpiredMs)
 
-        return accountService.refreshAuth(currentUserLoginId()!!, refreshToken)
-            .toResponse()
+        // TODO: Set Cookie
+//        val accessTokenCookie = createCookie(
+//            url = httpRequest.requestURL.toString(),
+//            name = "access_token",
+//            value = result.accessToken,
+//            expiredMs = jwtExpiredMs
+//        )
+//        val refreshTokenCookie = createCookie(
+//            url = httpRequest.requestURL.toString(),
+//            name = "refresh_token",
+//            value = result.refreshToken,
+//            expiredMs = refreshTokenExpiredMs
+//        )
+
+        return result.toResponse()
     }
 }

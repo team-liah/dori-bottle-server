@@ -101,7 +101,7 @@ class AccountServiceTest {
         clear()
 
         //when
-        val authDto = accountService.refreshAuth(saveUser.loginId, saveRefreshToken.token)
+        val authDto = accountService.refreshAuth(saveUser.loginId, saveRefreshToken.token, 1209600000)
         clear()
 
         //then
