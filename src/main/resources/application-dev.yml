@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:h2:tcp://localhost/~/doribottle-h2-local
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: doribottle-database.c92a4l3bvio6.ap-northeast-2.rds.amazonaws.com/doribottle_dev
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
