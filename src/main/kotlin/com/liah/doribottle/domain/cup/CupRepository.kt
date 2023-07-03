@@ -6,5 +6,5 @@ import java.util.*
 
 @Repository
 interface CupRepository : JpaRepository<Cup, UUID> {
-    fun findByRfid(rfid: String): Optional<Cup>
+    fun findByRfid(rfid: String): Cup?
 }
