@@ -6,5 +6,5 @@ import java.util.*
 
 @Repository
 interface PointHistoryRepository : JpaRepository<PointHistory, UUID> {
-    fun findByUserId(userId: UUID): PointHistory?
+    fun findAllByPointId(pointId: UUID): List<PointHistory>
 }
