@@ -4,8 +4,12 @@ import com.liah.doribottle.common.exception.BadRequestException
 import com.liah.doribottle.common.exception.NotFoundException
 import com.liah.doribottle.common.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.point.PointHistoryType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.service.account.dto.AuthDto
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
@@ -22,7 +26,8 @@ class AccountService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
     private val tokenProvider: TokenProvider,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     fun updatePassword(
         loginId: String,
@@ -85,9 +90,20 @@ class AccountService(
             ?: throw NotFoundException("존재하지 않는 유저입니다.")
         if (user.phoneNumber != phoneNumber)
             throw BadRequestException("잘못된 요청입니다.")
+        if (user.role == Role.USER)
+            throw BadRequestException("이미 가입된 회원입니다.")
 
         user.update(name, birthDate, gender)
         user.changeRole(Role.USER)
+
+        applicationEventPublisher.publishEvent(
+            PointSaveEvent(
+                user.id,
+                PointSaveType.REWARD,
+                PointHistoryType.SAVE_REGISTER_REWARD,
+                10
+            )
+        )
 
         return user.id
     }

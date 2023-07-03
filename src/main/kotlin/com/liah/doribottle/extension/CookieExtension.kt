@@ -19,7 +19,7 @@ fun createCookie(
     .httpOnly(true)
     .secure(true)
     .path("/")
-    .maxAge(expiredMs)
+    .maxAge(expiredMs/1000)
     .build()
 
 private fun parseSubDomain(url: String): String {
