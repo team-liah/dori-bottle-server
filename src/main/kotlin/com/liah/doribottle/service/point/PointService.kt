@@ -16,7 +16,7 @@ class PointService(
         saveType: PointSaveType,
         historyType: PointHistoryType,
         saveAmounts: Long,
-        description: String
+        description: String = historyType.title
     ): UUID {
         val point = pointRepository.save(Point(userId, saveType, description, saveAmounts))
         pointHistoryRepository.save(PointHistory(userId, point, historyType, description, saveAmounts))

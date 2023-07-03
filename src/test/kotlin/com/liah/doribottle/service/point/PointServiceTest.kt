@@ -35,7 +35,7 @@ class PointServiceTest {
         val userId = UUID.randomUUID()
 
         //when
-        val id = pointService.save(userId, REWARD, SAVE_REGISTER_REWARD, 10, "회원가입 보상 적립")
+        val id = pointService.save(userId, REWARD, SAVE_REGISTER_REWARD, 10)
         clear()
 
         //then
@@ -44,7 +44,7 @@ class PointServiceTest {
         assertThat(findPoint?.userId).isEqualTo(userId)
         assertThat(findPoint?.saveType).isEqualTo(REWARD)
         assertThat(findPoint?.saveAmounts).isEqualTo(10L)
-        assertThat(findPoint?.description).isEqualTo("회원가입 보상 적립")
+        assertThat(findPoint?.description).isEqualTo(SAVE_REGISTER_REWARD.title)
         assertThat(findPointHistories)
             .extracting("type")
             .containsExactly(SAVE_REGISTER_REWARD)
@@ -53,6 +53,6 @@ class PointServiceTest {
             .containsExactly(10L)
         assertThat(findPointHistories)
             .extracting("description")
-            .containsExactly("회원가입 보상 적립")
+            .containsExactly(SAVE_REGISTER_REWARD.title)
     }
 }
