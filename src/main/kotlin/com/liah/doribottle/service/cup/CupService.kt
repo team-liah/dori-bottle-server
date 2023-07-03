@@ -5,6 +5,7 @@ import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupRepository
 import com.liah.doribottle.service.cup.dto.CupDto
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -38,8 +39,8 @@ class CupService(
     fun getCupByRfid(
         rfid: String
     ): CupDto {
-        val cup = cupRepository
-            .findByRfid(rfid).orElseThrow { NotFoundException("컵 정보를 찾을 수 없습니다.") }
+        val cup = cupRepository.findByRfid(rfid)
+            ?: throw NotFoundException("컵 정보를 찾을 수 없습니다.")
 
         return cup.toDto()
     }
@@ -57,7 +58,8 @@ class CupService(
         id: UUID,
         reason: String?
     ) {
-        val cup = cupRepository.findById(id).orElseThrow { NotFoundException("컵 정보를 찾을 수 없습니다.") }
+        val cup = cupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException("컵 정보를 찾을 수 없습니다.")
         cup.delete(reason)
     }
 
