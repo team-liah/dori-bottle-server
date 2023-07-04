@@ -52,6 +52,9 @@ dependencies {
 
 	// jackson-module-kotlin
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+	// swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 }
 
 tasks.withType<KotlinCompile> {
