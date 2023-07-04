@@ -26,7 +26,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .addFilterBefore(JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorize -> authorize
-                .requestMatchers("/", "/docs/index.html", "/h2-console/**").permitAll()
+                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/v1/account/auth", "/api/v1/account/auth/send-sms").permitAll()
                 .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
                 .anyRequest().authenticated()
