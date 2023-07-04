@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -31,7 +32,7 @@ class AccountController(
     fun sendSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
-        val authCode = Random().nextInt(100000, 999999).toString()
+        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
         accountService.updatePassword(request.loginId!!, authCode)
 
         smsService.sendLoginAuthSms(request.loginId, authCode)

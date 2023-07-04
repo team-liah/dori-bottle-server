@@ -15,24 +15,18 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.restdocs.RestDocumentationContextProvider
-import org.springframework.restdocs.RestDocumentationExtension
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*
-import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
-import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 
-@ExtendWith(RestDocumentationExtension::class, SpringExtension::class)
+@ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AccountControllerTest {
     private lateinit var mockMvc: MockMvc
@@ -42,6 +36,7 @@ class AccountControllerTest {
         private const val USER_LOGIN_ID = "01056383316"
         private const val GUEST_LOGIN_ID = "01012345678"
     }
+    @Autowired private lateinit var context: WebApplicationContext
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
@@ -55,14 +50,10 @@ class AccountControllerTest {
     private lateinit var guestRefreshToken: RefreshToken
 
     @BeforeEach
-    internal fun setUp(
-        webApplicationContext: WebApplicationContext,
-        restDocumentation: RestDocumentationContextProvider
-    ) {
+    internal fun setUp() {
         mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext)
+            .webAppContextSetup(context)
             .apply<DefaultMockMvcBuilder?>(springSecurity())
-            .apply<DefaultMockMvcBuilder?>(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
             .build()
     }
 
@@ -93,14 +84,6 @@ class AccountControllerTest {
         )
             .andExpect(MockMvcResultMatchers.status().is5xxServerError)
             .andExpect(jsonPath("message", `is`("SMS 발송 실패했습니다.")))
-            .andDo(
-                document(
-                    "account/auth-send-sms",
-                    requestFields(
-                        fieldWithPath("loginId").description("Login ID (User's phone number)")
-                    )
-                )
-            )
     }
 
     @DisplayName("인증")
@@ -115,15 +98,6 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andDo(
-                document(
-                    "account/auth",
-                    requestFields(
-                        fieldWithPath("loginId").description("Login ID (User's phone number)"),
-                        fieldWithPath("loginPassword").description("Login Password (Received SMS Text)")
-                    )
-                )
-            )
     }
 
     @DisplayName("회원가입")
@@ -142,16 +116,5 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andDo(
-                document(
-                    "account/register",
-                    requestFields(
-                        fieldWithPath("phoneNumber").description("User's phone number"),
-                        fieldWithPath("name").description("Username"),
-                        fieldWithPath("gender").description("User gender"),
-                        fieldWithPath("birthDate").description("User birth date")
-                    )
-                )
-            )
     }
 }

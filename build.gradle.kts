@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "3.1.0"
 	id("io.spring.dependency-management") version "1.1.0"
-	id("org.asciidoctor.jvm.convert") version "3.3.2"
 	kotlin("jvm") version "1.8.21"
 	kotlin("plugin.spring") version "1.8.21"
 	kotlin("plugin.jpa") version "1.8.21"
@@ -46,10 +45,6 @@ dependencies {
 	// ulid-creator
 	implementation("com.github.f4b6a3:ulid-creator:5.2.0")
 
-	// Spring Rest Docs
-	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
-	testImplementation("org.springframework.restdocs:spring-restdocs-asciidoctor")
-
 	// jjwt-api
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
@@ -68,33 +63,4 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-val asciidoctorExt: Configuration by configurations.creating
-val snippetsDir by extra { file("build/generated-snippets") }
-dependencies {
-	asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
-}
-
-// Test -> asciidoctor -> build
-tasks {
-	test {
-		outputs.dir(snippetsDir)
-	}
-
-	asciidoctor {
-		inputs.dir(snippetsDir)
-		configurations(asciidoctorExt.name)
-		dependsOn(test)
-		doLast {
-			copy {
-				from("build/docs/asciidoc")
-				into("src/main/resources/static/docs")
-			}
-		}
-	}
-
-	build {
-		dependsOn(asciidoctor)
-	}
 }
