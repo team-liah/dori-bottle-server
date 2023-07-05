@@ -12,5 +12,11 @@ data class RegisterRequest(
     @field:NotNull
     val gender: Gender?,
     @field:NotNull
-    val birthDate: Int?
+    val birthDate: Int?,
+    @field:NotNull
+    val agreedTermsOfService: Boolean?,
+    @field:NotNull
+    val agreedTermsOfPrivacy: Boolean?,
+    @field:NotNull
+    val agreedTermsOfMarketing: Boolean?
 )

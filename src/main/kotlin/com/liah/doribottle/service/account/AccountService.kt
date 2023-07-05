@@ -84,7 +84,10 @@ class AccountService(
         phoneNumber: String,
         name: String,
         birthDate: Int,
-        gender: Gender
+        gender: Gender,
+        agreedTermsOfService: Boolean,
+        agreedTermsOfPrivacy: Boolean,
+        agreedTermsOfMarketing: Boolean
     ): UUID {
         val user = userRepository.findByLoginId(loginId)
             ?: throw NotFoundException("존재하지 않는 유저입니다.")
@@ -94,6 +97,7 @@ class AccountService(
             throw BadRequestException("이미 가입된 회원입니다.")
 
         user.update(name, birthDate, gender)
+        user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.changeRole(Role.USER)
 
         applicationEventPublisher.publishEvent(
