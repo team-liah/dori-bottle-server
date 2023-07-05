@@ -7,7 +7,7 @@ import com.liah.doribottle.web.account.vm.AuthRequest
 import com.liah.doribottle.web.account.vm.RegisterRequest
 import com.liah.doribottle.web.account.vm.SendSmsRequest
 import jakarta.servlet.http.Cookie
-import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -35,6 +36,8 @@ class AccountControllerTest {
     companion object {
         private const val USER_LOGIN_ID = "01056383316"
         private const val GUEST_LOGIN_ID = "01012345678"
+        private const val ACCESS_TOKEN = "access_token"
+        private const val REFRESH_TOKEN = "refresh_token"
     }
     @Autowired private lateinit var context: WebApplicationContext
 
@@ -98,6 +101,73 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
+    }
+
+    @DisplayName("인증 - Unauthorized")
+    @Test
+    fun authException() {
+        val body = AuthRequest(USER_LOGIN_ID, "000000")
+
+        mockMvc.perform(
+            post("$endPoint/auth")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(jsonPath("message", `is`("잘못된 인증번호입니다.")))
+    }
+
+    @DisplayName("인증 새로고침")
+    @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
+    @Test
+    fun refreshAuth() {
+        val cookie = Cookie("refresh_token", userRefreshToken.token)
+
+        mockMvc.perform(
+            post("$endPoint/refresh-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
+    }
+
+    @DisplayName("인증 새로고침 - Unauthorized")
+    @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
+    @Test
+    fun refreshAuthException() {
+        val cookie = Cookie("refresh_token", UUID.randomUUID().toString())
+
+        mockMvc.perform(
+            post("$endPoint/refresh-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(jsonPath("message", `is`("유효한 토큰 정보를 확인할 수 없습니다.")))
+    }
+
+    @DisplayName("로그아웃")
+    @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
+    @Test
+    fun logout() {
+        val cookie = Cookie("refresh_token", userRefreshToken.token)
+
+        mockMvc.perform(
+            post("$endPoint/logout")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, ""))
+            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, ""))
     }
 
     @DisplayName("회원가입")
@@ -116,5 +186,7 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
     }
 }
