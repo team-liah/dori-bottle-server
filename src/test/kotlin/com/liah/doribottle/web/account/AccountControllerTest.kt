@@ -105,7 +105,7 @@ class AccountControllerTest {
     @Test
     fun register() {
         val cookie = Cookie("refresh_token", guestRefreshToken.token)
-        val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, 19970101)
+        val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, 19970101, true, true, false)
 
         mockMvc
             .perform(
