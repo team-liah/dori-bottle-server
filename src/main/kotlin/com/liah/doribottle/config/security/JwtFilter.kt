@@ -28,11 +28,11 @@ class JwtFilter(
 
         if (!token.isNullOrEmpty() && tokenProvider.validateToken(token)) {
             val id = tokenProvider.getUserIdFromToken(token)
-            val login = tokenProvider.getUserLoginFromToken(token)
+            val loginId = tokenProvider.getUserLoginIdFromToken(token)
             val role = (Role::key findBy tokenProvider.getUserRoleFromToken(token))!!
 
             val authenticationToken = UsernamePasswordAuthenticationToken(
-                DoriUser(id, login, role),
+                DoriUser(id, loginId, role),
                 null,
                 listOf(SimpleGrantedAuthority(role.key))
             )

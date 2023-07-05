@@ -5,6 +5,6 @@ import java.util.*
 
 data class DoriUser(
     val id: UUID,
-    val login: String,
+    val loginId: String,
     val role: Role
 )
