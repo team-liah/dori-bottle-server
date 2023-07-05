@@ -10,10 +10,10 @@ data class UserDto(
     val loginId: String,
     val name: String,
     val phoneNumber: String,
-    val invitationKey: UUID,
+    val invitationCode: String,
     val birthDate: Int?,
     val gender: Gender?,
     val role: Role
 ) {
-    fun toProfile() = ProfileResponse(id, loginId, name, phoneNumber, invitationKey, birthDate, gender, role)
+    fun toProfile() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
 }

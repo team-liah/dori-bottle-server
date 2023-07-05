@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
 import java.time.Instant
@@ -46,7 +47,7 @@ class User(
         protected set
 
     @Column(nullable = false, unique = true)
-    val invitationKey: UUID = UUID.randomUUID()
+    val invitationCode: String = randomString()
 
     @Column(nullable = false)
     var active: Boolean = true
@@ -115,5 +116,5 @@ class User(
         }
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationKey, birthDate, gender, role)
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
 }
