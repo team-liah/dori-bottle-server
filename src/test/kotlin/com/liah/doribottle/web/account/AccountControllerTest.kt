@@ -1,6 +1,8 @@
 package com.liah.doribottle.web.account
 
 import com.liah.doribottle.config.security.WithMockDoriUser
+import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.web.account.vm.AuthRequest
@@ -36,8 +38,6 @@ class AccountControllerTest {
     companion object {
         private const val USER_LOGIN_ID = "01056383316"
         private const val GUEST_LOGIN_ID = "01012345678"
-        private const val ACCESS_TOKEN = "access_token"
-        private const val REFRESH_TOKEN = "refresh_token"
     }
     @Autowired private lateinit var context: WebApplicationContext
 
@@ -124,7 +124,7 @@ class AccountControllerTest {
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun refreshAuth() {
-        val cookie = Cookie("refresh_token", userRefreshToken.token)
+        val cookie = Cookie(REFRESH_TOKEN, userRefreshToken.token)
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -141,7 +141,7 @@ class AccountControllerTest {
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun refreshAuthException() {
-        val cookie = Cookie("refresh_token", UUID.randomUUID().toString())
+        val cookie = Cookie(REFRESH_TOKEN, UUID.randomUUID().toString())
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -157,7 +157,7 @@ class AccountControllerTest {
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun logout() {
-        val cookie = Cookie("refresh_token", userRefreshToken.token)
+        val cookie = Cookie(REFRESH_TOKEN, userRefreshToken.token)
 
         mockMvc.perform(
             post("$endPoint/logout")
@@ -174,7 +174,7 @@ class AccountControllerTest {
     @WithMockDoriUser(loginId = GUEST_LOGIN_ID, role = Role.GUEST)
     @Test
     fun register() {
-        val cookie = Cookie("refresh_token", guestRefreshToken.token)
+        val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.token)
         val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, 19970101, true, true, false)
 
         mockMvc

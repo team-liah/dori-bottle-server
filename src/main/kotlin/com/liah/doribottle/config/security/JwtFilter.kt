@@ -1,5 +1,6 @@
 package com.liah.doribottle.config.security
 
+import com.liah.doribottle.constant.ACCESS_TOKEN
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -48,7 +49,7 @@ class JwtFilter(
             return authorization.substring(7)
         }
 
-        val cookieToken = request.cookies?.firstOrNull { c -> c.name.equals("access_token") }?.value
+        val cookieToken = request.cookies?.firstOrNull { c -> c.name.equals(ACCESS_TOKEN) }?.value
         if (!cookieToken.isNullOrEmpty()) {
             return cookieToken
         }

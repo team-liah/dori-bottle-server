@@ -1,6 +1,8 @@
 package com.liah.doribottle.web.account
 
 import com.liah.doribottle.common.exception.UnauthorizedException
+import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.extension.createCookie
 import com.liah.doribottle.extension.currentUserLoginId
 import com.liah.doribottle.extension.expireCookie
@@ -24,10 +26,6 @@ class AccountController(
     @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
-    companion object {
-        private const val ACCESS_TOKEN = "access_token"
-        private const val REFRESH_TOKEN = "refresh_token"
-    }
     @PostMapping("/auth/send-sms")
     fun sendSms(
         @Valid @RequestBody request: SendSmsRequest
