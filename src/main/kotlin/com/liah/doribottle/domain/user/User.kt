@@ -59,6 +59,18 @@ class User(
     @Column(nullable = false)
     var role: Role = role
 
+    @Column
+    var agreedTermsOfServiceDate: Instant? = null
+        protected set
+
+    @Column
+    var agreedTermsOfPrivacyDate: Instant? = null
+        protected set
+
+    @Column
+    var agreedTermsOfMarketingDate: Instant? = null
+        protected set
+
     fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
@@ -81,5 +93,24 @@ class User(
 
     fun changeRole(role: Role) {
         this.role = role
+    }
+
+    fun agreeOnTerms(
+        agreedTermsOfService: Boolean,
+        agreedTermsOfPrivacy: Boolean,
+        agreedTermsOfMarketing: Boolean
+    ) {
+        when (agreedTermsOfService) {
+            true -> this.agreedTermsOfServiceDate = Instant.now()
+            false -> this.agreedTermsOfServiceDate = null
+        }
+        when (agreedTermsOfPrivacy) {
+            true -> this.agreedTermsOfPrivacyDate = Instant.now()
+            false -> this.agreedTermsOfPrivacyDate = null
+        }
+        when (agreedTermsOfMarketing) {
+            true -> this.agreedTermsOfMarketingDate = Instant.now()
+            false -> this.agreedTermsOfMarketingDate = null
+        }
     }
 }
