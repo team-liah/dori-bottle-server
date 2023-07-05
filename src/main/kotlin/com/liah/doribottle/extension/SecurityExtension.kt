@@ -3,9 +3,11 @@ package com.liah.doribottle.extension
 import com.liah.doribottle.config.security.DoriUser
 import org.springframework.security.core.context.SecurityContextHolder
 
+fun currentUser() = getPrincipal()
+
 fun currentUserId() = getPrincipal()?.id
 
-fun currentUserLoginId() = getPrincipal()?.login
+fun currentUserLoginId() = getPrincipal()?.loginId
 
 private fun getPrincipal(): DoriUser? {
     val principal = SecurityContextHolder.getContext().authentication.principal

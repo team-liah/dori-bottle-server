@@ -1,6 +1,8 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.extension.randomString
+import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -45,7 +47,7 @@ class User(
         protected set
 
     @Column(nullable = false, unique = true)
-    val invitationKey: UUID = UUID.randomUUID()
+    val invitationCode: String = randomString()
 
     @Column(nullable = false)
     var active: Boolean = true
@@ -58,6 +60,18 @@ class User(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var role: Role = role
+
+    @Column
+    var agreedTermsOfServiceDate: Instant? = null
+        protected set
+
+    @Column
+    var agreedTermsOfPrivacyDate: Instant? = null
+        protected set
+
+    @Column
+    var agreedTermsOfMarketingDate: Instant? = null
+        protected set
 
     fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
@@ -82,4 +96,25 @@ class User(
     fun changeRole(role: Role) {
         this.role = role
     }
+
+    fun agreeOnTerms(
+        agreedTermsOfService: Boolean,
+        agreedTermsOfPrivacy: Boolean,
+        agreedTermsOfMarketing: Boolean
+    ) {
+        when (agreedTermsOfService) {
+            true -> this.agreedTermsOfServiceDate = Instant.now()
+            false -> this.agreedTermsOfServiceDate = null
+        }
+        when (agreedTermsOfPrivacy) {
+            true -> this.agreedTermsOfPrivacyDate = Instant.now()
+            false -> this.agreedTermsOfPrivacyDate = null
+        }
+        when (agreedTermsOfMarketing) {
+            true -> this.agreedTermsOfMarketingDate = Instant.now()
+            false -> this.agreedTermsOfMarketingDate = null
+        }
+    }
+
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
 }

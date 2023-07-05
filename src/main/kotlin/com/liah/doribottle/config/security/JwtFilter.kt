@@ -1,5 +1,8 @@
 package com.liah.doribottle.config.security
 
+import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.extension.findBy
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -25,13 +28,13 @@ class JwtFilter(
 
         if (!token.isNullOrEmpty() && tokenProvider.validateToken(token)) {
             val id = tokenProvider.getUserIdFromToken(token)
-            val login = tokenProvider.getUserLoginFromToken(token)
-            val role = tokenProvider.getUserRoleFromToken(token)
+            val loginId = tokenProvider.getUserLoginIdFromToken(token)
+            val role = (Role::key findBy tokenProvider.getUserRoleFromToken(token))!!
 
             val authenticationToken = UsernamePasswordAuthenticationToken(
-                DoriUser(id, login),
+                DoriUser(id, loginId, role),
                 null,
-                listOf(SimpleGrantedAuthority(role))
+                listOf(SimpleGrantedAuthority(role.key))
             )
 
             authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)
@@ -48,7 +51,7 @@ class JwtFilter(
             return authorization.substring(7)
         }
 
-        val cookieToken = request.cookies?.firstOrNull { c -> c.name.equals("access_token") }?.value
+        val cookieToken = request.cookies?.firstOrNull { c -> c.name.equals(ACCESS_TOKEN) }?.value
         if (!cookieToken.isNullOrEmpty()) {
             return cookieToken
         }
