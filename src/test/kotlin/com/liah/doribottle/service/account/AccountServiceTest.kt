@@ -119,7 +119,7 @@ class AccountServiceTest {
         clear()
 
         //when
-        accountService.register(saveUser.loginId, loginId, "Tester", 19970224, MALE)
+        accountService.register(saveUser.loginId, loginId, "Tester", 19970224, MALE, true, true, false)
         clear()
 
         //then
@@ -129,5 +129,8 @@ class AccountServiceTest {
         assertThat(findUser?.role).isEqualTo(Role.USER)
         assertThat(findUser?.birthDate).isEqualTo(19970224)
         assertThat(findUser?.gender).isEqualTo(MALE)
+        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
+        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
+        assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
     }
 }
