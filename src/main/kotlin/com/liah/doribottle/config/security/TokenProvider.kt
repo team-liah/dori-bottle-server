@@ -22,7 +22,7 @@ class TokenProvider(
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
-                "login" to login,
+                "loginId" to login,
                 "role" to role.key
             ))
             .setIssuedAt(now)
@@ -42,13 +42,13 @@ class TokenProvider(
         return UUID.fromString(subject)
     }
 
-    fun getUserLoginFromToken(token: String): String {
+    fun getUserLoginIdFromToken(token: String): String {
         return Jwts.parserBuilder()
             .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
             .build()
             .parseClaimsJws(token)
             .body
-            .get("login", String::class.java)
+            .get("loginId", String::class.java)
     }
 
     fun getUserRoleFromToken(token: String): String {
