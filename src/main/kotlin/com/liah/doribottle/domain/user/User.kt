@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -113,4 +114,6 @@ class User(
             false -> this.agreedTermsOfMarketingDate = null
         }
     }
+
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationKey, birthDate, gender, role)
 }
