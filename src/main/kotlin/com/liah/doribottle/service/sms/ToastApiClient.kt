@@ -26,6 +26,8 @@ class ToastApiClient(
         recipientNo: String,
         templateParameter: Map<String, String>
     ) {
+        log.info("SEND_NO ::: $sendNo")
+
         val recipient = Recipient(recipientNo, "82", templateParameter)
         val request = SendAuthSmsTemplateRequest(
             templateId = template.id,
