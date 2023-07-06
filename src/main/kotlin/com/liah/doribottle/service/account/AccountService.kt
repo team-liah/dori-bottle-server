@@ -1,6 +1,7 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.common.exception.BadRequestException
+import com.liah.doribottle.common.exception.ErrorCode
 import com.liah.doribottle.common.exception.NotFoundException
 import com.liah.doribottle.common.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
@@ -48,7 +49,7 @@ class AccountService(
         loginPassword: String
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw UsernameNotFoundException("User $loginId was not found in the database) }")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         checkLoginPassword(user, loginPassword)
         checkAccount(user)
@@ -66,10 +67,10 @@ class AccountService(
         millis: Long
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException("존재하지 않는 유저입니다.")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         val validRefreshToken = refreshTokenRepository
             .findByUserIdAndTokenAndExpiredDateIsAfter(user.id, refreshToken, Instant.now())
-            ?: throw UnauthorizedException("유효한 토큰 정보를 확인할 수 없습니다.")
+            ?: throw UnauthorizedException()
 
         checkAccount(user)
 
@@ -91,11 +92,11 @@ class AccountService(
         agreedTermsOfMarketing: Boolean
     ): UUID {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException("존재하지 않는 유저입니다.")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         if (user.phoneNumber != phoneNumber)
-            throw BadRequestException("잘못된 요청입니다.")
+            throw BadRequestException(ErrorCode.INVALID_INPUT_VALUE)
         if (user.role == Role.USER)
-            throw BadRequestException("이미 가입된 회원입니다.")
+            throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
 
         user.update(name, birthDate, gender)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)

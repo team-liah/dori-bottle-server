@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.cup
 
+import com.liah.doribottle.common.exception.ErrorCode
 import com.liah.doribottle.common.exception.NotFoundException
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupRepository
@@ -40,7 +41,7 @@ class CupService(
         rfid: String
     ): CupDto {
         val cup = cupRepository.findByRfid(rfid)
-            ?: throw NotFoundException("컵 정보를 찾을 수 없습니다.")
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
 
         return cup.toDto()
     }
@@ -59,7 +60,7 @@ class CupService(
         reason: String?
     ) {
         val cup = cupRepository.findByIdOrNull(id)
-            ?: throw NotFoundException("컵 정보를 찾을 수 없습니다.")
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
         cup.delete(reason)
     }
 

@@ -1,5 +1,7 @@
 package com.liah.doribottle.domain.cup
 
+import com.liah.doribottle.common.exception.BusinessException
+import com.liah.doribottle.common.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.cup.CupState.ON_LOAN
 import com.liah.doribottle.domain.cup.CupState.PENDING
@@ -32,7 +34,7 @@ class Cup(
     fun delete(
         reason: String?
     ) {
-        if (verifyOnLoan()) throw IllegalArgumentException("대여 중인 컵은 삭제할 수 없습니다.")
+        if (verifyOnLoan()) throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
         deletedReason = reason
         deletedBy = "User principal" // TODO: get user principal from security context
         deletedDate = Instant.now()
