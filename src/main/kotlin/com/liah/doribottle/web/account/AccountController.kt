@@ -108,7 +108,7 @@ class AccountController(
             gender = request.gender!!,
             agreedTermsOfService = request.agreedTermsOfService!!,
             agreedTermsOfPrivacy = request.agreedTermsOfPrivacy!!,
-            agreedTermsOfMarketing = request.agreedTermsOfMarketing!!,
+            agreedTermsOfMarketing = request.agreedTermsOfMarketing!!
         )
 
         val result = try {
