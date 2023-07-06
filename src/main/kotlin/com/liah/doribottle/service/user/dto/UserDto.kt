@@ -2,7 +2,7 @@ package com.liah.doribottle.service.user.dto
 
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.web.account.vm.ProfileResponse
+import com.liah.doribottle.web.me.vm.ProfileResponse
 import java.util.*
 
 data class UserDto(

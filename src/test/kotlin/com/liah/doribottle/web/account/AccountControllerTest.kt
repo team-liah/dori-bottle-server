@@ -1,6 +1,5 @@
 package com.liah.doribottle.web.account
 
-import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -45,7 +43,6 @@ class AccountControllerTest {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
-    @Autowired private lateinit var tokenProvider: TokenProvider
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
 
     private lateinit var user: User
@@ -74,47 +71,6 @@ class AccountControllerTest {
 
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
         guestRefreshToken = refreshTokenRepository.save(RefreshToken(guest))
-    }
-
-    @DisplayName("Dori User 프로필 조회")
-    @Test
-    fun getSimpleProfile() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
-        mockMvc.perform(
-            get("$endPoint/simple-profile")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(jsonPath("id", `is`(user.id.toString())))
-            .andExpect(jsonPath("loginId", `is`(user.loginId)))
-            .andExpect(jsonPath("role", `is`(user.role.name)))
-    }
-
-    @DisplayName("프로필 조회")
-    @Test
-    fun getProfile() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
-        mockMvc.perform(
-            get("$endPoint/profile")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(jsonPath("id", `is`(user.id.toString())))
-            .andExpect(jsonPath("loginId", `is`(user.loginId)))
-            .andExpect(jsonPath("name", `is`(user.name)))
-            .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
-            .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
-            .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
-            .andExpect(jsonPath("gender", `is`(user.gender)))
-            .andExpect(jsonPath("role", `is`(user.role.name)))
     }
 
     @DisplayName("인증요청")
