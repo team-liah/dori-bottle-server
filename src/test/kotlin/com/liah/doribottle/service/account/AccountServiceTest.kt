@@ -27,7 +27,7 @@ class AccountServiceTest {
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
-    private val loginId = "01000000000"
+    private val loginId = "010-0000-0000"
 
     private fun clear() {
         entityManager.flush()
