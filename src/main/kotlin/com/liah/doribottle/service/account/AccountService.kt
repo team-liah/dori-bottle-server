@@ -4,6 +4,7 @@ import com.liah.doribottle.common.exception.BadRequestException
 import com.liah.doribottle.common.exception.NotFoundException
 import com.liah.doribottle.common.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointHistoryType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
@@ -105,7 +106,7 @@ class AccountService(
                 user.id,
                 PointSaveType.REWARD,
                 PointHistoryType.SAVE_REGISTER_REWARD,
-                10
+                SAVE_REGISTER_REWARD_AMOUNTS
             )
         )
 
