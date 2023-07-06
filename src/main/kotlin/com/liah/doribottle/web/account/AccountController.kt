@@ -6,7 +6,6 @@ import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.extension.*
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
-import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.account.vm.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
@@ -21,17 +20,10 @@ import java.util.concurrent.ThreadLocalRandom
 @RequestMapping("/api/v1/account")
 class AccountController(
     private val accountService: AccountService,
-    private val userService: UserService,
     private val smsService: SmsService,
     @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
-    @GetMapping("/simple-profile")
-    fun getSimpleProfile() = currentUser()
-
-    @GetMapping("/profile")
-    fun getProfile() = userService.get(currentUserId()!!).toProfile()
-
     @PostMapping("/auth/send-sms")
     fun sendSms(
         @Valid @RequestBody request: SendSmsRequest

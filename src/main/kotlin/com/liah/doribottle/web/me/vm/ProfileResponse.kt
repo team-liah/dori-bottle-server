@@ -1,8 +1,8 @@
-package com.liah.doribottle.web.account.vm
+package com.liah.doribottle.web.me.vm
 
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
-import java.util.UUID
+import java.util.*
 
 data class ProfileResponse(
     val id: UUID,
