@@ -18,6 +18,7 @@ logging.level:
 jwt:
   secret: ${JWT_SECRET}
   expiredMs: 3600000 # 1hour
+  preAuthExpiredMs: 300000 # 5minute
 
 app:
   refreshToken:

@@ -10,7 +10,6 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
-import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -51,16 +50,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException::class)
     protected fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         log.error("HttpMessageNotReadableException", e)
-        val mostSpecificCause = e.cause
-        return if (mostSpecificCause != null) {
-            val exceptionName = mostSpecificCause.javaClass.name
-            val message = mostSpecificCause.message
-            val response = ErrorResponse("$exceptionName - $message", HttpStatus.BAD_REQUEST.value())
-            ResponseEntity(response, HttpStatus.BAD_REQUEST)
-        } else {
-            val response = ErrorResponse(e.message, HttpStatus.BAD_REQUEST.value())
-            ResponseEntity(response, HttpStatus.BAD_REQUEST)
-        }
+        val response = ErrorResponse(e.message, HttpStatus.BAD_REQUEST.value())
+        return ResponseEntity(response, HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
