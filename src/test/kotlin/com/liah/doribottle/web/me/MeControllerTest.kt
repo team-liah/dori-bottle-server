@@ -30,7 +30,7 @@ class MeControllerTest {
     private val endPoint = "/api/v1/me"
 
     companion object {
-        private const val USER_LOGIN_ID = "01056383316"
+        private const val USER_LOGIN_ID = "010-5638-3316"
     }
 
     @Autowired private lateinit var context: WebApplicationContext
