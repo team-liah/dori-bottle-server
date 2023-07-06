@@ -36,8 +36,8 @@ class AccountControllerTest {
     private val endPoint = "/api/v1/account"
 
     companion object {
-        private const val USER_LOGIN_ID = "01056383316"
-        private const val GUEST_LOGIN_ID = "01012345678"
+        private const val USER_LOGIN_ID = "010-5638-3316"
+        private const val GUEST_LOGIN_ID = "010-1234-5678"
     }
     @Autowired private lateinit var context: WebApplicationContext
 
