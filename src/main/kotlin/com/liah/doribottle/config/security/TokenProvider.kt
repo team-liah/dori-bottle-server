@@ -12,20 +12,31 @@ import java.util.*
 @Service
 class TokenProvider(
     @Value("\${jwt.secret}") private val secret: String,
-    @Value("\${jwt.expiredMs}") private val expiredMs: Long
+    @Value("\${jwt.expiredMs}") private val expiredMs: Long,
+    @Value("\${jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun createToken(id: UUID, login: String, role: Role): String {
+    fun createPreAuthToken(doriUser: DoriUser): String {
+        val now = Date()
+        val expiredDate = Date(now.time + preAuthExpiredMs)
+        return createToken(doriUser.id, doriUser.loginId, doriUser.role, now, expiredDate)
+    }
+
+    fun createToken(id: UUID, loginId: String, role: Role): String {
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
+        return createToken(id, loginId, role, now, expiredDate)
+    }
+
+    private fun createToken(id: UUID, loginId: String, role: Role, issueDate: Date, expiredDate: Date): String {
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
-                "loginId" to login,
+                "loginId" to loginId,
                 "role" to role.key
             ))
-            .setIssuedAt(now)
+            .setIssuedAt(issueDate)
             .setExpiration(expiredDate)
             .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
             .compact()

@@ -2,9 +2,7 @@ package com.liah.doribottle.web.me
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.domain.user.UserRepository
+import com.liah.doribottle.domain.user.*
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
@@ -36,9 +34,11 @@ class MeControllerTest {
     @Autowired private lateinit var context: WebApplicationContext
 
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private lateinit var user: User
+    private lateinit var userRefreshToken: RefreshToken
 
     @BeforeEach
     internal fun setUp() {
@@ -50,10 +50,12 @@ class MeControllerTest {
 
     @BeforeEach
     internal fun init() {
+        refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
 
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
+        userRefreshToken = refreshTokenRepository.save(RefreshToken(user))
     }
 
     @DisplayName("Dori User 프로필 조회")
@@ -72,6 +74,22 @@ class MeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("id", Matchers.`is`(user.id.toString())))
             .andExpect(MockMvcResultMatchers.jsonPath("loginId", Matchers.`is`(user.loginId)))
             .andExpect(MockMvcResultMatchers.jsonPath("role", Matchers.`is`(user.role.name)))
+    }
+
+    @DisplayName("Dori User Pre Auth Token")
+    @Test
+    fun getPreAuthToken() {
+        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$endPoint/pre-auth-token")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("accessToken", Matchers.notNullValue()))
     }
 
     @DisplayName("프로필 조회")
