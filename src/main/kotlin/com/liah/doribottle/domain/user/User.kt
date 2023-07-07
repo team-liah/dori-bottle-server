@@ -38,7 +38,7 @@ class User(
         protected set
 
     @Column
-    var birthDate: Int? = null
+    var birthDate: String? = null
         protected set
 
     @Enumerated(EnumType.STRING)
@@ -85,7 +85,7 @@ class User(
 
     fun update(
         name: String,
-        birthDate: Int?,
+        birthDate: String?,
         gender: Gender?
     ) {
         this.name = name

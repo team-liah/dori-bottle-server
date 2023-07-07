@@ -1,6 +1,6 @@
 package com.liah.doribottle.service.sms
 
-import com.liah.doribottle.common.exception.SmsSendingException
+import com.liah.doribottle.common.error.exception.SmsSendingException
 import com.liah.doribottle.service.sms.dto.Recipient
 import com.liah.doribottle.service.sms.dto.SendAuthSmsTemplateRequest
 import com.liah.doribottle.service.sms.dto.ToastRestApiResponse
@@ -39,7 +39,7 @@ class ToastApiClient(
         if (response.statusCode != HttpStatus.OK || response.body?.header?.isSuccessful == false) {
             log.error("ERROR CODE: ${response.body?.header?.resultCode}")
             log.error("ERROR MESSAGE: ${response.body?.header?.resultMessage}")
-            throw SmsSendingException("SMS 발송 실패했습니다.")
+            throw SmsSendingException()
         }
     }
 }
