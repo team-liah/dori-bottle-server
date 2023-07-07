@@ -1,6 +1,7 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
 import jakarta.persistence.EntityManager
@@ -24,6 +25,7 @@ class AccountServiceTest {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var pointSumRepository: PointSumRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -101,7 +103,7 @@ class AccountServiceTest {
         clear()
 
         //when
-        val authDto = accountService.refreshAuth(saveUser.loginId, saveRefreshToken.token, 1209600000)
+        val authDto = accountService.refreshAuth(saveRefreshToken.token, 1209600000)
         clear()
 
         //then
@@ -124,6 +126,8 @@ class AccountServiceTest {
 
         //then
         val findUser = userRepository.findByIdOrNull(saveUser.id)
+        val findPointSum = pointSumRepository.findByUserId(saveUser.id)
+
         assertThat(findUser?.loginId).isEqualTo(loginId)
         assertThat(findUser?.phoneNumber).isEqualTo(loginId)
         assertThat(findUser?.role).isEqualTo(Role.USER)
@@ -132,5 +136,8 @@ class AccountServiceTest {
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
+
+        assertThat(findPointSum?.totalPayAmounts).isEqualTo(0L)
+        assertThat(findPointSum?.totalRewordAmounts).isEqualTo(0L)
     }
 }

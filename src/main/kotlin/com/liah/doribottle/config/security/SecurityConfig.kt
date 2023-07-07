@@ -27,9 +27,10 @@ class SecurityConfig(
             .addFilterBefore(JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorize -> authorize
                 .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
-                .requestMatchers("/api/v1/account/auth", "/api/v1/account/auth/send-sms").permitAll()
+                .requestMatchers("/api/v1/account/auth/send-sms", "/api/v1/account/auth", "/api/v1/account/refresh-auth", "/api/v1/account/logout").permitAll()
                 .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
-                .anyRequest().authenticated()
+                .requestMatchers("/api/v1/me").authenticated()
+                .anyRequest().hasRole(Role.USER.name)
             }
             .exceptionHandling { exception -> exception
                 .accessDeniedHandler(RestAccessDeniedHandler())

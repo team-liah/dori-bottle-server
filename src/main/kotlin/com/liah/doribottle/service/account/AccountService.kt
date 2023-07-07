@@ -8,6 +8,8 @@ import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointHistoryType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.domain.point.PointSum
+import com.liah.doribottle.domain.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.service.account.dto.AuthDto
@@ -26,6 +28,7 @@ import java.util.*
 class AccountService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
+    private val pointSumRepository: PointSumRepository,
     private val tokenProvider: TokenProvider,
     private val passwordEncoder: PasswordEncoder,
     private val applicationEventPublisher: ApplicationEventPublisher
@@ -48,7 +51,7 @@ class AccountService(
         loginPassword: String
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+            ?: throw UnauthorizedException()
 
         checkLoginPassword(user, loginPassword)
         checkAccount(user)
@@ -61,21 +64,22 @@ class AccountService(
     }
 
     fun refreshAuth(
-        loginId: String,
         refreshToken: String?,
         millis: Long
     ): AuthDto {
-        val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         val validRefreshToken = refreshTokenRepository
-            .findByUserIdAndTokenAndExpiredDateIsAfter(user.id, refreshToken, Instant.now())
+            .findByTokenAndExpiredDateIsAfter(refreshToken, Instant.now())
             ?: throw UnauthorizedException()
 
-        checkAccount(user)
+        checkAccount(validRefreshToken.user)
 
         validRefreshToken.refresh(millis)
 
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val accessToken = tokenProvider.createToken(
+            validRefreshToken.user.id,
+            validRefreshToken.user.loginId,
+            validRefreshToken.user.role
+        )
         val refreshedToken = validRefreshToken.token
         return AuthDto(accessToken, refreshedToken)
     }
@@ -101,6 +105,7 @@ class AccountService(
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.changeRole(Role.USER)
 
+        pointSumRepository.save(PointSum(user.id))
         applicationEventPublisher.publishEvent(
             PointSaveEvent(
                 user.id,
