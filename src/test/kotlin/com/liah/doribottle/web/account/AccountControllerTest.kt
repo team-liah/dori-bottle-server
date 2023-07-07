@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.account
 
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
@@ -85,7 +86,7 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().is5xxServerError)
-            .andExpect(jsonPath("message", `is`("SMS 발송 실패했습니다.")))
+            .andExpect(jsonPath("message", `is`(ErrorCode.SMS_SENDING_ERROR.message)))
     }
 
     @DisplayName("인증")
@@ -116,7 +117,7 @@ class AccountControllerTest {
                 .content(body.convertJsonToString())
         )
             .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andExpect(jsonPath("message", `is`("잘못된 인증번호입니다.")))
+            .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
     @DisplayName("인증 새로고침")
@@ -149,7 +150,7 @@ class AccountControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isUnauthorized)
-            .andExpect(jsonPath("message", `is`("유효한 토큰 정보를 확인할 수 없습니다.")))
+            .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
     @DisplayName("로그아웃")
@@ -174,7 +175,7 @@ class AccountControllerTest {
     @Test
     fun register() {
         val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.token)
-        val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, 19970101, true, true, false)
+        val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, "19970101", true, true, false)
 
         mockMvc
             .perform(

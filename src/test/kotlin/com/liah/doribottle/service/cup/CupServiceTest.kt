@@ -1,5 +1,7 @@
 package com.liah.doribottle.service.cup
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupRepository
 import com.liah.doribottle.domain.cup.CupState.ON_LOAN
@@ -96,9 +98,9 @@ class CupServiceTest {
         clear()
 
         //when, then
-        val exception = assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<BusinessException> {
             cupService.remove(id, "파손 폐기")
         }
-        assertThat(exception.message).isEqualTo("대여 중인 컵은 삭제할 수 없습니다.")
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_DELETE_NOT_ALLOWED)
     }
 }

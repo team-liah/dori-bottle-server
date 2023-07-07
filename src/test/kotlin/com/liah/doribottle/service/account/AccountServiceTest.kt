@@ -89,7 +89,7 @@ class AccountServiceTest {
         val badCredentialsException = assertThrows<BadCredentialsException> {
             accountService.auth(loginId, "000000")
         }
-        assertThat(badCredentialsException.message).isEqualTo("잘못된 인증번호입니다.")
+        assertThat(badCredentialsException.message).isEqualTo("Invalid login password.")
     }
 
     @DisplayName("재인증")
@@ -119,7 +119,7 @@ class AccountServiceTest {
         clear()
 
         //when
-        accountService.register(saveUser.loginId, loginId, "Tester", 19970224, MALE, true, true, false)
+        accountService.register(saveUser.loginId, loginId, "Tester", "19970224", MALE, true, true, false)
         clear()
 
         //then
@@ -127,7 +127,7 @@ class AccountServiceTest {
         assertThat(findUser?.loginId).isEqualTo(loginId)
         assertThat(findUser?.phoneNumber).isEqualTo(loginId)
         assertThat(findUser?.role).isEqualTo(Role.USER)
-        assertThat(findUser?.birthDate).isEqualTo(19970224)
+        assertThat(findUser?.birthDate).isEqualTo("19970224")
         assertThat(findUser?.gender).isEqualTo(MALE)
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull

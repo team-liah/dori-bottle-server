@@ -1,8 +1,9 @@
 package com.liah.doribottle.service.account
 
-import com.liah.doribottle.common.exception.BadRequestException
-import com.liah.doribottle.common.exception.NotFoundException
-import com.liah.doribottle.common.exception.UnauthorizedException
+import com.liah.doribottle.common.error.exception.BadRequestException
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointHistoryType
@@ -14,7 +15,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -48,7 +48,7 @@ class AccountService(
         loginPassword: String
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw UsernameNotFoundException("User $loginId was not found in the database) }")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         checkLoginPassword(user, loginPassword)
         checkAccount(user)
@@ -66,10 +66,10 @@ class AccountService(
         millis: Long
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException("존재하지 않는 유저입니다.")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         val validRefreshToken = refreshTokenRepository
             .findByUserIdAndTokenAndExpiredDateIsAfter(user.id, refreshToken, Instant.now())
-            ?: throw UnauthorizedException("유효한 토큰 정보를 확인할 수 없습니다.")
+            ?: throw UnauthorizedException()
 
         checkAccount(user)
 
@@ -84,18 +84,18 @@ class AccountService(
         loginId: String,
         phoneNumber: String,
         name: String,
-        birthDate: Int,
+        birthDate: String,
         gender: Gender,
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
         agreedTermsOfMarketing: Boolean
     ): UUID {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException("존재하지 않는 유저입니다.")
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         if (user.phoneNumber != phoneNumber)
-            throw BadRequestException("잘못된 요청입니다.")
+            throw BadRequestException(ErrorCode.USER_INVALID_PHONE_NUMBER)
         if (user.role == Role.USER)
-            throw BadRequestException("이미 가입된 회원입니다.")
+            throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
 
         user.update(name, birthDate, gender)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
@@ -119,16 +119,16 @@ class AccountService(
     ) {
         if (user.loginExpirationDate == null
             || user.loginExpirationDate!! < Instant.now())
-            throw BadCredentialsException("인증시간이 초과되었습니다.")
+            throw BadCredentialsException("Login request is expired or does not exist.")
         if (!passwordEncoder.matches(loginPassword, user.loginPassword))
-            throw BadCredentialsException("잘못된 인증번호입니다.")
+            throw BadCredentialsException("Invalid login password.")
     }
 
     private fun checkAccount(user: User) {
         if (!user.active)
-            throw DisabledException("비활성화된 계정입니다.")
+            throw DisabledException("Account is disabled.")
         if (user.blocked)
-            throw LockedException("정지된 계정입니다.")
+            throw LockedException("Account is locked.")
     }
     
     private fun createRefreshToken(

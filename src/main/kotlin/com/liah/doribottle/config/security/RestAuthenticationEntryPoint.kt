@@ -1,10 +1,10 @@
 package com.liah.doribottle.config.security
 
-import com.liah.doribottle.common.exhandler.ErrorResponse
+import com.liah.doribottle.common.error.ErrorResponse
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.extension.convertJsonToString
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint
 
@@ -14,7 +14,7 @@ class RestAuthenticationEntryPoint : AuthenticationEntryPoint {
         response: HttpServletResponse,
         e: AuthenticationException
     ) {
-        val errorResponse = ErrorResponse(e.message, HttpStatus.UNAUTHORIZED.value())
+        val errorResponse = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
         response.contentType = "application/json"
         response.status = HttpServletResponse.SC_UNAUTHORIZED
         response.writer?.write(errorResponse.convertJsonToString())
