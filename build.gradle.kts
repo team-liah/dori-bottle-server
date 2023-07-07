@@ -8,6 +8,7 @@ plugins {
 	kotlin("plugin.jpa") version "1.8.21"
 	kotlin("plugin.allopen") version "1.8.21"
 	kotlin("plugin.noarg") version "1.8.21"
+	kotlin("kapt") version "1.8.21"
 }
 
 allOpen {
@@ -55,6 +56,12 @@ dependencies {
 
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+
+	// query dsl
+	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+	implementation("com.querydsl:querydsl-core:5.0.0")
+	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
+	kapt("com.querydsl:querydsl-kotlin-codegen:5.0.0")
 }
 
 tasks.withType<KotlinCompile> {
