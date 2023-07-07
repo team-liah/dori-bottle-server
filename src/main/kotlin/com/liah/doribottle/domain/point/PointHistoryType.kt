@@ -5,7 +5,7 @@ enum class PointHistoryType(
 ) {
     SAVE_REGISTER_REWARD("회원가입 보상 적립"),
     SAVE_INVITE_REWARD("초대 보상 적립"),
-    SAVE_CHARGE("충전 적립"),
+    SAVE_PAY("충전 적립"),
     CANCEL_SAVE("적립 취소"),
 
     USE_CUP("컵 사용"),

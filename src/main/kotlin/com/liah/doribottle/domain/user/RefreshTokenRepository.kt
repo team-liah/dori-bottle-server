@@ -7,5 +7,5 @@ import java.util.*
 
 @Repository
 interface RefreshTokenRepository : JpaRepository<RefreshToken, UUID> {
-    fun findByUserIdAndTokenAndExpiredDateIsAfter(userId: UUID, token: String?, expiredDate: Instant): RefreshToken?
+    fun findByTokenAndExpiredDateIsAfter(token: String?, expiredDate: Instant): RefreshToken?
 }

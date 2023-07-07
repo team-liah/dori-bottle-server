@@ -2,9 +2,12 @@ package com.liah.doribottle.web.me
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.domain.point.PointSum
+import com.liah.doribottle.domain.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -35,6 +38,7 @@ class MeControllerTest {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var pointSumRepository: PointSumRepository
 
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -57,6 +61,14 @@ class MeControllerTest {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
         userRefreshToken = refreshTokenRepository.save(RefreshToken(user))
+        pointSumRepository.save(PointSum(user.id))
+    }
+
+    @AfterEach
+    internal fun destroy() {
+        refreshTokenRepository.deleteAll()
+        userRepository.deleteAll()
+        pointSumRepository.deleteAll()
     }
 
     @DisplayName("Dori User 프로필 조회")
@@ -114,5 +126,22 @@ class MeControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("birthDate", Matchers.`is`(user.birthDate)))
             .andExpect(MockMvcResultMatchers.jsonPath("gender", Matchers.`is`(user.gender)))
             .andExpect(MockMvcResultMatchers.jsonPath("role", Matchers.`is`(user.role.name)))
+    }
+
+    @DisplayName("잔여 포인트 조회")
+    @Test
+    fun getRemainPoint() {
+        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$endPoint/remain-point")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("payPoint", Matchers.`is`(0)))
+            .andExpect(MockMvcResultMatchers.jsonPath("freePoint", Matchers.`is`(0)))
     }
 }
