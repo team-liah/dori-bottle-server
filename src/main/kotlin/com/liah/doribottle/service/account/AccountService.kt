@@ -48,7 +48,7 @@ class AccountService(
         loginPassword: String
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+            ?: throw UnauthorizedException()
 
         checkLoginPassword(user, loginPassword)
         checkAccount(user)
@@ -66,7 +66,7 @@ class AccountService(
         millis: Long
     ): AuthDto {
         val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+            ?: throw UnauthorizedException()
         val validRefreshToken = refreshTokenRepository
             .findByUserIdAndTokenAndExpiredDateIsAfter(user.id, refreshToken, Instant.now())
             ?: throw UnauthorizedException()
