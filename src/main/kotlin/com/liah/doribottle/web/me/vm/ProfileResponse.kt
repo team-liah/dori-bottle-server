@@ -10,7 +10,7 @@ data class ProfileResponse(
     val name: String,
     val phoneNumber: String,
     val invitationCode: String,
-    val birthDate: Int?,
+    val birthDate: String?,
     val gender: Gender?,
     val role: Role
 )

@@ -6,6 +6,6 @@ import jakarta.validation.constraints.Pattern
 
 data class SendSmsRequest(
     @field:NotEmpty
-    @field:Pattern(regexp = PHONE_NUMBER_REGEX, message = "휴대전화번호 형식이 아닙니다.")
+    @field:Pattern(regexp = PHONE_NUMBER_REGEX)
     val loginId: String?
 )
