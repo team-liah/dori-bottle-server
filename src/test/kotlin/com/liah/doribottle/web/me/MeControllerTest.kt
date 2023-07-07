@@ -35,6 +35,7 @@ class MeControllerTest {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private lateinit var user: User
@@ -65,7 +66,7 @@ class MeControllerTest {
         val cookie = Cookie(ACCESS_TOKEN, accessToken)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint")
+            MockMvcRequestBuilders.get(endPoint)
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
