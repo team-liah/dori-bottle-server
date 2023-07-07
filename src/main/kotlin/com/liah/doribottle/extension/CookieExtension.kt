@@ -28,7 +28,7 @@ private fun parseSubDomain(url: String): String {
         if (part.first() == "www") {
             part = part.drop(1)
         }
-        part.drop(1).joinToString(".")
+        part.joinToString(".")
     } else {
         part.first()
     }
