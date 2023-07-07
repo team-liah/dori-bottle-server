@@ -1,6 +1,6 @@
-package com.liah.doribottle.common.exhandler
+package com.liah.doribottle.common.error
 
-import com.liah.doribottle.common.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.ErrorCode
 import org.springframework.validation.BindingResult
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
