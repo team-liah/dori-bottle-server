@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.account
 
 import com.liah.doribottle.common.error.exception.UnauthorizedException
+import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.extension.*
@@ -21,6 +22,7 @@ import java.util.concurrent.ThreadLocalRandom
 class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
+    private val tokenProvider: TokenProvider,
     @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
@@ -65,8 +67,7 @@ class AccountController(
         httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?
     ): ResponseEntity<AuthResponse> {
-        val result = accountService
-            .refreshAuth(currentUserLoginId()!!, refreshToken, refreshTokenExpiredMs)
+        val result = accountService.refreshAuth(refreshToken, refreshTokenExpiredMs)
 
         val accessTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
@@ -104,7 +105,7 @@ class AccountController(
         )
 
         val result = try {
-            accountService.refreshAuth(currentUserLoginId()!!, refreshToken, refreshTokenExpiredMs)
+            accountService.refreshAuth(refreshToken, refreshTokenExpiredMs)
         } catch (e: UnauthorizedException) {
             null
         }

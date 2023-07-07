@@ -11,6 +11,7 @@ import com.liah.doribottle.web.account.vm.RegisterRequest
 import com.liah.doribottle.web.account.vm.SendSmsRequest
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -62,9 +63,6 @@ class AccountControllerTest {
 
     @BeforeEach
     internal fun init() {
-        refreshTokenRepository.deleteAll()
-        userRepository.deleteAll()
-
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         userEntity.updatePassword(passwordEncoder.encode("123456"))
         user = userRepository.save(userEntity)
@@ -72,6 +70,12 @@ class AccountControllerTest {
 
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
         guestRefreshToken = refreshTokenRepository.save(RefreshToken(guest))
+    }
+
+    @AfterEach
+    internal fun destroy() {
+        refreshTokenRepository.deleteAll()
+        userRepository.deleteAll()
     }
 
     @DisplayName("인증요청")
