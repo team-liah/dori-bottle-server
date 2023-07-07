@@ -10,10 +10,11 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 class UserService(
     private val userRepository: UserRepository,
 ) {
+    @Transactional(readOnly = true)
     fun get(id: UUID): UserDto {
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)

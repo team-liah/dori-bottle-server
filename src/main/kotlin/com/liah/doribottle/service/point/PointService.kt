@@ -14,6 +14,7 @@ class PointService(
     private val pointHistoryRepository: PointHistoryRepository,
     private val pointSumRepository: PointSumRepository
 ) {
+    @Transactional(readOnly = true)
     fun getSum(userId: UUID) =
         pointSumRepository.findByUserId(userId)?.toDto()
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
