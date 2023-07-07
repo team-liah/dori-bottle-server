@@ -1,9 +1,9 @@
 package com.liah.doribottle.service.account
 
-import com.liah.doribottle.common.exception.BadRequestException
-import com.liah.doribottle.common.exception.ErrorCode
-import com.liah.doribottle.common.exception.NotFoundException
-import com.liah.doribottle.common.exception.UnauthorizedException
+import com.liah.doribottle.common.error.exception.BadRequestException
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointHistoryType
@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -85,7 +84,7 @@ class AccountService(
         loginId: String,
         phoneNumber: String,
         name: String,
-        birthDate: Int,
+        birthDate: String,
         gender: Gender,
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
@@ -94,7 +93,7 @@ class AccountService(
         val user = userRepository.findByLoginId(loginId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         if (user.phoneNumber != phoneNumber)
-            throw BadRequestException(ErrorCode.INVALID_INPUT_VALUE)
+            throw BadRequestException(ErrorCode.USER_INVALID_PHONE_NUMBER)
         if (user.role == Role.USER)
             throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
 
@@ -120,16 +119,16 @@ class AccountService(
     ) {
         if (user.loginExpirationDate == null
             || user.loginExpirationDate!! < Instant.now())
-            throw BadCredentialsException("인증시간이 초과되었습니다.")
+            throw BadCredentialsException("Login request is expired or does not exist.")
         if (!passwordEncoder.matches(loginPassword, user.loginPassword))
-            throw BadCredentialsException("잘못된 인증번호입니다.")
+            throw BadCredentialsException("Invalid login password.")
     }
 
     private fun checkAccount(user: User) {
         if (!user.active)
-            throw DisabledException("비활성화된 계정입니다.")
+            throw DisabledException("Account is disabled.")
         if (user.blocked)
-            throw LockedException("정지된 계정입니다.")
+            throw LockedException("Account is locked.")
     }
     
     private fun createRefreshToken(

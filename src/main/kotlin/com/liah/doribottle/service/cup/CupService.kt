@@ -1,7 +1,7 @@
 package com.liah.doribottle.service.cup
 
-import com.liah.doribottle.common.exception.ErrorCode
-import com.liah.doribottle.common.exception.NotFoundException
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupRepository
 import com.liah.doribottle.service.cup.dto.CupDto

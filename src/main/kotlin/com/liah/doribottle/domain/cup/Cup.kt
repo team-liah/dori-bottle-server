@@ -1,7 +1,7 @@
 package com.liah.doribottle.domain.cup
 
-import com.liah.doribottle.common.exception.BusinessException
-import com.liah.doribottle.common.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.cup.CupState.ON_LOAN
 import com.liah.doribottle.domain.cup.CupState.PENDING

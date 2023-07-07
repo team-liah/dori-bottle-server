@@ -1,6 +1,6 @@
-package com.liah.doribottle.common.exhandler
+package com.liah.doribottle.common.error
 
-import com.liah.doribottle.common.exception.*
+import com.liah.doribottle.common.error.exception.*
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

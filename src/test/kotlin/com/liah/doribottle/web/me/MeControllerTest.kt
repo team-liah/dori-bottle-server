@@ -2,6 +2,7 @@ package com.liah.doribottle.web.me
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.domain.user.RefreshTokenRepository
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.domain.user.UserRepository
@@ -36,6 +37,8 @@ class MeControllerTest {
     @Autowired private lateinit var context: WebApplicationContext
 
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private lateinit var user: User
@@ -50,6 +53,7 @@ class MeControllerTest {
 
     @BeforeEach
     internal fun init() {
+        refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
 
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
@@ -63,7 +67,7 @@ class MeControllerTest {
         val cookie = Cookie(ACCESS_TOKEN, accessToken)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint")
+            MockMvcRequestBuilders.get(endPoint)
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
