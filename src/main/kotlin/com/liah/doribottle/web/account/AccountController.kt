@@ -1,6 +1,6 @@
 package com.liah.doribottle.web.account
 
-import com.liah.doribottle.common.exception.UnauthorizedException
+import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.extension.*
