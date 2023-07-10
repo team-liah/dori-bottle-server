@@ -50,18 +50,16 @@ class CupService(
      * Delete cup by id
      *
      * @param id cup's id
-     * @param reason reason for deleting
      * @throws NotFoundException if no value is present
      * @throws IllegalArgumentException if cup state is on loan
      */
     @Transactional
     fun remove(
-        id: UUID,
-        reason: String?
+        id: UUID
     ) {
         val cup = cupRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        cup.delete(reason)
+        cup.delete()
     }
 
     fun findAllCups(

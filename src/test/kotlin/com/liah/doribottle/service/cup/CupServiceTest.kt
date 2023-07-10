@@ -46,7 +46,7 @@ class CupServiceTest {
         val findCup = cupRepository.findById(id).orElse(null)
         assertThat(findCup.rfid).isEqualTo(RFID)
         assertThat(findCup.state).isEqualTo(PENDING)
-        assertThat(findCup.deletedDate).isNull()
+        assertThat(findCup.deleted).isFalse
     }
 
     @DisplayName("RFID 컵 조회")
@@ -62,9 +62,6 @@ class CupServiceTest {
         //then
         assertThat(cup.rfid).isEqualTo(RFID)
         assertThat(cup.state).isEqualTo(PENDING)
-        assertThat(cup.deletedDate).isNull()
-        assertThat(cup.deletedBy).isNull()
-        assertThat(cup.deletedReason).isNull()
     }
 
     @DisplayName("컵 제거")
@@ -76,14 +73,12 @@ class CupServiceTest {
         clear()
 
         //when
-        cupService.remove(id, "파손 폐기")
+        cupService.remove(id)
         clear()
 
         //then
         val findCup = cupRepository.findById(id).orElse(null)
-        assertThat(findCup.deletedDate).isNotNull
-        assertThat(findCup.deletedBy).isEqualTo("User principal")
-        assertThat(findCup.deletedReason).isEqualTo("파손 폐기")
+        assertThat(findCup.deleted).isTrue
     }
 
     @DisplayName("컵 제거 예외")
@@ -99,7 +94,7 @@ class CupServiceTest {
 
         //when, then
         val exception = assertThrows<BusinessException> {
-            cupService.remove(id, "파손 폐기")
+            cupService.remove(id)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_DELETE_NOT_ALLOWED)
     }
