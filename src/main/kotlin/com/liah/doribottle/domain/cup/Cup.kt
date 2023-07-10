@@ -10,7 +10,6 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Index
 import jakarta.persistence.Table
-import java.time.Instant
 
 @Entity
 @Table(
@@ -29,15 +28,11 @@ class Cup(
     var state: CupState = PENDING
         protected set
 
-    fun toDto() = CupDto(id, rfid, state, deletedReason, deletedDate, deletedBy)
+    fun toDto() = CupDto(id, rfid, state)
 
-    fun delete(
-        reason: String?
-    ) {
+    fun delete() {
         if (verifyOnLoan()) throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
-        deletedReason = reason
-        deletedBy = "User principal" // TODO: get user principal from security context
-        deletedDate = Instant.now()
+        deleted = true
     }
 
     fun changeState(
