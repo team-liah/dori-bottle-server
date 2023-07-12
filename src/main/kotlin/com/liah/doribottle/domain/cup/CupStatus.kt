@@ -1,6 +1,6 @@
 package com.liah.doribottle.domain.cup
 
-enum class CupState(
+enum class CupStatus(
     val title: String
 ) {
     PENDING("보류"),
