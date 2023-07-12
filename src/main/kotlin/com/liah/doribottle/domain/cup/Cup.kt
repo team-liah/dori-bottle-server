@@ -29,6 +29,7 @@ class Cup(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     var machine: Machine? = null
+        protected set
 
     fun toDto() = CupDto(id, rfid, status)
 
@@ -41,6 +42,10 @@ class Cup(
         status: CupStatus
     ) {
         this.status = status
+    }
+
+    fun toMachine(machine: Machine?) {
+        this.machine = machine
     }
 
     private fun verifyOnLoan() = status == ON_LOAN
