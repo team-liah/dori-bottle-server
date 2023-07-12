@@ -5,11 +5,9 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
 import com.liah.doribottle.domain.cup.CupStatus.PENDING
+import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.service.cup.dto.CupDto
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Index
-import jakarta.persistence.Table
+import jakarta.persistence.*
 
 @Entity
 @Table(
@@ -27,6 +25,10 @@ class Cup(
     @Column(nullable = false)
     var status: CupStatus = PENDING
         protected set
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn
+    var machine: Machine? = null
 
     fun toDto() = CupDto(id, rfid, status)
 
