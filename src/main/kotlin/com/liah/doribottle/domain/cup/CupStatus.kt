@@ -3,7 +3,7 @@ package com.liah.doribottle.domain.cup
 enum class CupStatus(
     val title: String
 ) {
-    PENDING("보류"),
+    PENDING("초기 등록"),
     AVAILABLE("이용 가능"),
     ON_LOAN("대여 중"),
     RETURNED("반납됨"),
