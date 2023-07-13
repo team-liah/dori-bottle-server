@@ -24,4 +24,5 @@ enum class ErrorCode(
     USER_INVALID_PHONE_NUMBER(400, "C003", "Invalid phone number value."),
 
     // Machine
+    MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
 }
