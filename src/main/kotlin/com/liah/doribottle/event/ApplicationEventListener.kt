@@ -13,6 +13,6 @@ class ApplicationEventListener(
     @Async
     @TransactionalEventListener(PointSaveEvent::class)
     fun handlePointSaveEvent(event: PointSaveEvent) {
-        pointService.save(event.userId, event.saveType, event.historyType, event.saveAmounts, event.description)
+        pointService.save(event.userId, event.saveType, event.eventType, event.saveAmounts)
     }
 }
