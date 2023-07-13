@@ -25,4 +25,7 @@ enum class ErrorCode(
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
+
+    // Rental
+    LACK_OF_POINT(400, "E001", "Lack of points to rent cup.")
 }

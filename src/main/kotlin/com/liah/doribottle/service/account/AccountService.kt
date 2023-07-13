@@ -6,7 +6,7 @@ import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
-import com.liah.doribottle.domain.point.PointHistoryType
+import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.point.PointSum
 import com.liah.doribottle.repository.point.PointSumRepository
@@ -112,7 +112,7 @@ class AccountService(
             PointSaveEvent(
                 user.id,
                 PointSaveType.REWARD,
-                PointHistoryType.SAVE_REGISTER_REWARD,
+                PointEventType.SAVE_REGISTER_REWARD,
                 SAVE_REGISTER_REWARD_AMOUNTS
             )
         )

@@ -1,13 +1,13 @@
 package com.liah.doribottle.service.point
 
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
-import com.liah.doribottle.repository.point.PointHistoryRepository
-import com.liah.doribottle.domain.point.PointHistoryType.SAVE_REGISTER_REWARD
-import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.domain.point.PointEventType.SAVE_REGISTER_REWARD
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.point.PointSum
-import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.repository.point.PointEventRepository
+import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
@@ -27,7 +27,7 @@ class PointServiceTest {
     @PersistenceContext private lateinit var entityManager: EntityManager
     @Autowired private lateinit var pointService: PointService
     @Autowired private lateinit var pointRepository: PointRepository
-    @Autowired private lateinit var pointHistoryRepository: PointHistoryRepository
+    @Autowired private lateinit var pointEventRepository: PointEventRepository
     @Autowired private lateinit var pointSumRepository: PointSumRepository
     @Autowired private lateinit var userRepository: UserRepository
 
@@ -77,7 +77,7 @@ class PointServiceTest {
         //then
         val findPoint = pointRepository.findByIdOrNull(id)
         val findSumPoint = pointSumRepository.findByUserId(userId)
-        val findPointHistories = pointHistoryRepository.findAllByPointId(id)
+        val findPointEvents = pointEventRepository.findAllByPointId(id)
 
         assertThat(findPoint?.userId).isEqualTo(userId)
         assertThat(findPoint?.saveType).isEqualTo(REWARD)
@@ -87,14 +87,11 @@ class PointServiceTest {
         assertThat(findSumPoint?.totalPayAmounts).isEqualTo(0L)
         assertThat(findSumPoint?.totalRewordAmounts).isEqualTo(SAVE_REGISTER_REWARD_AMOUNTS)
 
-        assertThat(findPointHistories)
+        assertThat(findPointEvents)
             .extracting("type")
             .containsExactly(SAVE_REGISTER_REWARD)
-        assertThat(findPointHistories)
+        assertThat(findPointEvents)
             .extracting("amounts")
             .containsExactly(SAVE_REGISTER_REWARD_AMOUNTS)
-        assertThat(findPointHistories)
-            .extracting("description")
-            .containsExactly(SAVE_REGISTER_REWARD.title)
     }
 }
