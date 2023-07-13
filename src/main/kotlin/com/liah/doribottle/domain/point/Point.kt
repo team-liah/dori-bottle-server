@@ -31,4 +31,15 @@ class Point(
     @Column(nullable = false)
     var remainAmounts: Long = saveAmounts
         protected set
+
+    fun use(amounts: Long): Long {
+        val remain = remainAmounts - amounts
+        return if (remain >= 0) {
+            remainAmounts = remain
+            0
+        } else {
+            remainAmounts = 0
+            -remain
+        }
+    }
 }
