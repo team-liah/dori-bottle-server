@@ -1,13 +1,14 @@
 package com.liah.doribottle.service.point
 
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
-import com.liah.doribottle.domain.point.PointHistoryRepository
+import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.domain.point.PointHistoryType.SAVE_REGISTER_REWARD
-import com.liah.doribottle.domain.point.PointRepository
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.point.PointSum
-import com.liah.doribottle.domain.point.PointSumRepository
+import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.repository.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat

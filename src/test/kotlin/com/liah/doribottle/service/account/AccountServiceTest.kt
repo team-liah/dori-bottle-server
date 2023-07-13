@@ -1,9 +1,11 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.domain.point.PointSumRepository
+import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
+import com.liah.doribottle.repository.user.RefreshTokenRepository
+import com.liah.doribottle.repository.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
