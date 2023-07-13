@@ -3,7 +3,7 @@ package com.liah.doribottle.service.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
-import com.liah.doribottle.domain.cup.CupRepository
+import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.domain.cup.CupStatus.*
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext

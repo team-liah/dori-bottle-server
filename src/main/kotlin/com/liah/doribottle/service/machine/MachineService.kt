@@ -4,7 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
-import com.liah.doribottle.domain.machine.MachineRepository
+import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.machine.dto.MachineDto
 import org.springframework.data.repository.findByIdOrNull

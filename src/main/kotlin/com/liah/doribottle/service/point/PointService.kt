@@ -3,6 +3,9 @@ package com.liah.doribottle.service.point
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.point.*
+import com.liah.doribottle.repository.point.PointHistoryRepository
+import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.service.point.dto.PointSumDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

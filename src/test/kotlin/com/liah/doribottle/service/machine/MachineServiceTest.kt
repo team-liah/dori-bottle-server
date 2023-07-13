@@ -2,7 +2,7 @@ package com.liah.doribottle.service.machine
 
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
-import com.liah.doribottle.domain.machine.MachineRepository
+import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.domain.machine.MachineState.INITIAL
 import com.liah.doribottle.domain.machine.MachineType
 import jakarta.persistence.EntityManager
