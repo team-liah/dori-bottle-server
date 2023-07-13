@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 class CupService(
     private val cupRepository: CupRepository
 ) {
@@ -22,11 +22,11 @@ class CupService(
      * @param rfid cup's rfid
      * @return result cup's id
      */
-    @Transactional
     fun register(
         rfid: String
     ): UUID {
         val cup = cupRepository.save(Cup(rfid))
+
         return cup.id
     }
 
@@ -37,7 +37,8 @@ class CupService(
      * @return cup dto
      * @throws NotFoundException if no value is present
      */
-    fun getCupByRfid(
+    @Transactional(readOnly = true)
+    fun getByRfid(
         rfid: String
     ): CupDto {
         val cup = cupRepository.findByRfid(rfid)
@@ -53,7 +54,6 @@ class CupService(
      * @throws NotFoundException if no value is present
      * @throws IllegalArgumentException if cup state is on loan
      */
-    @Transactional
     fun remove(
         id: UUID
     ) {
@@ -62,18 +62,21 @@ class CupService(
         cup.delete()
     }
 
+    @Transactional(readOnly = true)
     fun findAllCups(
         pageable: Pageable
     ) {
         // TODO: find all cups
     }
 
+    @Transactional(readOnly = true)
     fun findCupsInMachine(
         machineId: UUID
     ) {
         // TODO: find cups in machine
     }
 
+    @Transactional(readOnly = true)
     fun findCupsUserHas(
         userId: Long
     ) {
