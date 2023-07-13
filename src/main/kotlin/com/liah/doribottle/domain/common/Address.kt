@@ -4,7 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 
 @Embeddable
-class Address(
+data class Address(
     @Column
     val zipCode: String?,
 
