@@ -23,8 +23,7 @@ class Rental(
     cup: Cup,
     fromMachine: Machine,
     withIce: Boolean,
-    day: Long,
-    usePoint: Long
+    dayLimit: Long
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -48,11 +47,16 @@ class Rental(
     @Column(nullable = false)
     val withIce: Boolean = withIce
 
-    @Column
-    var succeededDate: Instant? = null
+    @Column(nullable = false)
+    var cost: Long = if (withIce) 2 else 1
+        protected set
 
     @Column
-    var expiredDate: Instant = Instant.now().plus(day, ChronoUnit.DAYS)
+    var succeededDate: Instant? = null
+        protected set
+
+    @Column
+    var expiredDate: Instant = Instant.now().plus(dayLimit, ChronoUnit.DAYS)
         protected set
 
     @Column(nullable = false)
