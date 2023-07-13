@@ -3,11 +3,13 @@ package com.liah.doribottle.domain.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.domain.cup.CupStatus.INITIAL
 import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
-import com.liah.doribottle.domain.cup.CupStatus.PENDING
-import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.service.cup.dto.CupDto
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Index
+import jakarta.persistence.Table
 
 @Entity
 @Table(
@@ -17,18 +19,11 @@ import jakarta.persistence.*
 class Cup(
     rfid: String
 ) : SoftDeleteEntity() {
-    // TODO: Add current Machine FK Column
-
     @Column(nullable = false, unique = true)
     val rfid: String = rfid
 
     @Column(nullable = false)
-    var status: CupStatus = PENDING
-        protected set
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
-    var machine: Machine? = null
+    var status: CupStatus = INITIAL
         protected set
 
     fun toDto() = CupDto(id, rfid, status)
@@ -42,10 +37,6 @@ class Cup(
         status: CupStatus
     ) {
         this.status = status
-    }
-
-    fun toMachine(machine: Machine?) {
-        this.machine = machine
     }
 
     private fun verifyOnLoan() = status == ON_LOAN

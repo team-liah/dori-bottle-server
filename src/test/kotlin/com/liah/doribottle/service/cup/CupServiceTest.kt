@@ -4,8 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupRepository
-import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
-import com.liah.doribottle.domain.cup.CupStatus.PENDING
+import com.liah.doribottle.domain.cup.CupStatus.*
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -45,7 +44,7 @@ class CupServiceTest {
         //then
         val findCup = cupRepository.findById(id).orElse(null)
         assertThat(findCup.rfid).isEqualTo(RFID)
-        assertThat(findCup.status).isEqualTo(PENDING)
+        assertThat(findCup.status).isEqualTo(INITIAL)
         assertThat(findCup.deleted).isFalse
     }
 
@@ -57,11 +56,11 @@ class CupServiceTest {
         clear()
 
         //when
-        val cup = cupService.getCupByRfid(RFID)
+        val cup = cupService.getByRfid(RFID)
 
         //then
         assertThat(cup.rfid).isEqualTo(RFID)
-        assertThat(cup.status).isEqualTo(PENDING)
+        assertThat(cup.status).isEqualTo(INITIAL)
     }
 
     @DisplayName("컵 제거")
