@@ -88,18 +88,15 @@ class AccountService(
 
     fun register(
         loginId: String,
-        phoneNumber: String,
         name: String,
         birthDate: String,
-        gender: Gender,
+        gender: Gender?,
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
         agreedTermsOfMarketing: Boolean
     ): UUID {
         val user = userRepository.findByLoginId(loginId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        if (user.phoneNumber != phoneNumber)
-            throw BadRequestException(ErrorCode.USER_INVALID_PHONE_NUMBER)
         if (user.role == Role.USER)
             throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
 
