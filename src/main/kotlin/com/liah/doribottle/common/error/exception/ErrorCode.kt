@@ -21,7 +21,6 @@ enum class ErrorCode(
     // User
     USER_NOT_FOUND(404, "C001", "User entity not found."),
     USER_ALREADY_REGISTERED(400, "C002", "User is already registered."),
-    USER_INVALID_PHONE_NUMBER(400, "C003", "Invalid phone number value."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
