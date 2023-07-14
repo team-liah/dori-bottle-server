@@ -1,6 +1,6 @@
 package com.liah.doribottle.domain.point
 
-enum class PointHistoryType(
+enum class PointEventType(
     val title: String
 ) {
     SAVE_REGISTER_REWARD("회원가입 보상 적립"),
@@ -9,7 +9,6 @@ enum class PointHistoryType(
     CANCEL_SAVE("적립 취소"),
 
     USE_CUP("컵 사용"),
-    CANCEL_USE("컵 사용 취소"),
 
     DISAPPEAR("소멸")
 }

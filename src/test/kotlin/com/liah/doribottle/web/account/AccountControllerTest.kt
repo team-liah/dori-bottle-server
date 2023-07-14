@@ -5,7 +5,10 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.repository.user.RefreshTokenRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.account.vm.AuthRequest
 import com.liah.doribottle.web.account.vm.RegisterRequest
 import com.liah.doribottle.web.account.vm.SendSmsRequest
@@ -179,7 +182,7 @@ class AccountControllerTest {
     @Test
     fun register() {
         val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.token)
-        val body = RegisterRequest(GUEST_LOGIN_ID, "Tester 2", Gender.MALE, "19970101", true, true, false)
+        val body = RegisterRequest("Tester 2", MALE, "19970101", true, true, false)
 
         mockMvc
             .perform(

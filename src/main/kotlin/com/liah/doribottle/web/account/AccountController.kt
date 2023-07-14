@@ -95,10 +95,9 @@ class AccountController(
     ): ResponseEntity<AuthResponse> {
         accountService.register(
             loginId = currentUserLoginId()!!,
-            phoneNumber = request.phoneNumber!!,
             name = request.name!!,
             birthDate = request.birthDate!!,
-            gender = request.gender!!,
+            gender = request.gender,
             agreedTermsOfService = request.agreedTermsOfService!!,
             agreedTermsOfPrivacy = request.agreedTermsOfPrivacy!!,
             agreedTermsOfMarketing = request.agreedTermsOfMarketing!!

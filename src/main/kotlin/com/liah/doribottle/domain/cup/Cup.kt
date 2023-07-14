@@ -3,14 +3,13 @@ package com.liah.doribottle.domain.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
-import com.liah.doribottle.domain.cup.CupState.ON_LOAN
-import com.liah.doribottle.domain.cup.CupState.PENDING
+import com.liah.doribottle.domain.cup.CupStatus.INITIAL
+import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
 import com.liah.doribottle.service.cup.dto.CupDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Index
 import jakarta.persistence.Table
-import java.time.Instant
 
 @Entity
 @Table(
@@ -20,31 +19,25 @@ import java.time.Instant
 class Cup(
     rfid: String
 ) : SoftDeleteEntity() {
-    // TODO: Add current Machine FK Column
-
     @Column(nullable = false, unique = true)
     val rfid: String = rfid
 
     @Column(nullable = false)
-    var state: CupState = PENDING
+    var status: CupStatus = INITIAL
         protected set
 
-    fun toDto() = CupDto(id, rfid, state, deletedReason, deletedDate, deletedBy)
+    fun toDto() = CupDto(id, rfid, status)
 
-    fun delete(
-        reason: String?
-    ) {
+    fun delete() {
         if (verifyOnLoan()) throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
-        deletedReason = reason
-        deletedBy = "User principal" // TODO: get user principal from security context
-        deletedDate = Instant.now()
+        deleted = true
     }
 
     fun changeState(
-        state: CupState
+        status: CupStatus
     ) {
-        this.state = state
+        this.status = status
     }
 
-    private fun verifyOnLoan() = state == ON_LOAN
+    private fun verifyOnLoan() = status == ON_LOAN
 }

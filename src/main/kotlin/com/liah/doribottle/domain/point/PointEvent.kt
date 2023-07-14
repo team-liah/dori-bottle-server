@@ -7,29 +7,21 @@ import java.util.*
 
 @Entity
 @Table(
-    name = "point_history",
-    indexes = [Index(name = "IDX_POINT_HISTORY_USER_ID", columnList = "userId")]
+    name = "point_event",
+    indexes = [Index(name = "IDX_POINT_EVENT_POINT_ID", columnList = "point_id")]
 )
-class PointHistory(
-    userId: UUID,
+class PointEvent(
     point: Point,
-    type: PointHistoryType,
-    description: String,
+    type: PointEventType,
     amounts: Long
 ) : PrimaryKeyEntity() {
-    @Column(nullable = false)
-    val userId: UUID = userId
-
     @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "point_id", nullable = false)
     val point: Point = point
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PointHistoryType = type
-
-    @Column(nullable = false, length = 1000)
-    val description: String = description
+    val type: PointEventType = type
 
     @Column(nullable = false)
     val amounts: Long = amounts

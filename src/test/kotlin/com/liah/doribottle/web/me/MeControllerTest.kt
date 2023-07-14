@@ -3,8 +3,10 @@ package com.liah.doribottle.web.me
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.domain.point.PointSum
-import com.liah.doribottle.domain.point.PointSumRepository
+import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.repository.user.RefreshTokenRepository
+import com.liah.doribottle.repository.user.UserRepository
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach

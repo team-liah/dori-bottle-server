@@ -2,7 +2,7 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.user.UserRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.user.dto.UserDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
