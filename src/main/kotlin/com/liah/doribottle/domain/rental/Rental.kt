@@ -1,10 +1,7 @@
 package com.liah.doribottle.domain.rental
 
-import com.liah.doribottle.common.error.exception.BusinessException
-import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.Cup
-import com.liah.doribottle.domain.cup.CupStatus
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
