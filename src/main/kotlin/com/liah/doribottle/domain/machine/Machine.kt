@@ -1,5 +1,7 @@
 package com.liah.doribottle.domain.machine
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.machine.MachineState.INITIAL
@@ -34,13 +36,21 @@ class Machine(
         protected set
 
     @Column(nullable = false)
-    var cupAmounts: Long = 0
+    var cupAmounts: Int = 0
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var state: MachineState = INITIAL
         protected set
+
+    fun increaseCupAmounts(amounts: Int) {
+        val result = cupAmounts + amounts
+        if (result > capacity) throw BusinessException(ErrorCode.FULL_OF_CUP)
+        if (result < 0) throw BusinessException(ErrorCode.LACK_OF_CUP)
+
+        cupAmounts = result
+    }
 
     fun toDto() = MachineDto(id, no, type, address, capacity, cupAmounts, state)
 }

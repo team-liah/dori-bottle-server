@@ -24,6 +24,7 @@ class RentalService(
     private val pointQueryRepository: PointQueryRepository
 ) {
     // TODO: Add Condition (cup status, Machine type, etc)
+    // TODO: Add Test: Failed rental
     fun rental(
         userId: UUID,
         cupRfid: String,
@@ -51,5 +52,19 @@ class RentalService(
             if (remain == 0L) return
         }
         throw BusinessException(ErrorCode.LACK_OF_POINT)
+    }
+
+    fun `return`(
+        toMachineId: UUID,
+        cupRfid: String
+    ) {
+        val toMachine = machineRepository.findByIdOrNull(toMachineId)
+            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+        val cup = cupRepository.findByRfid(cupRfid)
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+        val rental = rentalRepository.findByCupId(cup.id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+
+        rental.`return`(toMachine)
     }
 }

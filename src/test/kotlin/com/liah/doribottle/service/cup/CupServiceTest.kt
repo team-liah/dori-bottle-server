@@ -3,8 +3,8 @@ package com.liah.doribottle.service.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
-import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.domain.cup.CupStatus.*
+import com.liah.doribottle.repository.cup.CupRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -86,8 +86,8 @@ class CupServiceTest {
         //given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
-
-        cup.changeState(ON_LOAN)
+        cup.changeState(AVAILABLE)
+        cup.loan()
 
         clear()
 
