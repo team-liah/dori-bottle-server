@@ -77,7 +77,7 @@ class CupServiceTest {
 
         //then
         val findCup = cupRepository.findById(id).orElse(null)
-        assertThat(findCup.deleted).isTrue
+        assertThat(findCup).isNull()
     }
 
     @DisplayName("컵 제거 예외")
