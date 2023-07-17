@@ -8,9 +8,10 @@ import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
-import com.liah.doribottle.domain.point.PointSum
-import com.liah.doribottle.repository.point.PointSumRepository
-import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.domain.user.Gender
+import com.liah.doribottle.domain.user.RefreshToken
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -30,7 +31,6 @@ import java.util.*
 class AccountService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
-    private val pointSumRepository: PointSumRepository,
     private val tokenProvider: TokenProvider,
     private val passwordEncoder: PasswordEncoder,
     private val applicationEventPublisher: ApplicationEventPublisher
@@ -104,7 +104,6 @@ class AccountService(
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.changeRole(Role.USER)
 
-        pointSumRepository.save(PointSum(user.id))
         applicationEventPublisher.publishEvent(
             PointSaveEvent(
                 user.id,
