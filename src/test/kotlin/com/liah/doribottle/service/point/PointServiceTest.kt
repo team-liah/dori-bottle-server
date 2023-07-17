@@ -1,13 +1,14 @@
 package com.liah.doribottle.service.point
 
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointEventType.SAVE_REGISTER_REWARD
+import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
-import com.liah.doribottle.domain.point.PointSum
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointRepository
-import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
@@ -28,7 +29,6 @@ class PointServiceTest {
     @Autowired private lateinit var pointService: PointService
     @Autowired private lateinit var pointRepository: PointRepository
     @Autowired private lateinit var pointEventRepository: PointEventRepository
-    @Autowired private lateinit var pointSumRepository: PointSumRepository
     @Autowired private lateinit var userRepository: UserRepository
 
     companion object {
@@ -46,7 +46,6 @@ class PointServiceTest {
     internal fun init() {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
-        pointSumRepository.save(PointSum(user.id))
         clear()
     }
 
@@ -54,14 +53,17 @@ class PointServiceTest {
     @Test
     fun getSum() {
         //given
-        val userId = user.id
+        pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        clear()
 
         //when
-        val sum = pointService.getSum(userId)
+        val sum = pointService.getSum(user.id)
 
         //then
-        assertThat(sum.totalPayAmounts).isEqualTo(0)
-        assertThat(sum.totalRewordAmounts).isEqualTo(0)
+        assertThat(sum.userId).isEqualTo(user.id)
+        assertThat(sum.totalPayAmounts).isEqualTo(10)
+        assertThat(sum.totalRewordAmounts).isEqualTo(10)
     }
 
     @DisplayName("적립")
@@ -76,16 +78,12 @@ class PointServiceTest {
 
         //then
         val findPoint = pointRepository.findByIdOrNull(id)
-        val findSumPoint = pointSumRepository.findByUserId(userId)
         val findPointEvents = pointEventRepository.findAllByPointId(id)
 
         assertThat(findPoint?.userId).isEqualTo(userId)
         assertThat(findPoint?.saveType).isEqualTo(REWARD)
         assertThat(findPoint?.saveAmounts).isEqualTo(SAVE_REGISTER_REWARD_AMOUNTS)
         assertThat(findPoint?.description).isEqualTo(SAVE_REGISTER_REWARD.title)
-
-        assertThat(findSumPoint?.totalPayAmounts).isEqualTo(0L)
-        assertThat(findSumPoint?.totalRewordAmounts).isEqualTo(SAVE_REGISTER_REWARD_AMOUNTS)
 
         assertThat(findPointEvents)
             .extracting("type")
