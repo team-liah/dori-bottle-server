@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.cup
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.cup.Cup
@@ -59,7 +60,10 @@ class CupService(
     ) {
         val cup = cupRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        cup.delete()
+        if (cup.verifyOnLoan())
+            throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
+
+        cupRepository.delete(cup)
     }
 
     @Transactional(readOnly = true)
