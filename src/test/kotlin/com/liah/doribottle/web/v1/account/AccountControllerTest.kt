@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.account
+package com.liah.doribottle.web.v1.account
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
@@ -9,9 +9,9 @@ import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.web.account.vm.AuthRequest
-import com.liah.doribottle.web.account.vm.RegisterRequest
-import com.liah.doribottle.web.account.vm.SendSmsRequest
+import com.liah.doribottle.web.v1.account.vm.AuthRequest
+import com.liah.doribottle.web.v1.account.vm.RegisterRequest
+import com.liah.doribottle.web.v1.account.vm.SendSmsRequest
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.AfterEach

@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.account.vm
+package com.liah.doribottle.web.v1.account.vm
 
 data class AuthResponse(
     val accessToken: String,
