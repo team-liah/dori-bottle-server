@@ -26,6 +26,7 @@ class MeController(
     @GetMapping("/profile")
     fun getProfile() = userService.get(currentUserId()!!).toProfile()
 
+    //TODO: Caching
     @GetMapping("/remain-point")
     fun getRemainPoint() = pointService.getSum(currentUserId()!!).toRemainPoint()
 }
