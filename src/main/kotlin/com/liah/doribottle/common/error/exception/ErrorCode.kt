@@ -26,8 +26,8 @@ enum class ErrorCode(
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
-    LACK_OF_CUP(400, "E003", "Lack of cups in vending machine."),
-    FULL_OF_CUP(400, "E004", "Full of cups in vending machine."),
+    LACK_OF_CUP(400, "E003", "Lack of cups in machine."),
+    FULL_OF_CUP(400, "E004", "Full of cups in machine."),
 
     // Rental
     RENTAL_NOT_FOUND(404, "E001", "Rental entity not found."),
