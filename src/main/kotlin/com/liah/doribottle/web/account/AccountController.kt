@@ -51,7 +51,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
-            value = result.refreshToken,
+            value = result.refreshToken!!,
             expiredMs = refreshTokenExpiredMs
         )
 
@@ -76,7 +76,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
-            value = result.refreshToken,
+            value = result.refreshToken!!,
             expiredMs = refreshTokenExpiredMs
         )
 
@@ -129,7 +129,7 @@ class AccountController(
             val refreshTokenCookie = createCookie(
                 url = httpRequest.requestURL.toString(),
                 name = REFRESH_TOKEN,
-                value = result.refreshToken,
+                value = result.refreshToken!!,
                 expiredMs = refreshTokenExpiredMs
             )
             ResponseEntity.ok()

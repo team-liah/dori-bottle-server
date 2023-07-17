@@ -23,9 +23,11 @@ class User(
     var loginId: String = loginId
         protected set
 
+    @Column
     var loginPassword: String? = null
         protected set
 
+    @Column
     var loginExpirationDate: Instant? = null
         protected set
 
@@ -59,7 +61,9 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: Role = role
+    var role: Role =
+        if (role != Role.ADMIN && role != Role.MACHINE_ADMIN) role
+        else throw IllegalArgumentException("Non User role is not allowed.")
 
     @Column
     var agreedTermsOfServiceDate: Instant? = null
