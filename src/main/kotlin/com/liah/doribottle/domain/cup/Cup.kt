@@ -2,26 +2,22 @@ package com.liah.doribottle.domain.cup
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.service.cup.dto.CupDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Index
 import jakarta.persistence.Table
-import org.hibernate.annotations.SQLDelete
-import org.hibernate.annotations.Where
 
 @Entity
 @Table(
     name = "cup",
     indexes = [Index(name = "IDX_CUP_RFID", columnList = "rfid")]
 )
-@SQLDelete(sql = "UPDATE cup SET deleted = true where id = ?")
-@Where(clause = "deleted = false")
 class Cup(
     rfid: String
-) : SoftDeleteEntity() {
+) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
     val rfid: String = rfid
 
