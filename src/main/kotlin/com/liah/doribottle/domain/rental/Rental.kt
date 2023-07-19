@@ -5,6 +5,7 @@ import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.rental.RentalStatus.SUCCEEDED
 import com.liah.doribottle.domain.user.User
 import jakarta.persistence.*
 import java.time.Instant
@@ -62,4 +63,23 @@ class Rental(
     @Column(nullable = false)
     var status: RentalStatus = PROCEEDING
         protected set
+
+    init {
+        fromMachine.increaseCupAmounts(-1)
+        cup.loan()
+    }
+
+    fun `return`(
+        toMachine: Machine
+    ) {
+        if (toMachine.type != MachineType.COLLECTION)
+            throw IllegalArgumentException("Non CollectionMachine is not allowed.")
+        toMachine.increaseCupAmounts(1)
+
+        this.toMachine = toMachine
+        this.status = SUCCEEDED
+        this.succeededDate = Instant.now()
+
+        cup.`return`()
+    }
 }

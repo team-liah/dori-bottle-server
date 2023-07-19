@@ -3,7 +3,6 @@ package com.liah.doribottle.service.account
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.repository.point.PointSumRepository
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.persistence.EntityManager
@@ -27,7 +26,6 @@ class AccountServiceTest {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
-    @Autowired private lateinit var pointSumRepository: PointSumRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -128,7 +126,6 @@ class AccountServiceTest {
 
         //then
         val findUser = userRepository.findByIdOrNull(saveUser.id)
-        val findPointSum = pointSumRepository.findByUserId(saveUser.id)
 
         assertThat(findUser?.loginId).isEqualTo(loginId)
         assertThat(findUser?.phoneNumber).isEqualTo(loginId)
@@ -138,8 +135,5 @@ class AccountServiceTest {
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
-
-        assertThat(findPointSum?.totalPayAmounts).isEqualTo(0L)
-        assertThat(findPointSum?.totalRewordAmounts).isEqualTo(0L)
     }
 }

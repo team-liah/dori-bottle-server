@@ -1,10 +1,12 @@
-package com.liah.doribottle.web.me
+package com.liah.doribottle.web.v1.me
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.domain.point.PointSum
-import com.liah.doribottle.repository.point.PointSumRepository
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.servlet.http.Cookie
@@ -40,7 +42,7 @@ class MeControllerTest {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
-    @Autowired private lateinit var pointSumRepository: PointSumRepository
+    @Autowired private lateinit var pointRepository: PointRepository
 
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -63,14 +65,13 @@ class MeControllerTest {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
         userRefreshToken = refreshTokenRepository.save(RefreshToken(user))
-        pointSumRepository.save(PointSum(user.id))
     }
 
     @AfterEach
     internal fun destroy() {
         refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
-        pointSumRepository.deleteAll()
+        pointRepository.deleteAll()
     }
 
     @DisplayName("Dori User 프로필 조회")
@@ -133,6 +134,9 @@ class MeControllerTest {
     @DisplayName("잔여 포인트 조회")
     @Test
     fun getRemainPoint() {
+        pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
+        pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+
         val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
         val cookie = Cookie(ACCESS_TOKEN, accessToken)
 
@@ -143,7 +147,7 @@ class MeControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("payPoint", Matchers.`is`(0)))
-            .andExpect(MockMvcResultMatchers.jsonPath("freePoint", Matchers.`is`(0)))
+            .andExpect(MockMvcResultMatchers.jsonPath("payPoint", Matchers.`is`(10)))
+            .andExpect(MockMvcResultMatchers.jsonPath("freePoint", Matchers.`is`(10)))
     }
 }

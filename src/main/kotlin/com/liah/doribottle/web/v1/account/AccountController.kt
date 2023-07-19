@@ -1,13 +1,15 @@
-package com.liah.doribottle.web.account
+package com.liah.doribottle.web.v1.account
 
 import com.liah.doribottle.common.error.exception.UnauthorizedException
-import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.extension.*
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
-import com.liah.doribottle.web.account.vm.*
+import com.liah.doribottle.web.v1.account.vm.AuthRequest
+import com.liah.doribottle.web.v1.account.vm.AuthResponse
+import com.liah.doribottle.web.v1.account.vm.RegisterRequest
+import com.liah.doribottle.web.v1.account.vm.SendSmsRequest
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
@@ -22,7 +24,6 @@ import java.util.concurrent.ThreadLocalRandom
 class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
-    private val tokenProvider: TokenProvider,
     @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
@@ -53,7 +54,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
-            value = result.refreshToken,
+            value = result.refreshToken!!,
             expiredMs = refreshTokenExpiredMs
         )
 
@@ -78,7 +79,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
-            value = result.refreshToken,
+            value = result.refreshToken!!,
             expiredMs = refreshTokenExpiredMs
         )
 
@@ -131,7 +132,7 @@ class AccountController(
             val refreshTokenCookie = createCookie(
                 url = httpRequest.requestURL.toString(),
                 name = REFRESH_TOKEN,
-                value = result.refreshToken,
+                value = result.refreshToken!!,
                 expiredMs = refreshTokenExpiredMs
             )
             ResponseEntity.ok()
