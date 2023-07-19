@@ -24,7 +24,7 @@ class RentalService(
     private val machineRepository: MachineRepository,
     private val pointQueryRepository: PointQueryRepository
 ) {
-    fun rental(
+    fun rent(
         userId: UUID,
         cupRfid: String,
         fromMachineId: UUID,

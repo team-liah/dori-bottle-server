@@ -81,15 +81,15 @@ class RentalServiceTest {
         collectionMachine.increaseCupAmounts(0)
     }
 
-    @DisplayName("컵 대여")
+    @DisplayName("얼음 컵 대여")
     @Test
-    fun rental() {
+    fun rentIceCup() {
         //given
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
         clear()
 
         //when
-        val id = rentalService.rental(user.id, CUP_RFID, vendingMachine.id, true)
+        val id = rentalService.rent(user.id, CUP_RFID, vendingMachine.id, true)
         clear()
 
         //then
@@ -119,6 +119,44 @@ class RentalServiceTest {
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
 
+    @DisplayName("컵 대여")
+    @Test
+    fun rentCup() {
+        //given
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        clear()
+
+        //when
+        val id = rentalService.rent(user.id, CUP_RFID, vendingMachine.id, false)
+        clear()
+
+        //then
+        val findRental = rentalRepository.findByIdOrNull(id)
+        val findPoint = pointRepository.findByUserId(user.id)
+        val findPointEvents = pointEventRepository.findAllByPointId(findPoint?.id!!)
+        val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
+
+        assertThat(findRental?.user).isEqualTo(user)
+        assertThat(findRental?.cup).isEqualTo(cup)
+        assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
+        assertThat(findRental?.toMachine).isNull()
+        assertThat(findRental?.withIce).isEqualTo(false)
+        assertThat(findRental?.cost).isEqualTo(1L)
+        assertThat(findRental?.succeededDate).isNull()
+        assertThat(findRental?.expiredDate).isAfter(Instant.now())
+        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(findPoint.remainAmounts).isEqualTo(9L)
+        assertThat(findPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP)
+        assertThat(findPointEvents)
+            .extracting("amounts")
+            .containsExactly(10L, 1L)
+
+        assertThat(findMachine?.cupAmounts).isEqualTo(9)
+    }
+
     @DisplayName("컵 대여 예외")
     @Test
     fun rentalException() {
@@ -128,12 +166,12 @@ class RentalServiceTest {
 
         //when, then
         val exception1 = assertThrows<BusinessException> {
-            rentalService.rental(user.id, CUP_RFID, vendingMachine.id, true)
+            rentalService.rent(user.id, CUP_RFID, vendingMachine.id, true)
         }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
 
         val exception2 = assertThrows<BusinessException> {
-            rentalService.rental(user.id, "00000000", vendingMachine.id, true)
+            rentalService.rent(user.id, "00000000", vendingMachine.id, true)
         }
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.CUP_NOT_FOUND)
     }

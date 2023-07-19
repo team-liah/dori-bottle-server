@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -92,7 +92,7 @@ class AccountControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(MockMvcResultMatchers.status().is5xxServerError)
+            .andExpect(status().is5xxServerError)
             .andExpect(jsonPath("message", `is`(ErrorCode.SMS_SENDING_ERROR.message)))
     }
 
@@ -107,9 +107,9 @@ class AccountControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 - Unauthorized")
@@ -123,7 +123,7 @@ class AccountControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -139,9 +139,9 @@ class AccountControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 새로고침 - Unauthorized")
@@ -156,7 +156,7 @@ class AccountControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+            .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -172,9 +172,9 @@ class AccountControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, ""))
-            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, ""))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, ""))
+            .andExpect(cookie().value(REFRESH_TOKEN, ""))
     }
 
     @DisplayName("회원가입")
@@ -192,8 +192,8 @@ class AccountControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(MockMvcResultMatchers.cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
     }
 }
