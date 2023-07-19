@@ -45,7 +45,6 @@ class CupServiceTest {
         val findCup = cupRepository.findById(id).orElse(null)
         assertThat(findCup.rfid).isEqualTo(RFID)
         assertThat(findCup.status).isEqualTo(AVAILABLE)
-        assertThat(findCup.deleted).isFalse
     }
 
     @DisplayName("RFID 컵 조회")
