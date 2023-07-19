@@ -45,7 +45,7 @@ class RentalService(
 
     private fun usePoint(userId: UUID, cost: Long) {
         var remain = cost
-        val points = pointQueryRepository.findAllRemainByUserId(userId)
+        val points = pointQueryRepository.getAllRemainByUserId(userId)
         points.forEach { point ->
             remain = point.use(remain)
             if (remain == 0L) return

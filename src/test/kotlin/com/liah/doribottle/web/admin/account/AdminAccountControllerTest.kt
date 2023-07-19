@@ -21,7 +21,10 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -70,13 +73,13 @@ class AdminAccountControllerTest {
         val body = AuthRequest(ADMIN_LOGIN_ID, "123456")
 
         mockMvc.perform(
-            MockMvcRequestBuilders.post("$endPoint/auth")
+            post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, Matchers.notNullValue()))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, Matchers.notNullValue()))
     }
 
     @DisplayName("로그아웃")
@@ -84,11 +87,11 @@ class AdminAccountControllerTest {
     @Test
     fun logout() {
         mockMvc.perform(
-            MockMvcRequestBuilders.post("$endPoint/logout")
+            post("$endPoint/logout")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.cookie().value(ACCESS_TOKEN, ""))
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, ""))
     }
 }
