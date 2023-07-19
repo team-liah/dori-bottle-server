@@ -26,7 +26,7 @@ class Cup(
     val rfid: String = rfid
 
     @Column(nullable = false)
-    var status: CupStatus = INITIAL
+    var status: CupStatus = AVAILABLE
         protected set
 
     fun toDto() = CupDto(id, rfid, status)
