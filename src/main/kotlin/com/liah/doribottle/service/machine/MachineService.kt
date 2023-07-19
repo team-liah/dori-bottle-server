@@ -4,9 +4,13 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
+import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.machine.dto.MachineDto
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +19,8 @@ import java.util.*
 @Service
 @Transactional
 class MachineService(
-    private val machineRepository: MachineRepository
+    private val machineRepository: MachineRepository,
+    private val machineQueryRepository: MachineQueryRepository
 ) {
     fun register(
         no: String,
@@ -36,6 +41,18 @@ class MachineService(
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         return machine.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getAll(
+        type: MachineType?,
+        state: MachineState?,
+        addressKeyword: String?,
+        pageable: Pageable
+    ): Page<MachineDto> {
+        return machineQueryRepository
+            .getAll(type, state, addressKeyword, pageable)
+            .map { it.toDto() }
     }
 
     fun update(
