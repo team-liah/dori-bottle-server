@@ -11,6 +11,7 @@ import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -24,6 +25,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
@@ -86,10 +89,10 @@ class MeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("id", Matchers.`is`(user.id.toString())))
-            .andExpect(MockMvcResultMatchers.jsonPath("loginId", Matchers.`is`(user.loginId)))
-            .andExpect(MockMvcResultMatchers.jsonPath("role", Matchers.`is`(user.role.name)))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
     }
 
     @DisplayName("Dori User Pre Auth Token")
@@ -104,8 +107,8 @@ class MeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("accessToken", Matchers.notNullValue()))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("accessToken", Matchers.notNullValue()))
     }
 
     @DisplayName("프로필 조회")
@@ -120,15 +123,15 @@ class MeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("id", Matchers.`is`(user.id.toString())))
-            .andExpect(MockMvcResultMatchers.jsonPath("loginId", Matchers.`is`(user.loginId)))
-            .andExpect(MockMvcResultMatchers.jsonPath("name", Matchers.`is`(user.name)))
-            .andExpect(MockMvcResultMatchers.jsonPath("phoneNumber", Matchers.`is`(user.phoneNumber)))
-            .andExpect(MockMvcResultMatchers.jsonPath("invitationCode", Matchers.`is`(user.invitationCode)))
-            .andExpect(MockMvcResultMatchers.jsonPath("birthDate", Matchers.`is`(user.birthDate)))
-            .andExpect(MockMvcResultMatchers.jsonPath("gender", Matchers.`is`(user.gender)))
-            .andExpect(MockMvcResultMatchers.jsonPath("role", Matchers.`is`(user.role.name)))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("name", `is`(user.name)))
+            .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
+            .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
+            .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
+            .andExpect(jsonPath("gender", `is`(user.gender)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
     }
 
     @DisplayName("잔여 포인트 조회")
@@ -146,8 +149,8 @@ class MeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("payPoint", Matchers.`is`(10)))
-            .andExpect(MockMvcResultMatchers.jsonPath("freePoint", Matchers.`is`(10)))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("payPoint", `is`(10)))
+            .andExpect(jsonPath("freePoint", `is`(10)))
     }
 }
