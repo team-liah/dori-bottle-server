@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.user
+package com.liah.doribottle.web.v1.user
 
 import com.liah.doribottle.service.user.UserService
 import org.springframework.web.bind.annotation.RequestMapping

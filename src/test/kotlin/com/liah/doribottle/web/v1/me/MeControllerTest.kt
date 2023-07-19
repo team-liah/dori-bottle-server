@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.me
+package com.liah.doribottle.web.v1.me
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
