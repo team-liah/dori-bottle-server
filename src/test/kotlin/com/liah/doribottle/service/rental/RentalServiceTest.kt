@@ -1,5 +1,7 @@
 package com.liah.doribottle.service.rental
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupStatus
@@ -27,6 +29,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -67,7 +70,6 @@ class RentalServiceTest {
     internal fun init() {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
-        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
         cup = cupRepository.save(Cup(CUP_RFID))
         cup.changeState(CupStatus.AVAILABLE)
@@ -82,8 +84,11 @@ class RentalServiceTest {
     @DisplayName("컵 대여")
     @Test
     fun rental() {
-        //given, when
+        //given
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
         clear()
+
+        //when
         val id = rentalService.rental(user.id, CUP_RFID, vendingMachine.id, true)
         clear()
 
@@ -112,6 +117,25 @@ class RentalServiceTest {
             .containsExactly(10L, 2L)
 
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
+    }
+
+    @DisplayName("컵 대여 실패")
+    @Test
+    fun rentalException() {
+        //given
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+        clear()
+
+        //when, then
+        val exception1 = assertThrows<BusinessException> {
+            rentalService.rental(user.id, CUP_RFID, vendingMachine.id, true)
+        }
+        assertThat(exception1.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
+
+        val exception2 = assertThrows<BusinessException> {
+            rentalService.rental(user.id, "00000000", vendingMachine.id, true)
+        }
+        assertThat(exception2.errorCode).isEqualTo(ErrorCode.CUP_NOT_FOUND)
     }
 
     @DisplayName("컵 반납")

@@ -23,8 +23,6 @@ class RentalService(
     private val machineRepository: MachineRepository,
     private val pointQueryRepository: PointQueryRepository
 ) {
-    // TODO: Add Condition (cup status, Machine type, etc)
-    // TODO: Add Test: Failed rental
     fun rental(
         userId: UUID,
         cupRfid: String,
