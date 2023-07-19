@@ -19,7 +19,7 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.web.rental.vm.RentRequest
+import com.liah.doribottle.web.v1.rental.vm.RentRequest
 import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach

@@ -1,9 +1,9 @@
-package com.liah.doribottle.web.rental
+package com.liah.doribottle.web.v1.rental
 
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.rental.RentalService
-import com.liah.doribottle.web.rental.vm.RentRequest
-import com.liah.doribottle.web.rental.vm.ReturnRequest
+import com.liah.doribottle.web.v1.rental.vm.RentRequest
+import com.liah.doribottle.web.v1.rental.vm.ReturnRequest
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
