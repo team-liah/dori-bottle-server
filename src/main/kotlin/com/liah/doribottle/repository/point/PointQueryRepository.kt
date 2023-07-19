@@ -28,7 +28,7 @@ class PointQueryRepository(
      * TODO: If type issue fixed, edit ne to gt
      * https://github.com/querydsl/querydsl/pull/3346
      */
-    fun findAllRemainByUserId(userId: UUID): List<Point> {
+    fun getAllRemainByUserId(userId: UUID): List<Point> {
         return defaultPointQuery(userId)
             .where(point.remainAmounts.ne(0))
             .fetch()
