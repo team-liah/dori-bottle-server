@@ -119,7 +119,7 @@ class RentalServiceTest {
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
 
-    @DisplayName("컵 대여 실패")
+    @DisplayName("컵 대여 예외")
     @Test
     fun rentalException() {
         //given
@@ -160,5 +160,25 @@ class RentalServiceTest {
         assertThat(findCup?.status).isEqualTo(CupStatus.RETURNED)
 
         assertThat(fromMachine?.cupAmounts).isEqualTo(1)
+    }
+
+    @DisplayName("컵 반납 예외")
+    @Test
+    fun returnException() {
+        //given
+        rentalRepository.save(Rental(user, cup, vendingMachine, true, 7))
+        cupRepository.save(Cup("B1:B1:B1:B1"))
+        clear()
+
+        //when, then
+        val exception1 = assertThrows<BusinessException> {
+            rentalService.`return`(collectionMachine.id, "000000000")
+        }
+        assertThat(exception1.errorCode).isEqualTo(ErrorCode.CUP_NOT_FOUND)
+
+        val exception2 = assertThrows<BusinessException> {
+            rentalService.`return`(collectionMachine.id, "B1:B1:B1:B1")
+        }
+        assertThat(exception2.errorCode).isEqualTo(ErrorCode.RENTAL_NOT_FOUND)
     }
 }
