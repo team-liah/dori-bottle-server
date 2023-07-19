@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.account.vm
+package com.liah.doribottle.web.v1.account.vm
 
 import com.liah.doribottle.constant.BIRTH_DATE_REGEX
 import com.liah.doribottle.domain.user.Gender

@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.me.vm
+package com.liah.doribottle.web.v1.me.vm
 
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
