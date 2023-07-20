@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -72,7 +73,6 @@ class RentalServiceTest {
         user = userRepository.save(userEntity)
 
         cup = cupRepository.save(Cup(CUP_RFID))
-        cup.changeState(CupStatus.AVAILABLE)
 
         vendingMachine = machineRepository.save(Machine(MACHINE_NO1, VENDING, Address(),100))
         vendingMachine.increaseCupAmounts(10)
@@ -267,5 +267,39 @@ class RentalServiceTest {
             rentalService.`return`(collectionMachine.id, "B1:B1:B1:B1")
         }
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.RENTAL_NOT_FOUND)
+    }
+
+    @DisplayName("대여 내역 조회")
+    @Test
+    fun getAll() {
+        //given
+        val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
+        val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
+        val cup3 = cupRepository.save(Cup("D1:D1:D1:D1"))
+        val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
+        val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
+        val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
+        rentalRepository.save(Rental(user, cup1, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup2, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup3, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup4, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup5, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup6, vendingMachine, true, 7))
+
+        //when
+        val result = rentalService.getAll(
+            userId = user.id,
+            pageable = Pageable.ofSize(3)
+        )
+
+        //then
+        assertThat(result.totalElements).isEqualTo(6)
+        assertThat(result.totalPages).isEqualTo(2)
+        assertThat(result)
+            .extracting("userId")
+            .containsExactly(user.id, user.id, user.id)
+        assertThat(result)
+            .extracting("status")
+            .containsExactly(PROCEEDING, PROCEEDING, PROCEEDING)
     }
 }
