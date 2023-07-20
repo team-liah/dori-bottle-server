@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.rental.RentalStatus.SUCCEEDED
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.service.rental.dto.RentalDto
 import jakarta.persistence.*
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -82,4 +83,6 @@ class Rental(
 
         cup.`return`()
     }
+
+    fun toDto() = RentalDto(id, user.id, cup.id, fromMachine.id, toMachine?.id, withIce, cost, succeededDate, expiredDate, status)
 }
