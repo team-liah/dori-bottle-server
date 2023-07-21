@@ -1,18 +1,46 @@
 package com.liah.doribottle.service.rental.dto
 
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.service.machine.dto.MachineDto
+import com.liah.doribottle.web.v1.rental.vm.RentalMachineInfo
+import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 data class RentalDto(
     val id: UUID,
     val userId: UUID,
     val cupId: UUID,
-    val fromMachineId: UUID,
-    val toMachineId: UUID?,
+    val fromMachine: MachineDto,
+    val toMachine: MachineDto?,
     val withIce: Boolean,
     val cost: Long,
     val succeededDate: Instant?,
     val expiredDate: Instant,
     val status: RentalStatus
-)
+) {
+    fun toUserResponse() = RentalSearchResponse(
+        id = id,
+        userId = userId,
+        cupId = cupId,
+        fromMachine = RentalMachineInfo(
+            id = fromMachine.id,
+            no = fromMachine.no,
+            name = fromMachine.name,
+            address = fromMachine.address
+        ),
+        toMachine = toMachine?.let {
+            RentalMachineInfo(
+                id = it.id,
+                no = it.no,
+                name = it.name,
+                address = it.address
+            )
+        },
+        withIce = withIce,
+        cost = cost,
+        succeededDate = succeededDate,
+        expiredDate = expiredDate,
+        status = status
+    )
+}
