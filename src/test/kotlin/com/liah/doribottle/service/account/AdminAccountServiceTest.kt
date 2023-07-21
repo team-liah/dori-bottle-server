@@ -3,36 +3,23 @@ package com.liah.doribottle.service.account
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.user.AdminRepository
-import com.liah.doribottle.repository.user.RefreshTokenRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.transaction.annotation.Transactional
 
-@SpringBootTest
-@Transactional
-class AdminAccountServiceTest {
-    @PersistenceContext private lateinit var entityManager: EntityManager
+class AdminAccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var adminAccountService: AdminAccountService
     @Autowired private lateinit var adminRepository: AdminRepository
-    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private val loginId = "liah"
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @DisplayName("인증")
     @Test

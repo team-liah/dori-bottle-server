@@ -5,34 +5,19 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.repository.cup.CupRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.domain.Pageable
 
-@SpringBootTest
-@Transactional
-class CupServiceTest {
-    companion object {
-        const val RFID = "RFID"
-    }
-
-    @PersistenceContext
-    private lateinit var entityManager: EntityManager
+class CupServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var cupRepository: CupRepository
     @Autowired
     private lateinit var cupService: CupService
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @DisplayName("컵 등록")
     @Test
@@ -109,5 +94,31 @@ class CupServiceTest {
             cupService.remove(id)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_DELETE_NOT_ALLOWED)
+    }
+
+    @DisplayName("컵 목록 조회")
+    @Test
+    fun getAll() {
+        //given
+        cupRepository.save(Cup("B1:B1:B1:B1"))
+        cupRepository.save(Cup("C1:C1:C1:C1"))
+        cupRepository.save(Cup("D1:D1:D1:D1"))
+        cupRepository.save(Cup("E1:E1:E1:E1"))
+        cupRepository.save(Cup("F1:F1:F1:F1"))
+        cupRepository.save(Cup("G1:G1:G1:G1"))
+        clear()
+
+        //when
+        val result = cupService.getAll(
+            status = AVAILABLE,
+            pageable = Pageable.ofSize(3)
+        )
+
+        //then
+        assertThat(result.totalElements).isEqualTo(6)
+        assertThat(result.totalPages).isEqualTo(2)
+        assertThat(result)
+            .extracting("rfid")
+            .containsExactly("B1:B1:B1:B1", "C1:C1:C1:C1", "D1:D1:D1:D1")
     }
 }
