@@ -18,7 +18,7 @@ enum class ErrorCode(
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
     CUP_NOT_FOUND(404, "B002", "Cup entity not found."),
     CUP_RETURN_NOT_ALLOWED(400, "B003", "Cup in non-returnable state."),
-    CUP_LOAN_NOT_ALLOWED(400, "B004å", "Cup in non-loanable state."),
+    CUP_LOAN_NOT_ALLOWED(400, "B004", "Cup in non-loanable state."),
 
     // User
     USER_NOT_FOUND(404, "C001", "User entity not found."),
@@ -26,8 +26,8 @@ enum class ErrorCode(
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
-    LACK_OF_CUP(400, "E003", "Lack of cups in machine."),
-    FULL_OF_CUP(400, "E004", "Full of cups in machine."),
+    LACK_OF_CUP(400, "D002", "Lack of cups in machine."),
+    FULL_OF_CUP(400, "D003", "Full of cups in machine."),
 
     // Rental
     RENTAL_NOT_FOUND(404, "E001", "Rental entity not found."),
