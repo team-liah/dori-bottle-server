@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
@@ -109,5 +110,31 @@ class CupServiceTest {
             cupService.remove(id)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_DELETE_NOT_ALLOWED)
+    }
+
+    @DisplayName("컵 목록 조회")
+    @Test
+    fun getAll() {
+        //given
+        cupRepository.save(Cup("B1:B1:B1:B1"))
+        cupRepository.save(Cup("C1:C1:C1:C1"))
+        cupRepository.save(Cup("D1:D1:D1:D1"))
+        cupRepository.save(Cup("E1:E1:E1:E1"))
+        cupRepository.save(Cup("F1:F1:F1:F1"))
+        cupRepository.save(Cup("G1:G1:G1:G1"))
+        clear()
+
+        //when
+        val result = cupService.getAll(
+            status = AVAILABLE,
+            pageable = Pageable.ofSize(3)
+        )
+
+        //then
+        assertThat(result.totalElements).isEqualTo(6)
+        assertThat(result.totalPages).isEqualTo(2)
+        assertThat(result)
+            .extracting("rfid")
+            .containsExactly("B1:B1:B1:B1", "C1:C1:C1:C1", "D1:D1:D1:D1")
     }
 }
