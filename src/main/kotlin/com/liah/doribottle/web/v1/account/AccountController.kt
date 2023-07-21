@@ -42,8 +42,10 @@ class AccountController(
         httpRequest: HttpServletRequest,
         @Valid @RequestBody request: AuthRequest
     ): ResponseEntity<AuthResponse> {
-        val result = accountService
-            .auth(request.loginId!!, request.loginPassword!!)
+        val result = accountService.auth(
+            loginId = request.loginId!!,
+            loginPassword = request.loginPassword!!
+        )
 
         val accessTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),

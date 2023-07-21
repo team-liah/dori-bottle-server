@@ -9,6 +9,7 @@ import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -65,7 +66,7 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, Address("12345", "삼성로"), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), 100)
 
         mockMvc.perform(
             post(endPoint)
@@ -80,7 +81,7 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
     @Test
     fun registerException() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, Address("12345", "삼성로"), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), 100)
 
         mockMvc.perform(
             post(endPoint)
@@ -125,7 +126,7 @@ class MachineControllerTest {
     @Test
     fun update() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", Address("12345", "삼성로"), 100, 50)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 50)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -141,7 +142,7 @@ class MachineControllerTest {
     @Test
     fun updateException() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", Address("12345", "삼성로"), 100, 110)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 110)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")

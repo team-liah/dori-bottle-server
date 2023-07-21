@@ -6,6 +6,7 @@ import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.service.common.AddressDto
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -41,7 +42,7 @@ class MachineServiceTest {
     @Test
     fun register() {
         //given
-        val address = Address("12345", "삼성로", null)
+        val address = AddressDto("12345", "삼성로", null)
 
         //when
         val id = machineService.register(NO, NAME, VENDING, address, 100)
@@ -52,7 +53,7 @@ class MachineServiceTest {
         assertThat(machine?.no).isEqualTo(NO)
         assertThat(machine?.name).isEqualTo(NAME)
         assertThat(machine?.type).isEqualTo(VENDING)
-        assertThat(machine?.address).isEqualTo(address)
+        assertThat(machine?.address?.toDto()).isEqualTo(address)
         assertThat(machine?.capacity).isEqualTo(100)
         assertThat(machine?.cupAmounts).isEqualTo(0)
         assertThat(machine?.state).isEqualTo(NORMAL)
@@ -73,7 +74,7 @@ class MachineServiceTest {
         assertThat(machineDto.no).isEqualTo(NO)
         assertThat(machineDto.name).isEqualTo(NAME)
         assertThat(machineDto.type).isEqualTo(VENDING)
-        assertThat(machineDto.address).isEqualTo(address)
+        assertThat(machineDto.address).isEqualTo(address.toDto())
         assertThat(machineDto.capacity).isEqualTo(100)
         assertThat(machineDto.cupAmounts).isEqualTo(0)
         assertThat(machineDto.state).isEqualTo(NORMAL)
@@ -163,7 +164,7 @@ class MachineServiceTest {
         clear()
 
         //when
-        val newAddress = Address("00000", "마장로", null)
+        val newAddress = AddressDto("00000", "마장로", null)
         machineService.update(machine.id, "new name", newAddress, 200, 10)
         clear()
 

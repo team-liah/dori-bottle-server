@@ -22,8 +22,14 @@ class MachineController(
     @PostMapping
     fun register(
         @Valid @RequestBody request: MachineRegisterRequest
-    ) {
-        machineService.register(request.no!!, request.name!!, request.type!!, request.address!!, request.capacity!!)
+    ): UUID {
+        return machineService.register(
+            no = request.no!!,
+            name = request.name!!,
+            type = request.type!!,
+            address = request.address!!,
+            capacity = request.capacity!!
+        )
     }
 
     @GetMapping
@@ -47,6 +53,12 @@ class MachineController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MachineUpdateRequest
     ) {
-        machineService.update(id, request.name!!, request.address!!, request.capacity!!, request.cupAmounts!!)
+        machineService.update(
+            id = id,
+            name = request.name!!,
+            address = request.address!!,
+            capacity = request.capacity!!,
+            cupAmounts = request.cupAmounts!!
+        )
     }
 }

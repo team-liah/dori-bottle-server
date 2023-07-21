@@ -18,7 +18,7 @@ class Machine(
     no: String,
     name: String,
     type: MachineType,
-    address: Address,
+    address: Address?,
     capacity: Int
 ) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
@@ -32,7 +32,7 @@ class Machine(
     val type: MachineType = type
 
     @Embedded
-    var address: Address = address
+    var address: Address? = address
         protected set
 
     @Column(nullable = false)
@@ -50,7 +50,7 @@ class Machine(
 
     fun update(
         name: String,
-        address: Address,
+        address: Address?,
         capacity: Int
     ) {
         this.name = name
@@ -69,5 +69,5 @@ class Machine(
         cupAmounts = amounts
     }
 
-    fun toDto() = MachineDto(id, no, name, type, address, capacity, cupAmounts, state)
+    fun toDto() = MachineDto(id, no, name, type, address?.toDto(), capacity, cupAmounts, state)
 }
