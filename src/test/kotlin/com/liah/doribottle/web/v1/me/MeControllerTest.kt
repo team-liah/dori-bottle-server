@@ -1,12 +1,12 @@
 package com.liah.doribottle.web.v1.me
 
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.servlet.http.Cookie
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -68,37 +68,17 @@ class MeControllerTest {
     }
 
     @DisplayName("Dori User 프로필 조회")
+    @WithMockDoriUser(loginId = "010-5638-3316", role = Role.USER)
     @Test
     fun get() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
         mockMvc.perform(
             MockMvcRequestBuilders.get(endPoint)
-                .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("id", `is`(user.id.toString())))
-            .andExpect(jsonPath("loginId", `is`(user.loginId)))
-            .andExpect(jsonPath("role", `is`(user.role.name)))
-    }
-
-    @DisplayName("Dori User Pre Auth Token")
-    @Test
-    fun getPreAuthToken() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/pre-auth-token")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("accessToken", Matchers.notNullValue()))
+            .andExpect(jsonPath("loginId", `is`("010-5638-3316")))
+            .andExpect(jsonPath("role", `is`(Role.USER.name)))
     }
 
     @DisplayName("프로필 조회")

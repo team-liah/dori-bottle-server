@@ -7,6 +7,6 @@ import org.springframework.security.test.context.support.WithSecurityContext
 @Retention(AnnotationRetention.RUNTIME)
 @WithSecurityContext(factory = WithMockDoriUserSecurityContextFactory::class)
 annotation class WithMockDoriUser(
-    val loginId: String = "01000000000",
+    val loginId: String = "010-0000-0000",
     val role: Role = Role.USER
 )
