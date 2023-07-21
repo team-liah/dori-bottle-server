@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.service.account.dto.AdminDto
 import jakarta.persistence.*
 
 @Entity
@@ -31,4 +32,6 @@ class Admin(
     var role: Role =
         if (role != Role.GUEST && role != Role.USER) role
         else throw IllegalArgumentException("Non Admin role is not allowed.")
+
+    fun toDto() = AdminDto(id, loginId, name, role)
 }

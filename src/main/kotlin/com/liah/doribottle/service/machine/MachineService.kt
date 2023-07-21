@@ -2,12 +2,12 @@ package com.liah.doribottle.service.machine
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.machine.dto.MachineDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -26,10 +26,18 @@ class MachineService(
         no: String,
         name: String,
         type: MachineType,
-        address: Address,
+        address: AddressDto?,
         capacity: Int
     ): UUID {
-        val machine = machineRepository.save(Machine(no, name, type, address, capacity))
+        val machine = machineRepository.save(
+            Machine(
+                no = no,
+                name = name,
+                type = type,
+                address = address?.toEmbeddable(),
+                capacity = capacity
+            )
+        )
 
         return machine.id
     }
@@ -64,14 +72,18 @@ class MachineService(
     fun update(
         id: UUID,
         name: String,
-        address: Address,
+        address: AddressDto?,
         capacity: Int,
         cupAmounts: Int
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
-        machine.update(name, address, capacity)
+        machine.update(
+            name = name,
+            address = address?.toEmbeddable(),
+            capacity = capacity
+        )
         machine.updateCupAmounts(cupAmounts)
     }
 }

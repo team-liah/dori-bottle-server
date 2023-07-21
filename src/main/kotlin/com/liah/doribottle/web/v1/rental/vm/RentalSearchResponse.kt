@@ -1,7 +1,7 @@
 package com.liah.doribottle.web.v1.rental.vm
 
-import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.service.common.AddressDto
 import java.time.Instant
 import java.util.*
 
@@ -22,5 +22,5 @@ data class RentalMachineInfo(
     val id: UUID,
     val no: String,
     val name: String,
-    val address: Address
+    val address: AddressDto?
 )
