@@ -5,35 +5,19 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.repository.cup.CupRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Pageable
-import org.springframework.transaction.annotation.Transactional
 
-@SpringBootTest
-@Transactional
-class CupServiceTest {
-    companion object {
-        const val RFID = "RFID"
-    }
-
-    @PersistenceContext
-    private lateinit var entityManager: EntityManager
+class CupServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var cupRepository: CupRepository
     @Autowired
     private lateinit var cupService: CupService
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @DisplayName("컵 등록")
     @Test

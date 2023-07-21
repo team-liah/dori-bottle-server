@@ -6,25 +6,19 @@ import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.*
 
-@SpringBootTest
-@Transactional
-class AccountServiceTest {
-    @PersistenceContext private lateinit var entityManager: EntityManager
+class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
@@ -32,11 +26,6 @@ class AccountServiceTest {
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private val loginId = "010-0000-0000"
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @DisplayName("비밀번호 업데이트")
     @Test
