@@ -26,6 +26,8 @@ class RentalQueryRepository(
     ): Page<Rental> {
         return queryFactory
             .selectFrom(rental)
+            .innerJoin(rental.fromMachine).fetchJoin()
+            .leftJoin(rental.toMachine).fetchJoin()
             .where(
                 userEq(userId),
                 cupEq(cupId),

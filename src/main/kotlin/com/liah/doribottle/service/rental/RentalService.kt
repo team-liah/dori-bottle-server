@@ -84,13 +84,13 @@ class RentalService(
         pageable: Pageable
     ): Page<RentalDto> {
         return rentalQueryRepository.getAll(
-                userId = userId,
-                cupId = cupId,
-                fromMachineId = fromMachineId,
-                toMachineId = toMachineId,
-                status = status,
-                expired = expired,
-                pageable = pageable
-            ).map { it.toDto() }
+            userId = userId,
+            cupId = cupId,
+            fromMachineId = fromMachineId,
+            toMachineId = toMachineId,
+            status = status,
+            expired = expired,
+            pageable = pageable
+        ).map { it.toDto() }
     }
 }

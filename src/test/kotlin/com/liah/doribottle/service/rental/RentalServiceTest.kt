@@ -75,10 +75,10 @@ class RentalServiceTest {
 
         cup = cupRepository.save(Cup(CUP_RFID))
 
-        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address(),100))
+        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address("12345", "test"),100))
         vendingMachine.increaseCupAmounts(10)
 
-        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address(),100))
+        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address("12345", "test"),100))
         collectionMachine.increaseCupAmounts(0)
     }
 
