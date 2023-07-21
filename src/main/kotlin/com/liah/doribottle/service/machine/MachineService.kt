@@ -46,14 +46,19 @@ class MachineService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        name: String? = null,
         type: MachineType? = null,
         state: MachineState? = null,
         addressKeyword: String? = null,
         pageable: Pageable
     ): Page<MachineDto> {
-        return machineQueryRepository
-            .getAll(type, state, addressKeyword, pageable)
-            .map { it.toDto() }
+        return machineQueryRepository.getAll(
+            name = name,
+            type = type,
+            state = state,
+            addressKeyword = addressKeyword,
+            pageable = pageable
+        ).map { it.toDto() }
     }
 
     fun update(

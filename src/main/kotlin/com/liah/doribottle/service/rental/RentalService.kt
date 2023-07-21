@@ -83,8 +83,14 @@ class RentalService(
         expired: Boolean? = null,
         pageable: Pageable
     ): Page<RentalDto> {
-        return rentalQueryRepository
-            .getAll(userId, cupId, fromMachineId, toMachineId, status, expired, pageable)
-            .map { it.toDto() }
+        return rentalQueryRepository.getAll(
+                userId = userId,
+                cupId = cupId,
+                fromMachineId = fromMachineId,
+                toMachineId = toMachineId,
+                status = status,
+                expired = expired,
+                pageable = pageable
+            ).map { it.toDto() }
     }
 }

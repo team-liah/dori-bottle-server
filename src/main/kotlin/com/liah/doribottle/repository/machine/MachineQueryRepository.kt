@@ -15,6 +15,7 @@ class MachineQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
+        name: String?,
         type: MachineType?,
         state: MachineState?,
         addressKeyword: String?,
@@ -23,6 +24,7 @@ class MachineQueryRepository(
         return queryFactory
             .selectFrom(machine)
             .where(
+                nameContains(name),
                 typeEq(type),
                 stateEq(state),
                 addressKeywordContains(addressKeyword)
@@ -30,6 +32,7 @@ class MachineQueryRepository(
             .toPage(pageable)
     }
 
+    private fun nameContains(name: String?) = name?.let { machine.name.contains(it) }
     private fun typeEq(type: MachineType?) = type?.let { machine.type.eq(it) }
     private fun stateEq(state: MachineState?) = state?.let { machine.state.eq(it) }
     private fun addressKeywordContains(addressKeyword: String?) = addressKeyword?.let {
