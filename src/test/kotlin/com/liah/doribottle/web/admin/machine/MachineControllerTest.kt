@@ -10,52 +10,26 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
+import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
-import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import org.springframework.web.context.WebApplicationContext
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class MachineControllerTest {
-    private lateinit var mockMvc: MockMvc
+class MachineControllerTest : BaseControllerTest() {
     private val endPoint = "/admin/api/machine"
-
-    companion object {
-        private const val ADMIN_LOGIN_ID = "admin"
-    }
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
 
     @Autowired
     private lateinit var machineRepository: MachineRepository
-
-    @BeforeEach
-    internal fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply<DefaultMockMvcBuilder?>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
-    }
 
     @AfterEach
     internal fun destroy() {
@@ -93,17 +67,28 @@ class MachineControllerTest {
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
     }
 
+    @DisplayName("자판기 등록 - 예외 TC2")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun registerExceptionTc2() {
+        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), 100)
+
+        mockMvc.perform(
+            post(endPoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("message", `is`(ErrorCode.MACHINE_ALREADY_REGISTERED.message)))
+    }
+
     @DisplayName("자판기 목록 조회")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAll() {
-        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), 100))
-
+        insertMachines()
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("type", "VENDING")
@@ -152,5 +137,14 @@ class MachineControllerTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
+    }
+
+    private fun insertMachines() {
+        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), 100))
     }
 }

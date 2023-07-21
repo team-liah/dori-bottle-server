@@ -23,25 +23,18 @@ import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
-@SpringBootTest
-@Transactional
-class RentalServiceTest {
-    @PersistenceContext
-    private lateinit var entityManager: EntityManager
+class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var rentalService: RentalService
     @Autowired private lateinit var rentalRepository: RentalRepository
     @Autowired private lateinit var pointRepository: PointRepository
@@ -50,23 +43,10 @@ class RentalServiceTest {
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var machineRepository: MachineRepository
 
-    companion object {
-        private const val USER_LOGIN_ID = "010-5638-3316"
-        private const val CUP_RFID = "A1:A1:A1:A1"
-        private const val MACHINE_NO1 = "000-00001"
-        private const val MACHINE_NO2 = "000-00002"
-        private const val MACHINE_NAME = "XX대학교 정문"
-    }
-
     private lateinit var user: User
     private lateinit var cup: Cup
     private lateinit var vendingMachine: Machine
     private lateinit var collectionMachine: Machine
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @BeforeEach
     internal fun init() {
