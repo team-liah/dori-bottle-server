@@ -18,7 +18,7 @@ import java.util.*
 class PointQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
-    private fun defaultPointQuery(userId: UUID) = queryFactory
+    private fun userQuery(userId: UUID) = queryFactory
         .selectFrom(point)
         .where(point.userId.eq(userId))
         .orderBy(point.saveType.desc())
@@ -29,7 +29,7 @@ class PointQueryRepository(
      * https://github.com/querydsl/querydsl/pull/3346
      */
     fun getAllRemainByUserId(userId: UUID): List<Point> {
-        return defaultPointQuery(userId)
+        return userQuery(userId)
             .where(point.remainAmounts.ne(0))
             .fetch()
     }

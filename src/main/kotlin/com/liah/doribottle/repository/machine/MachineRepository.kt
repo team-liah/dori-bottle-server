@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface MachineRepository : JpaRepository<Machine, UUID>
+interface MachineRepository : JpaRepository<Machine, UUID> {
+    fun findByNo(no: String): Machine?
+}

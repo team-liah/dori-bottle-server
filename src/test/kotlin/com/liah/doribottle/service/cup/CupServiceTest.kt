@@ -36,7 +36,7 @@ class CupServiceTest {
 
     @DisplayName("컵 등록")
     @Test
-    fun registerTest() {
+    fun register() {
         //when
         val id = cupService.register(RFID)
         clear()
@@ -47,9 +47,23 @@ class CupServiceTest {
         assertThat(findCup.status).isEqualTo(AVAILABLE)
     }
 
+    @DisplayName("컵 등록 예외")
+    @Test
+    fun registerException() {
+        //given
+        cupRepository.save(Cup(RFID))
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            cupService.register(RFID)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_ALREADY_REGISTERED)
+    }
+
     @DisplayName("RFID 컵 조회")
     @Test
-    fun getCupByRfidTest() {
+    fun getCupByRfid() {
         //given
         cupRepository.save(Cup(RFID))
         clear()
@@ -64,7 +78,7 @@ class CupServiceTest {
 
     @DisplayName("컵 제거")
     @Test
-    fun removeTest() {
+    fun remove() {
         //given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
@@ -81,7 +95,7 @@ class CupServiceTest {
 
     @DisplayName("컵 제거 예외")
     @Test
-    fun removeExceptionTest() {
+    fun removeException() {
         //given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id

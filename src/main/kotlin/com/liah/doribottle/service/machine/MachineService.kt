@@ -1,13 +1,14 @@
 package com.liah.doribottle.service.machine
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.machine.dto.MachineDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,13 +25,30 @@ class MachineService(
 ) {
     fun register(
         no: String,
+        name: String,
         type: MachineType,
-        address: Address,
+        address: AddressDto?,
         capacity: Int
     ): UUID {
-        val machine = machineRepository.save(Machine(no, type, address, capacity))
+        verifyDuplicatedNo(no)
+
+        val machine = machineRepository.save(
+            Machine(
+                no = no,
+                name = name,
+                type = type,
+                address = address?.toEmbeddable(),
+                capacity = capacity
+            )
+        )
 
         return machine.id
+    }
+
+    private fun verifyDuplicatedNo(no: String) {
+        val machine = machineRepository.findByNo(no)
+        if (machine != null)
+            throw BusinessException(ErrorCode.MACHINE_ALREADY_REGISTERED)
     }
 
     @Transactional(readOnly = true)
@@ -45,26 +63,36 @@ class MachineService(
 
     @Transactional(readOnly = true)
     fun getAll(
-        type: MachineType?,
-        state: MachineState?,
-        addressKeyword: String?,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
         pageable: Pageable
     ): Page<MachineDto> {
-        return machineQueryRepository
-            .getAll(type, state, addressKeyword, pageable)
-            .map { it.toDto() }
+        return machineQueryRepository.getAll(
+            name = name,
+            type = type,
+            state = state,
+            addressKeyword = addressKeyword,
+            pageable = pageable
+        ).map { it.toDto() }
     }
 
     fun update(
         id: UUID,
-        address: Address,
+        name: String,
+        address: AddressDto?,
         capacity: Int,
         cupAmounts: Int
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
-        machine.update(address, capacity)
+        machine.update(
+            name = name,
+            address = address?.toEmbeddable(),
+            capacity = capacity
+        )
         machine.updateCupAmounts(cupAmounts)
     }
 }

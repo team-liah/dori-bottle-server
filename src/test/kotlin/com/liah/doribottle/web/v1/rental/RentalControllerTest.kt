@@ -11,6 +11,8 @@ import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointSaveType.PAY
+import com.liah.doribottle.domain.rental.Rental
+import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertJsonToString
@@ -33,11 +35,14 @@ import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.context.WebApplicationContext
 
 @ExtendWith(SpringExtension::class)
@@ -82,10 +87,10 @@ class RentalControllerTest {
         user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
 
-        val machineEntity = Machine("1", VENDING, Address(), 100)
-        machineEntity.updateCupAmounts(1)
+        val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), 100)
+        machineEntity.updateCupAmounts(100)
         vendingMachine = machineRepository.save(machineEntity)
-        collectionMachine = machineRepository.save(Machine("2", COLLECTION, Address(), 100))
+        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), 100))
 
         cup = cupRepository.save(Cup(CUP_RFID))
     }
@@ -154,5 +159,45 @@ class RentalControllerTest {
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
+    }
+
+    @DisplayName("대여 내역 조회")
+    @Test
+    fun getAll() {
+        val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
+        val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
+        val cup3 = cupRepository.save(Cup("D1:D1:D1:D1"))
+        val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
+        val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
+        val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
+        rentalRepository.save(Rental(user, cup1, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup2, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup3, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup4, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup5, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup6, vendingMachine, true, 7))
+
+        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("status", "PROCEEDING")
+        params.add("page", "0")
+        params.add("size", "3")
+
+        val expectUserId = listOf(user.id.toString(), user.id.toString(), user.id.toString())
+        val expectFromMachineId = listOf(vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString())
+        val expectStatus = listOf(PROCEEDING.toString(), PROCEEDING.toString(), PROCEEDING.toString())
+
+        mockMvc.perform(
+            get(endPoint)
+                .cookie(cookie)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
+            .andExpect(jsonPath("content[*].fromMachine.id", `is`(expectFromMachineId)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
     }
 }

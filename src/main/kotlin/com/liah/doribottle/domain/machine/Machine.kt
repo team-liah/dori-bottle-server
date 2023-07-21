@@ -16,19 +16,23 @@ import jakarta.persistence.*
 )
 class Machine(
     no: String,
+    name: String,
     type: MachineType,
-    address: Address,
+    address: Address?,
     capacity: Int
 ) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
     val no: String = no
+
+    @Column(nullable = false)
+    var name: String = name
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: MachineType = type
 
     @Embedded
-    var address: Address = address
+    var address: Address? = address
         protected set
 
     @Column(nullable = false)
@@ -45,9 +49,11 @@ class Machine(
         protected set
 
     fun update(
-        address: Address,
+        name: String,
+        address: Address?,
         capacity: Int
     ) {
+        this.name = name
         this.address = address
         this.capacity = capacity
     }
@@ -63,5 +69,5 @@ class Machine(
         cupAmounts = amounts
     }
 
-    fun toDto() = MachineDto(id, no, type, address, capacity, cupAmounts, state)
+    fun toDto() = MachineDto(id, no, name, type, address?.toDto(), capacity, cupAmounts, state)
 }

@@ -36,7 +36,7 @@ class AdminAccountControllerTest {
     private val endPoint = "/admin/api/account"
 
     companion object {
-        private const val ADMIN_LOGIN_ID = "admin"
+        private const val ADMIN_LOGIN_ID = "tester"
     }
     @Autowired
     private lateinit var context: WebApplicationContext

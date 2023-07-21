@@ -1,12 +1,14 @@
-package com.liah.doribottle.web.v1.me
+package com.liah.doribottle.web.v1.point
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
-import com.liah.doribottle.repository.user.RefreshTokenRepository
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import jakarta.servlet.http.Cookie
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -28,9 +30,9 @@ import org.springframework.web.context.WebApplicationContext
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class MeControllerTest {
+class PointControllerTest {
     private lateinit var mockMvc: MockMvc
-    private val endPoint = "/api/v1/me"
+    private val endPoint = "/api/v1/point"
 
     companion object {
         private const val USER_LOGIN_ID = "010-5638-3316"
@@ -39,12 +41,11 @@ class MeControllerTest {
     @Autowired private lateinit var context: WebApplicationContext
 
     @Autowired private lateinit var userRepository: UserRepository
-    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var pointRepository: PointRepository
 
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private lateinit var user: User
-    private lateinit var userRefreshToken: RefreshToken
 
     @BeforeEach
     internal fun setUp() {
@@ -58,69 +59,31 @@ class MeControllerTest {
     internal fun init() {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
-        userRefreshToken = refreshTokenRepository.save(RefreshToken(user))
     }
 
     @AfterEach
     internal fun destroy() {
-        refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
+        pointRepository.deleteAll()
     }
 
-    @DisplayName("Dori User 프로필 조회")
+    @DisplayName("잔여 포인트 조회")
     @Test
-    fun get() {
+    fun getRemainPoint() {
+        pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
+        pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+
         val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
         val cookie = Cookie(ACCESS_TOKEN, accessToken)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get(endPoint)
+            MockMvcRequestBuilders.get("$endPoint/remain-point")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("id", `is`(user.id.toString())))
-            .andExpect(jsonPath("loginId", `is`(user.loginId)))
-            .andExpect(jsonPath("role", `is`(user.role.name)))
-    }
-
-    @DisplayName("Dori User Pre Auth Token")
-    @Test
-    fun getPreAuthToken() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/pre-auth-token")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("accessToken", Matchers.notNullValue()))
-    }
-
-    @DisplayName("프로필 조회")
-    @Test
-    fun getProfile() {
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
-
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/profile")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("id", `is`(user.id.toString())))
-            .andExpect(jsonPath("loginId", `is`(user.loginId)))
-            .andExpect(jsonPath("name", `is`(user.name)))
-            .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
-            .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
-            .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
-            .andExpect(jsonPath("gender", `is`(user.gender)))
-            .andExpect(jsonPath("role", `is`(user.role.name)))
+            .andExpect(jsonPath("payPoint", `is`(10)))
+            .andExpect(jsonPath("freePoint", `is`(10)))
     }
 }
