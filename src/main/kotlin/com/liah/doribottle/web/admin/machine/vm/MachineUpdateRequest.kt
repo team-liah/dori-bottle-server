@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull
 
 data class MachineUpdateRequest(
     @field:NotNull
+    val name: String?,
+    @field:NotNull
     val address: Address?,
     @field:NotNull
     val capacity: Int?,

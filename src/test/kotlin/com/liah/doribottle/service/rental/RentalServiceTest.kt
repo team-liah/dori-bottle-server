@@ -55,6 +55,7 @@ class RentalServiceTest {
         private const val CUP_RFID = "A1:A1:A1:A1"
         private const val MACHINE_NO1 = "000-00001"
         private const val MACHINE_NO2 = "000-00002"
+        private const val MACHINE_NAME = "XX대학교 정문"
     }
 
     private lateinit var user: User
@@ -74,10 +75,10 @@ class RentalServiceTest {
 
         cup = cupRepository.save(Cup(CUP_RFID))
 
-        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, VENDING, Address(),100))
+        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address(),100))
         vendingMachine.increaseCupAmounts(10)
 
-        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, COLLECTION, Address(),100))
+        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address(),100))
         collectionMachine.increaseCupAmounts(0)
     }
 

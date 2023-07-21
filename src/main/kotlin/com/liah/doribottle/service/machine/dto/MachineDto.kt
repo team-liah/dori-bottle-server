@@ -9,11 +9,12 @@ import java.util.*
 data class MachineDto(
     val id: UUID,
     val no: String,
+    val name: String,
     val type: MachineType,
     val address: Address,
     val capacity: Int,
     val cupAmounts: Int,
     val state: MachineState
 ) {
-    fun toSearchResponse() = MachineSearchResponse(id, no, type, address, capacity, cupAmounts, state)
+    fun toSearchResponse() = MachineSearchResponse(id, no, name, type, address, capacity, cupAmounts, state)
 }
