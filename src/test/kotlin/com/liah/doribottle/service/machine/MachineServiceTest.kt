@@ -1,5 +1,7 @@
 package com.liah.doribottle.service.machine
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
@@ -12,6 +14,7 @@ import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Pageable
@@ -57,6 +60,21 @@ class MachineServiceTest {
         assertThat(machine?.capacity).isEqualTo(100)
         assertThat(machine?.cupAmounts).isEqualTo(0)
         assertThat(machine?.state).isEqualTo(NORMAL)
+    }
+
+    @DisplayName("자판기 등록 예외")
+    @Test
+    fun registerException() {
+        //given
+        val address = Address("12345", "삼성로", null)
+        machineRepository.save(Machine(NO, NAME, VENDING, address, 100))
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            machineService.register(NO, NAME, VENDING, address.toDto(), 100)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.MACHINE_ALREADY_REGISTERED)
     }
 
     @DisplayName("자판기 조회")

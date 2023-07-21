@@ -26,9 +26,17 @@ class CupService(
     fun register(
         rfid: String
     ): UUID {
+        verifyDuplicatedRfid(rfid)
+
         val cup = cupRepository.save(Cup(rfid))
 
         return cup.id
+    }
+
+    private fun verifyDuplicatedRfid(rfid: String) {
+        val cup = cupRepository.findByRfid(rfid)
+        if (cup != null)
+            throw BusinessException(ErrorCode.CUP_ALREADY_REGISTERED)
     }
 
     /**
