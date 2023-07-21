@@ -9,9 +9,9 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.point.Point
-import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
-import com.liah.doribottle.domain.point.PointEventType.USE_CUP
+import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointSaveType.PAY
+import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
@@ -162,6 +162,65 @@ class RentalServiceTest {
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findSecondPointEvents)
+            .extracting("amounts")
+            .containsExactly(1L, 1L)
+
+        assertThat(findMachine?.cupAmounts).isEqualTo(9)
+    }
+
+    @DisplayName("얼음 컵 대여 TC3")
+    @Test
+    fun rentIceCupTc3() {
+        //given
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+        pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 1))
+        clear()
+
+        //when
+        val id = rentalService.rent(user.id, CUP_RFID, vendingMachine.id, true)
+        clear()
+
+        //then
+        val findRental = rentalRepository.findByIdOrNull(id)
+        val findPoints = pointRepository.findAllByUserId(user.id)
+        val firstPoint = findPoints[0]
+        val secondPoint = findPoints[1]
+        val thirdPoint = findPoints[2]
+        val findFirstPointEvents = pointEventRepository.findAllByPointId(firstPoint.id)
+        val findSecondPointEvents = pointEventRepository.findAllByPointId(secondPoint.id)
+        val findThirdPointEvents = pointEventRepository.findAllByPointId(thirdPoint.id)
+        val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
+
+        assertThat(findRental?.user).isEqualTo(user)
+        assertThat(findRental?.cup).isEqualTo(cup)
+        assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
+        assertThat(findRental?.toMachine).isNull()
+        assertThat(findRental?.withIce).isEqualTo(true)
+        assertThat(findRental?.cost).isEqualTo(2L)
+        assertThat(findRental?.succeededDate).isNull()
+        assertThat(findRental?.expiredDate).isAfter(Instant.now())
+        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(firstPoint.remainAmounts).isEqualTo(0L)
+        assertThat(secondPoint.remainAmounts).isEqualTo(1L)
+        assertThat(thirdPoint.remainAmounts).isEqualTo(0L)
+        assertThat(findFirstPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP)
+        assertThat(findFirstPointEvents)
+            .extracting("amounts")
+            .containsExactly(1L, 1L)
+        assertThat(findSecondPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_PAY)
+        assertThat(findSecondPointEvents)
+            .extracting("amounts")
+            .containsExactly(1L)
+        assertThat(findThirdPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_REGISTER_REWARD, USE_CUP)
+        assertThat(findThirdPointEvents)
             .extracting("amounts")
             .containsExactly(1L, 1L)
 
