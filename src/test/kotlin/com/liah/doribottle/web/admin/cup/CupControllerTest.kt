@@ -6,51 +6,26 @@ import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.cup.CupRepository
+import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
-import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import org.springframework.web.context.WebApplicationContext
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class CupControllerTest {
-    private lateinit var mockMvc: MockMvc
+class CupControllerTest : BaseControllerTest() {
     private val endPoint = "/admin/api/cup"
-
-    companion object {
-        private const val ADMIN_LOGIN_ID = "admin"
-    }
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
 
     @Autowired
     private lateinit var cupRepository: CupRepository
 
-    @BeforeEach
-    internal fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply<DefaultMockMvcBuilder?>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
-    }
 
     @AfterEach
     internal fun destroy() {
@@ -109,12 +84,7 @@ class CupControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAll() {
-        cupRepository.save(Cup("A1:A1:A1:A1"))
-        cupRepository.save(Cup("B1:B1:B1:B1"))
-        cupRepository.save(Cup("C1:C1:C1:C1"))
-        cupRepository.save(Cup("D1:D1:D1:D1"))
-        cupRepository.save(Cup("E1:E1:E1:E1"))
-        cupRepository.save(Cup("F1:F1:F1:F1"))
+        insertCups()
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("type", "AVAILABLE")
@@ -130,5 +100,14 @@ class CupControllerTest {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].rfid", `is`(expectValue)))
+    }
+
+    private fun insertCups() {
+        cupRepository.save(Cup("A1:A1:A1:A1"))
+        cupRepository.save(Cup("B1:B1:B1:B1"))
+        cupRepository.save(Cup("C1:C1:C1:C1"))
+        cupRepository.save(Cup("D1:D1:D1:D1"))
+        cupRepository.save(Cup("E1:E1:E1:E1"))
+        cupRepository.save(Cup("F1:F1:F1:F1"))
     }
 }

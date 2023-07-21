@@ -1,8 +1,6 @@
 package com.liah.doribottle.web.v1.rental
 
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
@@ -21,44 +19,24 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
-import jakarta.servlet.http.Cookie
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
-import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import org.springframework.web.context.WebApplicationContext
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RentalControllerTest {
-    private lateinit var mockMvc: MockMvc
+class RentalControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/rental"
-
-    companion object {
-        private const val USER_LOGIN_ID = "010-5638-3316"
-        private const val GUEST_LOGIN_ID = "010-1234-5678"
-        private const val CUP_RFID = "A1:A1:A1:A1"
-    }
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
 
     @Autowired private lateinit var rentalRepository: RentalRepository
     @Autowired private lateinit var userRepository: UserRepository
@@ -66,21 +44,11 @@ class RentalControllerTest {
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var pointRepository: PointRepository
 
-    @Autowired private lateinit var tokenProvider: TokenProvider
-
     private lateinit var user: User
     private lateinit var guest: User
     private lateinit var vendingMachine: Machine
     private lateinit var collectionMachine: Machine
     private lateinit var cup: Cup
-
-    @BeforeEach
-    internal fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply<DefaultMockMvcBuilder?>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
-    }
 
     @BeforeEach
     internal fun init() {
@@ -109,8 +77,7 @@ class RentalControllerTest {
     fun rent() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -128,8 +95,7 @@ class RentalControllerTest {
     fun rentExceptionLackOfPoint() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -146,8 +112,7 @@ class RentalControllerTest {
     @DisplayName("얼읍컵 대여 - Unauthorized")
     @Test
     fun rentExceptionFromGuest() {
-        val accessToken = tokenProvider.createToken(guest.id, guest.loginId, guest.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+        val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -164,21 +129,9 @@ class RentalControllerTest {
     @DisplayName("대여 내역 조회")
     @Test
     fun getAll() {
-        val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
-        val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
-        val cup3 = cupRepository.save(Cup("D1:D1:D1:D1"))
-        val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
-        val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
-        val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
-        rentalRepository.save(Rental(user, cup1, vendingMachine, true, 7))
-        rentalRepository.save(Rental(user, cup2, vendingMachine, true, 7))
-        rentalRepository.save(Rental(user, cup3, vendingMachine, true, 7))
-        rentalRepository.save(Rental(user, cup4, vendingMachine, true, 7))
-        rentalRepository.save(Rental(user, cup5, vendingMachine, true, 7))
-        rentalRepository.save(Rental(user, cup6, vendingMachine, true, 7))
+        insertRentals()
 
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
-        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("status", "PROCEEDING")
         params.add("page", "0")
@@ -199,5 +152,20 @@ class RentalControllerTest {
             .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
             .andExpect(jsonPath("content[*].fromMachine.id", `is`(expectFromMachineId)))
             .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
+
+    private fun insertRentals() {
+        val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
+        val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
+        val cup3 = cupRepository.save(Cup("D1:D1:D1:D1"))
+        val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
+        val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
+        val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
+        rentalRepository.save(Rental(user, cup1, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup2, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup3, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup4, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup5, vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cup6, vendingMachine, true, 7))
     }
 }
