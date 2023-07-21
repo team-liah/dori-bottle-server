@@ -93,6 +93,23 @@ class MachineControllerTest {
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
     }
 
+    @DisplayName("자판기 등록 - 예외 TC2")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun registerExceptionTc2() {
+        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), 100)
+
+        mockMvc.perform(
+            post(endPoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("message", `is`(ErrorCode.MACHINE_ALREADY_REGISTERED.message)))
+    }
+
     @DisplayName("자판기 목록 조회")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
