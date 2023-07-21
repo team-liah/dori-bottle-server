@@ -82,10 +82,10 @@ class RentalControllerTest {
         user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
 
-        val machineEntity = Machine("1", VENDING, Address(), 100)
+        val machineEntity = Machine("1", "name", VENDING, Address(), 100)
         machineEntity.updateCupAmounts(1)
         vendingMachine = machineRepository.save(machineEntity)
-        collectionMachine = machineRepository.save(Machine("2", COLLECTION, Address(), 100))
+        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address(), 100))
 
         cup = cupRepository.save(Cup(CUP_RFID))
     }

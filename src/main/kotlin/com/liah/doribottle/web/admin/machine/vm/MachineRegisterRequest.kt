@@ -8,6 +8,8 @@ data class MachineRegisterRequest(
     @field:NotNull
     val no: String?,
     @field:NotNull
+    val name: String?,
+    @field:NotNull
     val type: MachineType?,
     @field:NotNull
     val address: Address?,

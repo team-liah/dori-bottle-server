@@ -24,11 +24,12 @@ class MachineService(
 ) {
     fun register(
         no: String,
+        name: String,
         type: MachineType,
         address: Address,
         capacity: Int
     ): UUID {
-        val machine = machineRepository.save(Machine(no, type, address, capacity))
+        val machine = machineRepository.save(Machine(no, name, type, address, capacity))
 
         return machine.id
     }
@@ -45,9 +46,9 @@ class MachineService(
 
     @Transactional(readOnly = true)
     fun getAll(
-        type: MachineType?,
-        state: MachineState?,
-        addressKeyword: String?,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
         pageable: Pageable
     ): Page<MachineDto> {
         return machineQueryRepository
@@ -57,6 +58,7 @@ class MachineService(
 
     fun update(
         id: UUID,
+        name: String,
         address: Address,
         capacity: Int,
         cupAmounts: Int
@@ -64,7 +66,7 @@ class MachineService(
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
-        machine.update(address, capacity)
+        machine.update(name, address, capacity)
         machine.updateCupAmounts(cupAmounts)
     }
 }

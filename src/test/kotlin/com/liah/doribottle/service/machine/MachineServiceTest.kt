@@ -27,6 +27,11 @@ class MachineServiceTest {
     @Autowired
     private lateinit var machineService: MachineService
 
+    companion object {
+        const val NO = "0000000"
+        const val NAME = "XX대학교 정문"
+    }
+
     private fun clear() {
         entityManager.flush()
         entityManager.clear()
@@ -36,16 +41,16 @@ class MachineServiceTest {
     @Test
     fun register() {
         //given
-        val no = "0000000"
         val address = Address("12345", "삼성로", null)
 
         //when
-        val id = machineService.register(no, VENDING, address, 100)
+        val id = machineService.register(NO, NAME, VENDING, address, 100)
         clear()
 
         //then
         val machine = machineRepository.findByIdOrNull(id)
-        assertThat(machine?.no).isEqualTo(no)
+        assertThat(machine?.no).isEqualTo(NO)
+        assertThat(machine?.name).isEqualTo(NAME)
         assertThat(machine?.type).isEqualTo(VENDING)
         assertThat(machine?.address).isEqualTo(address)
         assertThat(machine?.capacity).isEqualTo(100)
@@ -57,16 +62,16 @@ class MachineServiceTest {
     @Test
     fun get() {
         //given
-        val no = "0000000"
         val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(no, VENDING, address, 100))
+        val machine = machineRepository.save(Machine(NO, NAME, VENDING, address, 100))
         clear()
 
         //when
         val machineDto = machineService.get(machine.id)
 
         //then
-        assertThat(machineDto.no).isEqualTo(no)
+        assertThat(machineDto.no).isEqualTo(NO)
+        assertThat(machineDto.name).isEqualTo(NAME)
         assertThat(machineDto.type).isEqualTo(VENDING)
         assertThat(machineDto.address).isEqualTo(address)
         assertThat(machineDto.capacity).isEqualTo(100)
@@ -78,12 +83,12 @@ class MachineServiceTest {
     @Test
     fun getAll() {
         //given
-        machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", VENDING, Address("00006", "도산대로", null), 100))
+        machineRepository.save(Machine("0000001", NAME, VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", NAME, VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", NAME, VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", NAME, VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", NAME, COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", NAME, VENDING, Address("00006", "도산대로", null), 100))
         clear()
 
         //when
@@ -99,12 +104,12 @@ class MachineServiceTest {
     @Test
     fun getAllUseFilter() {
         //given
-        machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", VENDING, Address("00006", "도산대로", null), 100))
+        machineRepository.save(Machine("0000001", NAME, VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", NAME, VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", NAME, VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", NAME, VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", NAME, COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", NAME, VENDING, Address("00006", "도산대로", null), 100))
         clear()
 
         //when
@@ -128,12 +133,12 @@ class MachineServiceTest {
     @Test
     fun getAllUsePaging() {
         //given
-        machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", VENDING, Address("00006", "도산대로", null), 100))
+        machineRepository.save(Machine("0000001", NAME, VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", NAME, VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", NAME, VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", NAME, VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", NAME, COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", NAME, VENDING, Address("00006", "도산대로", null), 100))
         clear()
 
         //when
@@ -153,19 +158,19 @@ class MachineServiceTest {
     @Test
     fun update() {
         //given
-        val no = "0000000"
         val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(no, VENDING, address, 100))
+        val machine = machineRepository.save(Machine(NO, NAME, VENDING, address, 100))
         clear()
 
         //when
         val newAddress = Address("00000", "마장로", null)
-        machineService.update(machine.id, newAddress, 200, 10)
+        machineService.update(machine.id, "new name", newAddress, 200, 10)
         clear()
 
         //then
         val findMachine = machineRepository.findByIdOrNull(machine.id)
-        assertThat(findMachine?.no).isEqualTo(no)
+        assertThat(findMachine?.no).isEqualTo(NO)
+        assertThat(findMachine?.name).isEqualTo("new name")
         assertThat(findMachine?.type).isEqualTo(VENDING)
         assertThat(findMachine?.address?.zipCode).isEqualTo("00000")
         assertThat(findMachine?.address?.address1).isEqualTo("마장로")

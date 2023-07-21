@@ -8,6 +8,7 @@ import java.util.*
 data class MachineSearchResponse(
     val id: UUID,
     val no: String,
+    val name: String,
     val type: MachineType,
     val address: Address,
     val capacity: Int,

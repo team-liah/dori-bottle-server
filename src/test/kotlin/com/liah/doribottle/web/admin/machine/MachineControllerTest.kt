@@ -65,7 +65,7 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = MachineRegisterRequest("0000001", VENDING, Address("12345", "삼성로"), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, Address("12345", "삼성로"), 100)
 
         mockMvc.perform(
             post(endPoint)
@@ -80,7 +80,7 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
     @Test
     fun registerException() {
-        val body = MachineRegisterRequest("0000001", VENDING, Address("12345", "삼성로"), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, Address("12345", "삼성로"), 100)
 
         mockMvc.perform(
             post(endPoint)
@@ -96,12 +96,12 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAll() {
-        machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", VENDING, Address("00006", "도산대로", null), 100))
+        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), 100))
 
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -124,8 +124,8 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
-        val machine = machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest(Address("12345", "삼성로"), 100, 50)
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineUpdateRequest("name", Address("12345", "삼성로"), 100, 50)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -140,8 +140,8 @@ class MachineControllerTest {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun updateException() {
-        val machine = machineRepository.save(Machine("0000001", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest(Address("12345", "삼성로"), 100, 110)
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineUpdateRequest("name", Address("12345", "삼성로"), 100, 110)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")

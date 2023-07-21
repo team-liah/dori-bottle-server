@@ -23,8 +23,7 @@ class MachineController(
     fun register(
         @Valid @RequestBody request: MachineRegisterRequest
     ) {
-        machineService
-            .register(request.no!!, request.type!!, request.address!!, request.capacity!!)
+        machineService.register(request.no!!, request.name!!, request.type!!, request.address!!, request.capacity!!)
     }
 
     @GetMapping
@@ -32,11 +31,14 @@ class MachineController(
         @ParameterObject request: MachineSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<MachineSearchResponse> {
-        return CustomPage.of(
-            machineService
-                .getAll(request.type, request.state, request.addressKeyword, pageable)
-                .map { it.toSearchResponse() }
-        )
+        val result = machineService.getAll(
+                type = request.type,
+                state = request.state,
+                addressKeyword = request.addressKeyword,
+                pageable = pageable
+            ).map { it.toSearchResponse() }
+
+        return CustomPage.of(result)
     }
 
     @PutMapping("/{id}")
@@ -44,7 +46,6 @@ class MachineController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MachineUpdateRequest
     ) {
-        machineService
-            .update(id, request.address!!, request.capacity!!, request.cupAmounts!!)
+        machineService.update(id, request.name!!, request.address!!, request.capacity!!, request.cupAmounts!!)
     }
 }
