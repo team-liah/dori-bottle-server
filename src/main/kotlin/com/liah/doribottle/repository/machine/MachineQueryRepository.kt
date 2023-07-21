@@ -15,10 +15,10 @@ class MachineQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
-        name: String?,
-        type: MachineType?,
-        state: MachineState?,
-        addressKeyword: String?,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
         pageable: Pageable
     ): Page<Machine> {
         return queryFactory
