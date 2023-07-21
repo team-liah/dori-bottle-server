@@ -29,7 +29,7 @@ class AdminAccountService(
         name: String,
         role: Role
     ): UUID {
-        checkDuplicatedLoginId(loginId)
+        verifyDuplicatedLoginId(loginId)
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         val admin = adminRepository
@@ -38,7 +38,7 @@ class AdminAccountService(
         return admin.id
     }
 
-    private fun checkDuplicatedLoginId(loginId: String) {
+    private fun verifyDuplicatedLoginId(loginId: String) {
         val admin = adminRepository.findByLoginId(loginId)
         if (admin != null)
             throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
@@ -51,13 +51,13 @@ class AdminAccountService(
     ): AuthDto {
         val admin = adminRepository.findByLoginId(loginId)
             ?: throw UnauthorizedException()
-        checkLoginPassword(admin, loginPassword)
+        verifyLoginPassword(admin, loginPassword)
 
         val accessToken = tokenProvider.createToken(admin.id, admin.loginId, admin.role)
         return AuthDto(accessToken, null)
     }
 
-    private fun checkLoginPassword(
+    private fun verifyLoginPassword(
         admin: Admin,
         loginPassword: String
     ) {
