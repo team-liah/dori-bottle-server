@@ -55,8 +55,8 @@ class AccountService(
         val user = userRepository.findByLoginId(loginId)
             ?: throw UnauthorizedException()
 
-        checkLoginPassword(user, loginPassword)
-        checkAccount(user)
+        verifyLoginPassword(user, loginPassword)
+        verifyAccount(user)
 
         user.authSuccess()
 
@@ -73,7 +73,7 @@ class AccountService(
             .findByTokenAndExpiredDateIsAfter(refreshToken, Instant.now())
             ?: throw UnauthorizedException()
 
-        checkAccount(validRefreshToken.user)
+        verifyAccount(validRefreshToken.user)
 
         validRefreshToken.refresh(millis)
 
@@ -116,7 +116,7 @@ class AccountService(
         return user.id
     }
 
-    private fun checkLoginPassword(
+    private fun verifyLoginPassword(
         user: User,
         loginPassword: String
     ) {
@@ -127,7 +127,7 @@ class AccountService(
             throw BadCredentialsException("Invalid login password.")
     }
 
-    private fun checkAccount(user: User) {
+    private fun verifyAccount(user: User) {
         if (!user.active)
             throw DisabledException("Account is disabled.")
         if (user.blocked)
