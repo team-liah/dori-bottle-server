@@ -4,8 +4,11 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.cup.CupStatus
+import com.liah.doribottle.repository.cup.CupQueryRepository
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.service.cup.dto.CupDto
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -15,14 +18,9 @@ import java.util.*
 @Service
 @Transactional
 class CupService(
-    private val cupRepository: CupRepository
+    private val cupRepository: CupRepository,
+    private val cupQueryRepository: CupQueryRepository
 ) {
-    /**
-     * Register cup by rfid
-     *
-     * @param rfid cup's rfid
-     * @return result cup's id
-     */
     fun register(
         rfid: String
     ): UUID {
@@ -39,13 +37,6 @@ class CupService(
             throw BusinessException(ErrorCode.CUP_ALREADY_REGISTERED)
     }
 
-    /**
-     * Get cup by rfid
-     *
-     * @param rfid cup's rfid
-     * @return cup dto
-     * @throws NotFoundException if no value is present
-     */
     @Transactional(readOnly = true)
     fun getByRfid(
         rfid: String
@@ -56,13 +47,17 @@ class CupService(
         return cup.toDto()
     }
 
-    /**
-     * Delete cup by id
-     *
-     * @param id cup's id
-     * @throws NotFoundException if no value is present
-     * @throws IllegalArgumentException if cup state is on loan
-     */
+    @Transactional(readOnly = true)
+    fun getAll(
+        status: CupStatus? = null,
+        pageable: Pageable
+    ): Page<CupDto> {
+        return cupQueryRepository.getAll(
+            status = status,
+            pageable = pageable
+        ).map { it.toDto() }
+    }
+
     fun remove(
         id: UUID
     ) {
