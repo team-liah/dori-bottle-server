@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.v1.account
 
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
@@ -26,8 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -49,6 +50,7 @@ class AccountControllerTest {
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
+    @Autowired private lateinit var tokenProvider: TokenProvider
 
     private lateinit var user: User
     private lateinit var guest: User
@@ -158,6 +160,22 @@ class AccountControllerTest {
         )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
+    }
+
+    @DisplayName("Dori User Pre Auth Token")
+    @Test
+    fun getPreAuthToken() {
+        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val cookie = Cookie(ACCESS_TOKEN, accessToken)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("accessToken", notNullValue()))
     }
 
     @DisplayName("로그아웃")

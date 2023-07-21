@@ -10,6 +10,7 @@ import com.liah.doribottle.web.v1.account.vm.AuthRequest
 import com.liah.doribottle.web.v1.account.vm.AuthResponse
 import com.liah.doribottle.web.v1.account.vm.RegisterRequest
 import com.liah.doribottle.web.v1.account.vm.SendSmsRequest
+import com.liah.doribottle.web.v1.me.vm.PreAuthResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
@@ -89,6 +90,9 @@ class AccountController(
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
             .body(result.toResponse())
     }
+
+    @GetMapping("/pre-auth")
+    fun preAuth() = PreAuthResponse(accountService.preAuth(currentUser()!!))
 
     @PostMapping("/register")
     fun register(

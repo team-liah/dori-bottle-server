@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BadRequestException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
+import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
@@ -85,6 +86,8 @@ class AccountService(
         val refreshedToken = validRefreshToken.token
         return AuthDto(accessToken, refreshedToken)
     }
+
+    fun preAuth(doriUser: DoriUser) = tokenProvider.createPreAuthToken(doriUser)
 
     fun register(
         loginId: String,

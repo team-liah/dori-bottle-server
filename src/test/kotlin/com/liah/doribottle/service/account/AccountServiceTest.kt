@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.account
 
+import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
@@ -18,6 +19,7 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.util.*
 
 @SpringBootTest
 @Transactional
@@ -111,6 +113,22 @@ class AccountServiceTest {
         assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
         assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
+    }
+
+    @DisplayName("인증 토큰")
+    @Test
+    fun preAuth() {
+        //given
+        val id = UUID.randomUUID()
+        val doriUser = DoriUser(id, loginId, Role.USER)
+
+        //when
+        val accessToken = accountService.preAuth(doriUser)
+
+        //then
+        assertThat(tokenProvider.validateToken(accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(accessToken)).isEqualTo(id)
+        assertThat(tokenProvider.getUserRoleFromToken(accessToken)).isEqualTo("ROLE_USER")
     }
 
     @DisplayName("회원가입")
