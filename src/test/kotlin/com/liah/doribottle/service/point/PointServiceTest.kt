@@ -10,37 +10,22 @@ import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
+import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
-@SpringBootTest
-@Transactional
-class PointServiceTest {
-    @PersistenceContext private lateinit var entityManager: EntityManager
+class PointServiceTest : BaseServiceTest() {
     @Autowired private lateinit var pointService: PointService
     @Autowired private lateinit var pointRepository: PointRepository
     @Autowired private lateinit var pointEventRepository: PointEventRepository
     @Autowired private lateinit var userRepository: UserRepository
 
-    companion object {
-        private const val USER_LOGIN_ID = "010-5638-3316"
-    }
-
     private lateinit var user: User
-
-    private fun clear() {
-        entityManager.flush()
-        entityManager.clear()
-    }
 
     @BeforeEach
     internal fun init() {
