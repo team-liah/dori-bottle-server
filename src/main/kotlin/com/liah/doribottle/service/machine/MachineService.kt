@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.machine
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.machine.Machine
@@ -29,6 +30,8 @@ class MachineService(
         address: AddressDto?,
         capacity: Int
     ): UUID {
+        verifyDuplicatedNo(no)
+
         val machine = machineRepository.save(
             Machine(
                 no = no,
@@ -40,6 +43,12 @@ class MachineService(
         )
 
         return machine.id
+    }
+
+    private fun verifyDuplicatedNo(no: String) {
+        val machine = machineRepository.findByNo(no)
+        if (machine != null)
+            throw BusinessException(ErrorCode.MACHINE_ALREADY_REGISTERED)
     }
 
     @Transactional(readOnly = true)

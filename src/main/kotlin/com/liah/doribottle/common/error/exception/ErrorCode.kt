@@ -19,6 +19,7 @@ enum class ErrorCode(
     CUP_NOT_FOUND(404, "B002", "Cup entity not found."),
     CUP_RETURN_NOT_ALLOWED(400, "B003", "Cup in non-returnable state."),
     CUP_LOAN_NOT_ALLOWED(400, "B004", "Cup in non-loanable state."),
+    CUP_ALREADY_REGISTERED(400, "B005", "Cup is already registered."),
 
     // User
     USER_NOT_FOUND(404, "C001", "User entity not found."),
@@ -28,6 +29,7 @@ enum class ErrorCode(
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
     LACK_OF_CUP(400, "D002", "Lack of cups in machine."),
     FULL_OF_CUP(400, "D003", "Full of cups in machine."),
+    MACHINE_ALREADY_REGISTERED(400, "D004", "Machine is already registered."),
 
     // Rental
     RENTAL_NOT_FOUND(404, "E001", "Rental entity not found."),
