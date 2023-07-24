@@ -10,6 +10,7 @@ import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.*
+import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.rental.Rental
@@ -20,6 +21,7 @@ import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.point.PointEventRepository
+import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -39,6 +41,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var rentalRepository: RentalRepository
     @Autowired private lateinit var pointRepository: PointRepository
     @Autowired private lateinit var pointEventRepository: PointEventRepository
+    @Autowired private lateinit var pointHistoryRepository: PointHistoryRepository
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var machineRepository: MachineRepository
@@ -67,6 +70,7 @@ class RentalServiceTest : BaseServiceTest() {
     fun rentIceCup() {
         //given
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 10))
         clear()
 
         //when
@@ -77,6 +81,7 @@ class RentalServiceTest : BaseServiceTest() {
         val findRental = rentalRepository.findByIdOrNull(id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
         val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
 
         assertThat(findRental?.user).isEqualTo(user)
@@ -90,12 +95,20 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
 
         assertThat(findPoint.remainAmounts).isEqualTo(8L)
+
         assertThat(findPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPointEvents)
             .extracting("amounts")
-            .containsExactly(10L, 2L)
+            .containsExactly(10L, -2L)
+
+        assertThat(findPointHistories)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(10L, -2L)
 
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
@@ -106,6 +119,8 @@ class RentalServiceTest : BaseServiceTest() {
         //given
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 1))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 1))
         clear()
 
         //when
@@ -119,6 +134,7 @@ class RentalServiceTest : BaseServiceTest() {
         val secondPoint = findPoints.last()
         val findFirstPointEvents = pointEventRepository.findAllByPointId(firstPoint.id)
         val findSecondPointEvents = pointEventRepository.findAllByPointId(secondPoint.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
         val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
 
         assertThat(findRental?.user).isEqualTo(user)
@@ -133,18 +149,26 @@ class RentalServiceTest : BaseServiceTest() {
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(0L)
+
         assertThat(findFirstPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findFirstPointEvents)
             .extracting("amounts")
-            .containsExactly(1L, 1L)
+            .containsExactly(1L, -1L)
         assertThat(findSecondPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findSecondPointEvents)
             .extracting("amounts")
-            .containsExactly(1L, 1L)
+            .containsExactly(1L, -1L)
+
+        assertThat(findPointHistories)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, SAVE_PAY, USE_CUP)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(1L, 1L, -2L)
 
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
@@ -156,6 +180,9 @@ class RentalServiceTest : BaseServiceTest() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
         pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 1))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 1))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 1))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_REGISTER_REWARD, 1))
         clear()
 
         //when
@@ -171,6 +198,7 @@ class RentalServiceTest : BaseServiceTest() {
         val findFirstPointEvents = pointEventRepository.findAllByPointId(firstPoint.id)
         val findSecondPointEvents = pointEventRepository.findAllByPointId(secondPoint.id)
         val findThirdPointEvents = pointEventRepository.findAllByPointId(thirdPoint.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
         val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
 
         assertThat(findRental?.user).isEqualTo(user)
@@ -186,12 +214,13 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(1L)
         assertThat(thirdPoint.remainAmounts).isEqualTo(0L)
+
         assertThat(findFirstPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findFirstPointEvents)
             .extracting("amounts")
-            .containsExactly(1L, 1L)
+            .containsExactly(1L, -1L)
         assertThat(findSecondPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY)
@@ -203,7 +232,14 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(SAVE_REGISTER_REWARD, USE_CUP)
         assertThat(findThirdPointEvents)
             .extracting("amounts")
-            .containsExactly(1L, 1L)
+            .containsExactly(1L, -1L)
+
+        assertThat(findPointHistories)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, SAVE_PAY, SAVE_REGISTER_REWARD, USE_CUP)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(1L, 1L, 1L, -2L)
 
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
@@ -213,6 +249,7 @@ class RentalServiceTest : BaseServiceTest() {
     fun rentCup() {
         //given
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        pointHistoryRepository.save(PointHistory(user.id, SAVE_PAY, 10))
         clear()
 
         //when
@@ -223,6 +260,7 @@ class RentalServiceTest : BaseServiceTest() {
         val findRental = rentalRepository.findByIdOrNull(id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
         val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
 
         assertThat(findRental?.user).isEqualTo(user)
@@ -236,12 +274,20 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
 
         assertThat(findPoint.remainAmounts).isEqualTo(9L)
+
         assertThat(findPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPointEvents)
             .extracting("amounts")
-            .containsExactly(10L, 1L)
+            .containsExactly(10L, -1L)
+
+        assertThat(findPointHistories)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(10L, -1L)
 
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
     }
