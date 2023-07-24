@@ -20,10 +20,10 @@ class PointHistory(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PointEventType = type
+    val eventType: PointEventType = type
 
     @Column(nullable = false)
     val amounts: Long = amounts
 
-    fun toDto() = PointHistoryDto(id, userId, type, amounts)
+    fun toDto() = PointHistoryDto(id, userId, eventType, amounts, createdDate, lastModifiedDate)
 }

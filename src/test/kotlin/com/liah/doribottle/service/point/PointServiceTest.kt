@@ -82,7 +82,7 @@ class PointServiceTest : BaseServiceTest() {
             .containsExactly(SAVE_REGISTER_REWARD_AMOUNTS)
 
         assertThat(findPointHistories)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_REGISTER_REWARD)
         assertThat(findPointHistories)
             .extracting("amounts")
@@ -111,7 +111,7 @@ class PointServiceTest : BaseServiceTest() {
         assertThat(result.totalElements).isEqualTo(6)
         assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_PAY, SAVE_PAY, USE_CUP)
         assertThat(result)
             .extracting("amounts")
