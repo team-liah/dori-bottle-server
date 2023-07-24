@@ -127,6 +127,13 @@ class User(
         }
     }
 
+    fun imposePenalty(
+        penaltyType: PenaltyType,
+        cause: String?
+    ) {
+        this.mutablePenalties.add(Penalty(this, penaltyType, cause))
+    }
+
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
     fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.map { it.toDto() })
 }
