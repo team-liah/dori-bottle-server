@@ -50,7 +50,7 @@ class PointControllerTest : BaseControllerTest() {
         pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
             get("$endPoint/remain-point")
@@ -68,7 +68,7 @@ class PointControllerTest : BaseControllerTest() {
     fun getAllHistories() {
         insertHistories()
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("page", "0")
         params.add("size", "3")

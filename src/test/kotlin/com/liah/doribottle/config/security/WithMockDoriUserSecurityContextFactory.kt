@@ -10,7 +10,7 @@ import java.util.*
 class WithMockDoriUserSecurityContextFactory : WithSecurityContextFactory<WithMockDoriUser> {
     override fun createSecurityContext(annotation: WithMockDoriUser): SecurityContext {
         val context = SecurityContextHolder.createEmptyContext()
-        val principal = DoriUser(UUID.randomUUID(), annotation.loginId, annotation.role)
+        val principal = DoriUser(UUID.randomUUID(), annotation.loginId, "MockDoriUser", annotation.role)
 
         val authenticationToken = UsernamePasswordAuthenticationToken(
             principal,

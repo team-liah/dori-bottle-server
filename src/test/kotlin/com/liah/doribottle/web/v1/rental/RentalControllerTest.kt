@@ -77,7 +77,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun rent() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -95,7 +95,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun rentExceptionLackOfPoint() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -112,7 +112,7 @@ class RentalControllerTest : BaseControllerTest() {
     @DisplayName("얼읍컵 대여 - Unauthorized")
     @Test
     fun rentExceptionFromGuest() {
-        val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.role)
+        val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.name, guest.role)
         val body = RentRequest(vendingMachine.id, cup.rfid, true)
 
         mockMvc.perform(
@@ -131,7 +131,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun getAll() {
         insertRentals()
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("status", "PROCEEDING")
         params.add("page", "0")

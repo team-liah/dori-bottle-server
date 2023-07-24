@@ -137,7 +137,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("Dori User Pre Auth Token")
     @Test
     fun getPreAuthToken() {
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("$endPoint/pre-auth")

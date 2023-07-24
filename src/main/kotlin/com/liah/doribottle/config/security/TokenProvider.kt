@@ -1,6 +1,7 @@
 package com.liah.doribottle.config.security
 
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.extension.findBy
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -20,26 +21,41 @@ class TokenProvider(
     fun createPreAuthToken(doriUser: DoriUser): String {
         val now = Date()
         val expiredDate = Date(now.time + preAuthExpiredMs)
-        return createToken(doriUser.id, doriUser.loginId, doriUser.role, now, expiredDate)
+        return createToken(doriUser.id, doriUser.loginId, doriUser.name, doriUser.role, now, expiredDate)
     }
 
-    fun createToken(id: UUID, loginId: String, role: Role): String {
+    fun createToken(id: UUID, loginId: String, name: String, role: Role): String {
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
-        return createToken(id, loginId, role, now, expiredDate)
+        return createToken(id, loginId, name, role, now, expiredDate)
     }
 
-    private fun createToken(id: UUID, loginId: String, role: Role, issueDate: Date, expiredDate: Date): String {
+    private fun createToken(id: UUID, loginId: String, name: String, role: Role, issueDate: Date, expiredDate: Date): String {
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
                 "loginId" to loginId,
+                "name" to name,
                 "role" to role.key
             ))
             .setIssuedAt(issueDate)
             .setExpiration(expiredDate)
             .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
             .compact()
+    }
+
+    fun getDoriUserFromToken(token: String): DoriUser {
+        val body = Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+            .build()
+            .parseClaimsJws(token)
+            .body
+
+        val id = UUID.fromString(body.subject)
+        val loginId = getValueFromBody(body, "loginId")
+        val name = getValueFromBody(body, "name")
+        val role = (Role::key findBy getValueFromBody(body, "role"))!!
+        return DoriUser(id, loginId, name, role)
     }
 
     fun getUserIdFromToken(token: String): UUID {
@@ -54,22 +70,26 @@ class TokenProvider(
     }
 
     fun getUserLoginIdFromToken(token: String): String {
-        return Jwts.parserBuilder()
+        val body = Jwts.parserBuilder()
             .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
             .build()
             .parseClaimsJws(token)
             .body
-            .get("loginId", String::class.java)
+
+        return getValueFromBody(body, "loginId")
     }
 
     fun getUserRoleFromToken(token: String): String {
-        return Jwts.parserBuilder()
+        val body = Jwts.parserBuilder()
             .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
             .build()
             .parseClaimsJws(token)
             .body
-            .get("role", String::class.java)
+
+        return getValueFromBody(body, "role")
     }
+
+    private fun getValueFromBody(body: Claims, key: String) = body.get(key, String::class.java)
 
     fun validateToken(authToken: String): Boolean {
         try {
