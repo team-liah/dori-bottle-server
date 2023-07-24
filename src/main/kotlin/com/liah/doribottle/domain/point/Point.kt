@@ -35,7 +35,7 @@ class Point(
     var remainAmounts: Long = saveAmounts
         protected set
 
-    @OneToMany(mappedBy = "point", fetch = LAZY, cascade = [ALL])
+    @OneToMany(mappedBy = "point", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
     protected val mutableEvents: MutableList<PointEvent> = mutableListOf()
 
     init {

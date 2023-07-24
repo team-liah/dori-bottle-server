@@ -55,7 +55,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("프로필 조회")
     @Test
     fun getProfile() {
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("$endPoint/profile")

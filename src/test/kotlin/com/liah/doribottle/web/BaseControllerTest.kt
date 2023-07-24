@@ -48,9 +48,10 @@ class BaseControllerTest {
     protected fun createAccessTokenCookie(
         id: UUID,
         loginId: String,
+        name: String,
         role: Role
     ): Cookie {
-        val accessToken = tokenProvider.createToken(id, loginId, role)
+        val accessToken = tokenProvider.createToken(id, loginId, name, role)
 
         return Cookie(ACCESS_TOKEN, accessToken)
     }

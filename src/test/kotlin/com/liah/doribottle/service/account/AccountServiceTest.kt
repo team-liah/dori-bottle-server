@@ -109,7 +109,7 @@ class AccountServiceTest : BaseServiceTest() {
     fun preAuth() {
         //given
         val id = UUID.randomUUID()
-        val doriUser = DoriUser(id, loginId, Role.USER)
+        val doriUser = DoriUser(id, loginId, "Tester", Role.USER)
 
         //when
         val accessToken = accountService.preAuth(doriUser)
