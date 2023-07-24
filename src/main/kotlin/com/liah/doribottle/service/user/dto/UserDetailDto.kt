@@ -2,7 +2,7 @@ package com.liah.doribottle.service.user.dto
 
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.web.v1.me.vm.ProfileResponse
+import com.liah.doribottle.web.v1.me.vm.MeResponse
 import java.util.*
 
 data class UserDetailDto(
@@ -16,5 +16,5 @@ data class UserDetailDto(
     val role: Role,
     val penalties: List<PenaltyDto>
 ) {
-    fun toProfile() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties)
+    fun toMeResponse() = MeResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties)
 }

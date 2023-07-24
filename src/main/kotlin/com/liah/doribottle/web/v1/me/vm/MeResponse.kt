@@ -5,7 +5,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.user.dto.PenaltyDto
 import java.util.*
 
-data class ProfileResponse(
+data class MeResponse(
     val id: UUID,
     val loginId: String,
     val name: String,
