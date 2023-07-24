@@ -3,11 +3,14 @@ package com.liah.doribottle.service.rental
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.point.PointEventType.USE_CUP
+import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointQueryRepository
 import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.rental.RentalRepository
@@ -28,7 +31,8 @@ class RentalService(
     private val userRepository: UserRepository,
     private val cupRepository: CupRepository,
     private val machineRepository: MachineRepository,
-    private val pointQueryRepository: PointQueryRepository
+    private val pointQueryRepository: PointQueryRepository,
+    private val pointHistoryRepository: PointHistoryRepository
 ) {
     fun rent(
         userId: UUID,
@@ -54,7 +58,10 @@ class RentalService(
         val points = pointQueryRepository.getAllRemainByUserId(userId)
         points.forEach { point ->
             remain = point.use(remain)
-            if (remain == 0L) return
+            if (remain == 0L) {
+                pointHistoryRepository.save(PointHistory(userId, USE_CUP, -cost))
+                return
+            }
         }
         throw BusinessException(ErrorCode.LACK_OF_POINT)
     }
