@@ -104,7 +104,7 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(10L, -2L)
 
         assertThat(findPointHistories)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPointHistories)
             .extracting("amounts")
@@ -164,7 +164,7 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(1L, -1L)
 
         assertThat(findPointHistories)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_PAY, SAVE_PAY, USE_CUP)
         assertThat(findPointHistories)
             .extracting("amounts")
@@ -235,7 +235,7 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(1L, -1L)
 
         assertThat(findPointHistories)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_PAY, SAVE_PAY, SAVE_REGISTER_REWARD, USE_CUP)
         assertThat(findPointHistories)
             .extracting("amounts")
@@ -283,7 +283,7 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(10L, -1L)
 
         assertThat(findPointHistories)
-            .extracting("type")
+            .extracting("eventType")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPointHistories)
             .extracting("amounts")
