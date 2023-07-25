@@ -2,10 +2,14 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType
+import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -19,6 +23,7 @@ import java.util.*
 class UserServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userService: UserService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var groupRepository: GroupRepository
 
     @DisplayName("유저 조회")
     @Test
@@ -36,14 +41,17 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(result.phoneNumber).isEqualTo(USER_LOGIN_ID)
         assertThat(result.role).isEqualTo(Role.USER)
         assertThat(result.penalties).isEmpty()
+        assertThat(result.group).isNull()
     }
 
     @DisplayName("유저 조회 - TC2")
     @Test
     fun getTc2() {
         //given
+        val group = groupRepository.save(Group("리아", COMPANY))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
+        user.updateGroup(group)
         clear()
 
         //when
@@ -63,6 +71,7 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(result.penalties)
             .extracting("cause")
             .containsExactly("의도적인 컵 파손")
+        assertThat(result.group?.name).isEqualTo("리아")
     }
 
     @DisplayName("유저 조회 예외")
