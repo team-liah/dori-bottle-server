@@ -3,7 +3,6 @@ package com.liah.doribottle.service.user
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.user.Gender
-import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -15,8 +14,7 @@ import java.util.*
 @Transactional
 class UserService(
     private val userRepository: UserRepository,
-    private val userQueryRepository: UserQueryRepository,
-    private val groupRepository: GroupRepository
+    private val userQueryRepository: UserQueryRepository
 ) {
     @Transactional(readOnly = true)
     fun get(id: UUID) = userQueryRepository.get(id).toDetailDto()
@@ -31,19 +29,5 @@ class UserService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.update(name, birthDate, gender)
-    }
-
-    fun updateGroup(
-        id: UUID,
-        groupId: UUID?
-    ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val groupOrNull = groupId?.let {
-            groupRepository.findByIdOrNull(groupId)
-                ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
-        }
-
-        user.updateGroup(groupOrNull)
     }
 }

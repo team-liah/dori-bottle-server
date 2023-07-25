@@ -1,5 +1,7 @@
 package com.liah.doribottle.service.group
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.group.GroupType.UNIVERSITY
@@ -11,6 +13,7 @@ import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -113,6 +116,50 @@ class GroupServiceTest : BaseServiceTest() {
         assertThat(findGroup).isNull()
         assertThat(findUser1?.group).isNull()
         assertThat(findUser2?.group).isNull()
+    }
+
+    @DisplayName("유저 추가")
+    @Test
+    fun addUser() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val group = groupRepository.save(Group("리아", COMPANY))
+        clear()
+
+        groupService.addUser(group.id, user.id)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        assertThat(findUser?.group).isEqualTo(group)
+    }
+
+    @DisplayName("유저 제거")
+    @Test
+    fun removeUser() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val group = groupRepository.save(Group("리아", COMPANY))
+        user.updateGroup(group)
+        clear()
+
+        groupService.removeUser(group.id, user.id)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        assertThat(findUser?.group).isNull()
+    }
+
+    @DisplayName("유저 제거 예외")
+    @Test
+    fun removeUserException() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val group1 = groupRepository.save(Group("리아", COMPANY))
+        val group2 = groupRepository.save(Group("삼성", COMPANY))
+        user.updateGroup(group1)
+        clear()
+
+        val exception = assertThrows<BusinessException> {
+            groupService.removeUser(group2.id, user.id)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.GROUP_NOT_MEMBER)
     }
 
     private fun insertGroups() {

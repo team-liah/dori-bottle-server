@@ -36,5 +36,6 @@ enum class ErrorCode(
     LACK_OF_POINT(400, "E002", "Lack of points to rent cup."),
 
     // Group
-    GROUP_NOT_FOUND(404, "F001", "Group entity not found.")
+    GROUP_NOT_FOUND(404, "F001", "Group entity not found."),
+    GROUP_NOT_MEMBER(400, "F002", "User entity not a member of Group.")
 }
