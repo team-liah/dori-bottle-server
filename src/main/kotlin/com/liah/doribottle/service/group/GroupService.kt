@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.group
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
@@ -61,6 +62,31 @@ class GroupService(
             ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
 
         group.update(name, type)
+    }
+
+    fun addUser(
+        id: UUID,
+        userId: UUID
+    ) {
+        val group = groupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.updateGroup(group)
+    }
+
+    fun removeUser(
+        id: UUID,
+        userId: UUID
+    ) {
+        val group = groupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        if (user.group?.id != group.id) throw BusinessException(ErrorCode.GROUP_NOT_MEMBER)
+
+        user.updateGroup(null)
     }
 
     fun delete(id: UUID) {
