@@ -1,6 +1,7 @@
 package com.liah.doribottle.service.group
 
 import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.group.GroupType.UNIVERSITY
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.service.BaseServiceTest
@@ -68,7 +69,24 @@ class GroupServiceTest : BaseServiceTest() {
             .containsExactly(UNIVERSITY, UNIVERSITY, UNIVERSITY)
     }
 
-    fun insertGroups() {
+    @DisplayName("기관 수정")
+    @Test
+    fun update() {
+        //given
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY))
+        clear()
+
+        //when
+        groupService.update(group.id, "리아", COMPANY)
+        clear()
+
+        //then
+        val findGroup = groupRepository.findByIdOrNull(group.id)
+        assertThat(findGroup?.name).isEqualTo("리아")
+        assertThat(findGroup?.type).isEqualTo(COMPANY)
+    }
+
+    private fun insertGroups() {
         groupRepository.save(Group("대학1", UNIVERSITY))
         groupRepository.save(Group("대학2", UNIVERSITY))
         groupRepository.save(Group("대학3", UNIVERSITY))
