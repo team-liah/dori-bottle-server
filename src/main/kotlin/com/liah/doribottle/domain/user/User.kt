@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
@@ -80,6 +81,11 @@ class User(
     var agreedTermsOfMarketingDate: Instant? = null
         protected set
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn
+    var group: Group? = null
+        protected set
+
     @OneToMany(mappedBy = "user", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
     protected val mutablePenalties: MutableList<Penalty> = mutableListOf()
     val penalties: List<Penalty> get() = mutablePenalties
@@ -132,6 +138,12 @@ class User(
         cause: String?
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, cause))
+    }
+
+    fun updateGroup(
+        group: Group?
+    ) {
+        this.group = group
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
