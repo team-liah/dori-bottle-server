@@ -40,6 +40,7 @@ class BaseControllerTest {
 
     companion object {
         const val ADMIN_LOGIN_ID = "adminTester"
+        const val MACHINE_LOGIN_ID = "machine"
         const val USER_LOGIN_ID = "010-5638-3316"
         const val GUEST_LOGIN_ID = "010-1234-5678"
         const val CUP_RFID = "A1:A1:A1:A1"

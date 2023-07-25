@@ -64,9 +64,14 @@ class Machine(
 
     fun updateCupAmounts(amounts: Int) {
         if (amounts > capacity) throw BusinessException(ErrorCode.FULL_OF_CUP)
-        if (amounts < 0) throw BusinessException(ErrorCode.LACK_OF_CUP)
+        try {
+            if (amounts < 0) throw BusinessException(ErrorCode.LACK_OF_CUP)
 
-        cupAmounts = amounts
+            cupAmounts = amounts
+        } catch (e: BusinessException) {
+            // TODO: Publish event
+            e.printStackTrace()
+        }
     }
 
     fun toDto() = MachineDto(id, no, name, type, address?.toDto(), capacity, cupAmounts, state)
