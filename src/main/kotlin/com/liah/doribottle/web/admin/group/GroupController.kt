@@ -47,4 +47,11 @@ class GroupController(
     ) {
         groupService.update(id, request.name!!, request.type!!)
     }
+
+    @DeleteMapping("/{id}")
+    fun delete(
+        @PathVariable id: UUID
+    ) {
+        groupService.delete(id)
+    }
 }

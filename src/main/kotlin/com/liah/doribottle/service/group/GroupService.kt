@@ -6,6 +6,7 @@ import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.repository.group.GroupQueryRepository
 import com.liah.doribottle.repository.group.GroupRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.group.dto.GroupDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -18,6 +19,7 @@ import java.util.*
 @Transactional
 class GroupService(
     private val groupRepository: GroupRepository,
+    private val userRepository: UserRepository,
     private val groupQueryRepository: GroupQueryRepository
 ) {
     fun register(
@@ -59,5 +61,15 @@ class GroupService(
             ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
 
         group.update(name, type)
+    }
+
+    fun delete(id: UUID) {
+        val group = groupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        val groupUsers = userRepository.findAllByGroupId(id)
+
+        groupUsers.forEach { it.updateGroup(null) }
+
+        groupRepository.delete(group)
     }
 }
