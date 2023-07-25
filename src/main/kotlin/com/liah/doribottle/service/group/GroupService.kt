@@ -64,6 +64,16 @@ class GroupService(
         group.update(name, type)
     }
 
+    fun delete(id: UUID) {
+        val group = groupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        val groupUsers = userRepository.findAllByGroupId(id)
+
+        groupUsers.forEach { it.updateGroup(null) }
+
+        groupRepository.delete(group)
+    }
+
     fun addUser(
         id: UUID,
         userId: UUID
@@ -87,15 +97,5 @@ class GroupService(
         if (user.group?.id != group.id) throw BusinessException(ErrorCode.GROUP_NOT_MEMBER)
 
         user.updateGroup(null)
-    }
-
-    fun delete(id: UUID) {
-        val group = groupRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
-        val groupUsers = userRepository.findAllByGroupId(id)
-
-        groupUsers.forEach { it.updateGroup(null) }
-
-        groupRepository.delete(group)
     }
 }
