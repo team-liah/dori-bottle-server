@@ -146,6 +146,6 @@ class User(
         this.group = group
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, group?.toDto())
     fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.map { it.toDto() }, group?.toDto())
 }
