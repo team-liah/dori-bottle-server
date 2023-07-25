@@ -1,4 +1,4 @@
-package com.liah.doribottle.web.v1.rental.vm
+package com.liah.doribottle.web.admin.rental.vm
 
 import jakarta.validation.constraints.NotNull
 import java.util.*

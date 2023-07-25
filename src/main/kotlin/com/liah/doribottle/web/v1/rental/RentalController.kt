@@ -6,7 +6,6 @@ import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
-import com.liah.doribottle.web.v1.rental.vm.ReturnRequest
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -29,16 +28,6 @@ class RentalController(
             cupRfid = request.cupRfid!!,
             fromMachineId = request.machineId!!,
             withIce = request.withIce!!
-        )
-    }
-
-    @PostMapping("/return")
-    fun `return`(
-        @Valid @RequestBody request: ReturnRequest
-    ) {
-        rentalService.`return`(
-            toMachineId = request.machineId!!,
-            cupRfid = request.cupRfid!!
         )
     }
 
