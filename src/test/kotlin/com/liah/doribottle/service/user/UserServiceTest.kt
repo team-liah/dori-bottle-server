@@ -2,10 +2,13 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -19,6 +22,7 @@ import java.util.*
 class UserServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userService: UserService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var groupRepository: GroupRepository
 
     @DisplayName("유저 조회")
     @Test
@@ -88,5 +92,34 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.name).isEqualTo("Updated Name")
         assertThat(findUser?.birthDate).isEqualTo("19970224")
         assertThat(findUser?.gender).isEqualTo(MALE)
+    }
+
+    @DisplayName("유저 조직 가입")
+    @Test
+    fun join() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val group = groupRepository.save(Group("리아", COMPANY))
+        clear()
+
+        userService.updateGroup(user.id, group.id)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        assertThat(findUser?.group).isEqualTo(group)
+    }
+
+    @DisplayName("유저 조직 탈퇴")
+    @Test
+    fun withdrawal() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val group = groupRepository.save(Group("리아", COMPANY))
+        user.updateGroup(group)
+        clear()
+
+        userService.updateGroup(user.id, null)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        assertThat(findUser?.group).isNull()
     }
 }
