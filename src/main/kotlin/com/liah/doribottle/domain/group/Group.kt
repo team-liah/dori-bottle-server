@@ -7,7 +7,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "group")
+@Table(name = "`group`")
 class Group(
     name: String,
     type: GroupType
