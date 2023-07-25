@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 
-class MachineControllerTest : BaseControllerTest() {
+class MachineResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/machine"
 
     @Autowired

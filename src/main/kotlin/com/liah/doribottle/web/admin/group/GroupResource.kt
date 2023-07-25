@@ -16,7 +16,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/admin/api/group")
-class GroupController(
+class GroupResource(
     private val groupService: GroupService
 ) {
     @PostMapping

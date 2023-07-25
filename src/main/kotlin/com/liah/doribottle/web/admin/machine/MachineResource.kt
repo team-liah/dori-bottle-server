@@ -16,7 +16,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/admin/api/machine")
-class MachineController(
+class MachineResource(
     private val machineService: MachineService
 ) {
     @PostMapping
