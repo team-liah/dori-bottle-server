@@ -16,6 +16,7 @@ class UserQueryRepository(
         return queryFactory
             .selectFrom(user)
             .leftJoin(user.mutablePenalties).fetchJoin()
+            .leftJoin(user.group).fetchJoin()
             .where(user.id.eq(id))
             .fetchOne() ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
     }
