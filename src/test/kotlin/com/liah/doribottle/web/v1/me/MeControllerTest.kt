@@ -1,9 +1,12 @@
 package com.liah.doribottle.web.v1.me
 
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
@@ -25,14 +28,17 @@ class MeControllerTest : BaseControllerTest() {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var groupRepository: GroupRepository
 
     private lateinit var user: User
     private lateinit var userRefreshToken: RefreshToken
 
     @BeforeEach
     internal fun init() {
+        val group = groupRepository.save(Group("리아", GroupType.COMPANY))
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         userEntity.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
+        userEntity.updateGroup(group)
         user = userRepository.save(userEntity)
         userRefreshToken = refreshTokenRepository.save(RefreshToken(user))
     }
@@ -65,6 +71,7 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
             .andExpect(jsonPath("penalties[*].type", `is`(expectPenaltyTypes)))
+            .andExpect(jsonPath("group.name", `is`(user.group?.name)))
     }
 
     @DisplayName("프로필 업데이트")
