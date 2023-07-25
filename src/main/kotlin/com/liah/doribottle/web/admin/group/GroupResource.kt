@@ -54,4 +54,20 @@ class GroupResource(
     ) {
         groupService.delete(id)
     }
+
+    @PostMapping("/{id}/user/{userId}")
+    fun addUser(
+        @PathVariable id: UUID,
+        @PathVariable userId: UUID
+    ) {
+        groupService.addUser(id, userId)
+    }
+
+    @DeleteMapping("/{id}/user/{userId}")
+    fun removeUser(
+        @PathVariable id: UUID,
+        @PathVariable userId: UUID
+    ) {
+        groupService.removeUser(id, userId)
+    }
 }
