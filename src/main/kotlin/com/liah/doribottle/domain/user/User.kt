@@ -1,9 +1,13 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.extension.randomString
+import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
+import jakarta.persistence.CascadeType.ALL
+import jakarta.persistence.FetchType.LAZY
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -77,6 +81,15 @@ class User(
     var agreedTermsOfMarketingDate: Instant? = null
         protected set
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn
+    var group: Group? = null
+        protected set
+
+    @OneToMany(mappedBy = "user", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
+    protected val mutablePenalties: MutableList<Penalty> = mutableListOf()
+    val penalties: List<Penalty> get() = mutablePenalties
+
     fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
@@ -120,5 +133,19 @@ class User(
         }
     }
 
+    fun imposePenalty(
+        penaltyType: PenaltyType,
+        cause: String?
+    ) {
+        this.mutablePenalties.add(Penalty(this, penaltyType, cause))
+    }
+
+    fun updateGroup(
+        group: Group?
+    ) {
+        this.group = group
+    }
+
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role)
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.map { it.toDto() }, group?.toDto())
 }

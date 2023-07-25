@@ -19,7 +19,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/admin/api/cup")
-class CupController(
+class CupResource(
     private val cupService: CupService
 ) {
     @PostMapping

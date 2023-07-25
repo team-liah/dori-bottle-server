@@ -53,7 +53,7 @@ class AdminAccountService(
             ?: throw UnauthorizedException()
         verifyLoginPassword(admin, loginPassword)
 
-        val accessToken = tokenProvider.createToken(admin.id, admin.loginId, admin.role)
+        val accessToken = tokenProvider.createToken(admin.id, admin.loginId, admin.name, admin.role)
         return AuthDto(accessToken, null)
     }
 

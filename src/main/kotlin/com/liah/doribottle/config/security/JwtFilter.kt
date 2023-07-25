@@ -1,8 +1,6 @@
 package com.liah.doribottle.config.security
 
 import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.extension.findBy
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -27,14 +25,12 @@ class JwtFilter(
         val token = resolveToken(request)
 
         if (!token.isNullOrEmpty() && tokenProvider.validateToken(token)) {
-            val id = tokenProvider.getUserIdFromToken(token)
-            val loginId = tokenProvider.getUserLoginIdFromToken(token)
-            val role = (Role::key findBy tokenProvider.getUserRoleFromToken(token))!!
+            val doriUser = tokenProvider.getDoriUserFromToken(token)
 
             val authenticationToken = UsernamePasswordAuthenticationToken(
-                DoriUser(id, loginId, role),
+                doriUser,
                 null,
-                listOf(SimpleGrantedAuthority(role.key))
+                listOf(SimpleGrantedAuthority(doriUser.role.key))
             )
 
             authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)

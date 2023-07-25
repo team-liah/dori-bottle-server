@@ -61,7 +61,12 @@ class AccountService(
 
         user.authSuccess()
 
-        val accessToken = tokenProvider.createToken(user.id, user.loginId, user.role)
+        val accessToken = tokenProvider.createToken(
+            user.id,
+            user.loginId,
+            user.name,
+            user.role
+        )
         val refreshToken = createRefreshToken(user)
         return AuthDto(accessToken, refreshToken)
     }
@@ -81,6 +86,7 @@ class AccountService(
         val accessToken = tokenProvider.createToken(
             validRefreshToken.user.id,
             validRefreshToken.user.loginId,
+            validRefreshToken.user.name,
             validRefreshToken.user.role
         )
         val refreshedToken = validRefreshToken.token

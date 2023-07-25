@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 
-class CupControllerTest : BaseControllerTest() {
+class CupResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/cup"
 
     @Autowired
