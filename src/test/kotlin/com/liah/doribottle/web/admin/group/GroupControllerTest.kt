@@ -86,6 +86,20 @@ class GroupControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
     }
 
+    @DisplayName("기관 삭제")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun delete() {
+        val group = groupRepository.save(Group("대학1", UNIVERSITY))
+
+        mockMvc.perform(
+            delete("$endPoint/${group.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+    }
+
     private fun insertGroups() {
         groupRepository.save(Group("대학1", UNIVERSITY))
         groupRepository.save(Group("대학2", UNIVERSITY))

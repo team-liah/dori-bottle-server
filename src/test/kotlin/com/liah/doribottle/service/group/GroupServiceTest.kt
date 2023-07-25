@@ -3,7 +3,10 @@ package com.liah.doribottle.service.group
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.group.GroupType.UNIVERSITY
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.group.GroupRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -17,6 +20,8 @@ class GroupServiceTest : BaseServiceTest() {
     private lateinit var groupService: GroupService
     @Autowired
     private lateinit var groupRepository: GroupRepository
+    @Autowired
+    private lateinit var userRepository: UserRepository
 
     @DisplayName("기관 등록")
     @Test
@@ -84,6 +89,30 @@ class GroupServiceTest : BaseServiceTest() {
         val findGroup = groupRepository.findByIdOrNull(group.id)
         assertThat(findGroup?.name).isEqualTo("리아")
         assertThat(findGroup?.type).isEqualTo(COMPANY)
+    }
+
+    @DisplayName("기관 삭제")
+    @Test
+    fun delete() {
+        //given
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY))
+        val user1 = userRepository.save(User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER))
+        val user2 = userRepository.save(User("010-0000-0002", "Tester 2", "010-0000-0002", Role.USER))
+        user1.updateGroup(group)
+        user2.updateGroup(group)
+        clear()
+
+        //when
+        groupService.delete(group.id)
+        clear()
+
+        //then
+        val findGroup = groupRepository.findByIdOrNull(group.id)
+        val findUser1 = userRepository.findByIdOrNull(user1.id)
+        val findUser2 = userRepository.findByIdOrNull(user2.id)
+        assertThat(findGroup).isNull()
+        assertThat(findUser1?.group).isNull()
+        assertThat(findUser2?.group).isNull()
     }
 
     private fun insertGroups() {
