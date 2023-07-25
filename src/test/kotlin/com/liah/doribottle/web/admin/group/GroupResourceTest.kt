@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 
-class GroupControllerTest : BaseControllerTest() {
+class GroupResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/group"
 
     @Autowired
