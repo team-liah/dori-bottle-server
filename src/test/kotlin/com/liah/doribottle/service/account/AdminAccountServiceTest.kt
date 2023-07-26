@@ -2,6 +2,7 @@ package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.repository.user.AdminRefreshTokenRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -16,10 +17,27 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AdminAccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var adminAccountService: AdminAccountService
     @Autowired private lateinit var adminRepository: AdminRepository
+    @Autowired private lateinit var adminRefreshTokenRepository: AdminRefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private val loginId = "liah"
+
+    @DisplayName("관리자 등록")
+    @Test
+    fun register() {
+        //given, when
+        val adminId = adminAccountService.register(loginId, "123456", "Tester", Role.ADMIN)
+        clear()
+
+        //then
+        val findUser = adminRepository.findByIdOrNull(adminId)
+
+        assertThat(findUser?.loginId).isEqualTo(loginId)
+        assertThat(passwordEncoder.matches("123456", findUser?.loginPassword)).isTrue
+        assertThat(findUser?.name).isEqualTo("Tester")
+        assertThat(findUser?.role).isEqualTo(Role.ADMIN)
+    }
 
     @DisplayName("인증")
     @Test
@@ -38,6 +56,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
         assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
+        assertThat(authDto.refreshToken).isNotNull
     }
 
     @DisplayName("인증 예외")
@@ -56,19 +75,24 @@ class AdminAccountServiceTest : BaseServiceTest() {
         assertThat(badCredentialsException.message).isEqualTo("Invalid login password.")
     }
 
-    @DisplayName("관리자 등록")
+    @DisplayName("재인증")
     @Test
-    fun register() {
-        //given, when
-        val adminId = adminAccountService.register(loginId, "123456", "Tester", Role.ADMIN)
+    fun refreshAuth() {
+        //given
+        val loginPassword = "123456"
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        val saveAdmin = adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
+        val saveRefreshToken = adminRefreshTokenRepository.save(AdminRefreshToken(saveAdmin))
+        clear()
+
+        //when
+        val authDto = adminAccountService.refreshAuth(saveRefreshToken.token, 1209600000)
         clear()
 
         //then
-        val findUser = adminRepository.findByIdOrNull(adminId)
-
-        assertThat(findUser?.loginId).isEqualTo(loginId)
-        assertThat(passwordEncoder.matches("123456", findUser?.loginPassword)).isTrue
-        assertThat(findUser?.name).isEqualTo("Tester")
-        assertThat(findUser?.role).isEqualTo(Role.ADMIN)
+        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
+        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
+        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
     }
 }

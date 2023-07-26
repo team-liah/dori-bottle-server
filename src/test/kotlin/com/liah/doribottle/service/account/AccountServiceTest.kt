@@ -27,6 +27,30 @@ class AccountServiceTest : BaseServiceTest() {
 
     private val loginId = "010-0000-0000"
 
+    @DisplayName("회원가입")
+    @Test
+    fun register() {
+        //given
+        val saveUser = userRepository.save(User(loginId, "사용자", loginId, Role.GUEST))
+        clear()
+
+        //when
+        accountService.register(saveUser.loginId, "Tester", "19970224", MALE, true, true, false)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(saveUser.id)
+
+        assertThat(findUser?.loginId).isEqualTo(loginId)
+        assertThat(findUser?.phoneNumber).isEqualTo(loginId)
+        assertThat(findUser?.role).isEqualTo(Role.USER)
+        assertThat(findUser?.birthDate).isEqualTo("19970224")
+        assertThat(findUser?.gender).isEqualTo(MALE)
+        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
+        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
+        assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
+    }
+
     @DisplayName("비밀번호 업데이트")
     @Test
     fun updatePassword() {
@@ -118,29 +142,5 @@ class AccountServiceTest : BaseServiceTest() {
         assertThat(tokenProvider.validateToken(accessToken)).isTrue
         assertThat(tokenProvider.getUserIdFromToken(accessToken)).isEqualTo(id)
         assertThat(tokenProvider.getUserRoleFromToken(accessToken)).isEqualTo("ROLE_USER")
-    }
-
-    @DisplayName("회원가입")
-    @Test
-    fun register() {
-        //given
-        val saveUser = userRepository.save(User(loginId, "사용자", loginId, Role.GUEST))
-        clear()
-
-        //when
-        accountService.register(saveUser.loginId, "Tester", "19970224", MALE, true, true, false)
-        clear()
-
-        //then
-        val findUser = userRepository.findByIdOrNull(saveUser.id)
-
-        assertThat(findUser?.loginId).isEqualTo(loginId)
-        assertThat(findUser?.phoneNumber).isEqualTo(loginId)
-        assertThat(findUser?.role).isEqualTo(Role.USER)
-        assertThat(findUser?.birthDate).isEqualTo("19970224")
-        assertThat(findUser?.gender).isEqualTo(MALE)
-        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
-        assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
-        assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
     }
 }
