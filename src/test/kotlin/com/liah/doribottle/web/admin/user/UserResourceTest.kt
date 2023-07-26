@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.user
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
+import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.group.GroupRepository
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -44,8 +45,28 @@ class UserResourceTest : BaseControllerTest() {
     @DisplayName("유저 조회")
     @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
     @Test
+    fun get() {
+        val userEntity = User("010-5638-3316", "Tester", "010-5638-3316", Role.USER)
+        userEntity.updateGroup(group)
+        userEntity.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
+        val user = userRepository.save(userEntity)
+
+        mockMvc.perform(
+            get("${endPoint}/${user.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("loginId", `is`("010-5638-3316")))
+            .andExpect(jsonPath("name", `is`("Tester")))
+            .andExpect(jsonPath("group.name", `is`("리아")))
+            .andExpect(jsonPath("penalties[*].type", `is`(listOf(DAMAGED_CUP.name))))
+    }
+
+    @DisplayName("유저 목록 조회")
+    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @Test
     fun getAll() {
-        // TODO: Lazy loading not working
         insertUsers()
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -55,7 +76,7 @@ class UserResourceTest : BaseControllerTest() {
 
         val expectLoginId = listOf("010-0000-0006", "010-0000-0005", "010-0000-0004")
         mockMvc.perform(
-            MockMvcRequestBuilders.get(endPoint)
+            get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -64,11 +85,10 @@ class UserResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("content[*].loginId", `is`(expectLoginId)))
     }
 
-    @DisplayName("유저 조회 TC2")
+    @DisplayName("유저 목록 조회 TC2")
     @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
     @Test
     fun getAllTc2() {
-        // TODO: Lazy loading not working
         insertUsers()
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -78,7 +98,7 @@ class UserResourceTest : BaseControllerTest() {
 
         val expectLoginId = listOf("010-0000-0001")
         mockMvc.perform(
-            MockMvcRequestBuilders.get(endPoint)
+            get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
