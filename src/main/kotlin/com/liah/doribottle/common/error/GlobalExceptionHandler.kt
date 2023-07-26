@@ -1,7 +1,11 @@
 package com.liah.doribottle.common.error
 
 import com.liah.doribottle.common.error.exception.*
+import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.extension.expireCookie
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -64,24 +68,45 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException::class)
-    protected fun handleBadCredentialsException(e: BadCredentialsException): ResponseEntity<ErrorResponse> {
+    protected fun handleBadCredentialsException(httpRequest: HttpServletRequest, e: BadCredentialsException): ResponseEntity<ErrorResponse> {
         log.error("BadCredentialsException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response)
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
+            .body(response)
     }
 
     @ExceptionHandler(DisabledException::class)
-    protected fun handleDisabledException(e: DisabledException): ResponseEntity<ErrorResponse> {
+    protected fun handleDisabledException(httpRequest: HttpServletRequest, e: DisabledException): ResponseEntity<ErrorResponse> {
         log.error("DisabledException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response)
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
+            .body(response)
     }
 
     @ExceptionHandler(LockedException::class)
-    protected fun handleLockedException(e: LockedException): ResponseEntity<ErrorResponse> {
+    protected fun handleLockedException(httpRequest: HttpServletRequest, e: LockedException): ResponseEntity<ErrorResponse> {
         log.error("LockedException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response)
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
+            .body(response)
     }
 
     /**
@@ -110,10 +135,17 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UnauthorizedException::class)
-    protected fun handleUnauthorizedException(e: UnauthorizedException): ResponseEntity<ErrorResponse> {
+    protected fun handleUnauthorizedException(httpRequest: HttpServletRequest, e: UnauthorizedException): ResponseEntity<ErrorResponse> {
         log.error("UnauthorizedException", e)
         val response = ErrorResponse.of(e.errorCode)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response)
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
+            .body(response)
     }
 
     @ExceptionHandler(ForbiddenException::class)

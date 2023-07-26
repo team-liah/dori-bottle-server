@@ -98,6 +98,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertJsonToString())
         )
             .andExpect(status().isUnauthorized)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -131,6 +132,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isUnauthorized)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -162,8 +164,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, ""))
-            .andExpect(cookie().value(REFRESH_TOKEN, ""))
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
     }
 
     @DisplayName("회원가입")
