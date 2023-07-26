@@ -6,7 +6,9 @@ import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.Admin
+import com.liah.doribottle.domain.user.AdminRefreshToken
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.repository.user.AdminRefreshTokenRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.account.dto.AdminDto
 import com.liah.doribottle.service.account.dto.AuthDto
@@ -14,12 +16,14 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
 @Transactional
 class AdminAccountService(
     private val adminRepository: AdminRepository,
+    private val adminRefreshTokenRepository: AdminRefreshTokenRepository,
     private val passwordEncoder: PasswordEncoder,
     private val tokenProvider: TokenProvider
 ) {
@@ -44,7 +48,6 @@ class AdminAccountService(
             throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
     }
 
-    @Transactional(readOnly = true)
     fun auth(
         loginId: String,
         loginPassword: String
@@ -53,8 +56,14 @@ class AdminAccountService(
             ?: throw UnauthorizedException()
         verifyLoginPassword(admin, loginPassword)
 
-        val accessToken = tokenProvider.createToken(admin.id, admin.loginId, admin.name, admin.role)
-        return AuthDto(accessToken, null)
+        val accessToken = tokenProvider.createToken(
+            admin.id,
+            admin.loginId,
+            admin.name,
+            admin.role
+        )
+        val refreshToken = createRefreshToken(admin)
+        return AuthDto(accessToken, refreshToken)
     }
 
     private fun verifyLoginPassword(
@@ -65,6 +74,35 @@ class AdminAccountService(
             throw BadCredentialsException("Invalid login password.")
     }
 
+    fun refreshAuth(
+        refreshToken: String?,
+        millis: Long
+    ): AuthDto {
+        val validRefreshToken = adminRefreshTokenRepository
+            .findByTokenAndExpiredDateIsAfter(refreshToken, Instant.now())
+            ?: throw UnauthorizedException()
+
+        validRefreshToken.refresh(millis)
+
+        val accessToken = tokenProvider.createToken(
+            validRefreshToken.admin.id,
+            validRefreshToken.admin.loginId,
+            validRefreshToken.admin.name,
+            validRefreshToken.admin.role
+        )
+        val refreshedToken = validRefreshToken.token
+        return AuthDto(accessToken, refreshedToken)
+    }
+
+    private fun createRefreshToken(
+        admin: Admin
+    ): String {
+        val refreshToken = adminRefreshTokenRepository.save(AdminRefreshToken(admin))
+
+        return refreshToken.token
+    }
+
+    // TODO: Migrate AdminService
     @Transactional(readOnly = true)
     fun get(
         loginId: String

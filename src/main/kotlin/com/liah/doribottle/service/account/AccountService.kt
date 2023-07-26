@@ -36,6 +36,36 @@ class AccountService(
     private val passwordEncoder: PasswordEncoder,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
+    fun register(
+        loginId: String,
+        name: String,
+        birthDate: String,
+        gender: Gender?,
+        agreedTermsOfService: Boolean,
+        agreedTermsOfPrivacy: Boolean,
+        agreedTermsOfMarketing: Boolean
+    ): UUID {
+        val user = userRepository.findByLoginId(loginId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        if (user.role == Role.USER)
+            throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
+
+        user.update(name, birthDate, gender)
+        user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
+        user.changeRole(Role.USER)
+
+        applicationEventPublisher.publishEvent(
+            PointSaveEvent(
+                user.id,
+                PointSaveType.REWARD,
+                PointEventType.SAVE_REGISTER_REWARD,
+                SAVE_REGISTER_REWARD_AMOUNTS
+            )
+        )
+
+        return user.id
+    }
+
     fun updatePassword(
         loginId: String,
         loginPassword: String
@@ -94,36 +124,6 @@ class AccountService(
     }
 
     fun preAuth(doriUser: DoriUser) = tokenProvider.createPreAuthToken(doriUser)
-
-    fun register(
-        loginId: String,
-        name: String,
-        birthDate: String,
-        gender: Gender?,
-        agreedTermsOfService: Boolean,
-        agreedTermsOfPrivacy: Boolean,
-        agreedTermsOfMarketing: Boolean
-    ): UUID {
-        val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        if (user.role == Role.USER)
-            throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
-
-        user.update(name, birthDate, gender)
-        user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
-        user.changeRole(Role.USER)
-
-        applicationEventPublisher.publishEvent(
-            PointSaveEvent(
-                user.id,
-                PointSaveType.REWARD,
-                PointEventType.SAVE_REGISTER_REWARD,
-                SAVE_REGISTER_REWARD_AMOUNTS
-            )
-        )
-
-        return user.id
-    }
 
     private fun verifyLoginPassword(
         user: User,
