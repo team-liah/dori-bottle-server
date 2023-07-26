@@ -54,7 +54,6 @@ class MeControllerTest : BaseControllerTest() {
     fun get() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        val expectPenaltyTypes = listOf(DAMAGED_CUP.name)
         mockMvc.perform(
             get(endPoint)
                 .cookie(cookie)
@@ -70,7 +69,7 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
-            .andExpect(jsonPath("penalties[*].type", `is`(expectPenaltyTypes)))
+            .andExpect(jsonPath("penaltyCount", `is`(1)))
             .andExpect(jsonPath("group.name", `is`(user.group?.name)))
     }
 

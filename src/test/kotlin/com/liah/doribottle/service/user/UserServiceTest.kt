@@ -3,7 +3,6 @@ package com.liah.doribottle.service.user
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
-import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.util.*
 
@@ -97,5 +97,42 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.name).isEqualTo("Updated Name")
         assertThat(findUser?.birthDate).isEqualTo("19970224")
         assertThat(findUser?.gender).isEqualTo(MALE)
+    }
+
+    @DisplayName("유저 목록 조회")
+    @Test
+    fun getAll() {
+        //given
+        insertUsers()
+        clear()
+
+        //when
+        val result = userService.getAll(
+            name = "Tester",
+            pageable = Pageable.ofSize(3)
+        )
+
+        //then
+        assertThat(result)
+            .extracting("loginId")
+            .containsExactly("010-0000-0001", "010-0000-0002", "010-0000-0003")
+        assertThat(result)
+            .extracting("name")
+            .containsExactly("Tester 1", "Tester 2", "Tester 3")
+        assertThat(result)
+            .extracting("group.name")
+            .containsExactly("리아", null, null)
+    }
+
+    private fun insertUsers() {
+        val group = groupRepository.save(Group("리아", COMPANY))
+        val userEntity1 = User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER)
+        userEntity1.updateGroup(group)
+        userRepository.save(userEntity1)
+        userRepository.save(User("010-0000-0002", "Tester 2", "010-0000-0002", Role.USER))
+        userRepository.save(User("010-0000-0003", "Tester 3", "010-0000-0003", Role.USER))
+        userRepository.save(User("010-0000-0004", "Tester 4", "010-0000-0004", Role.USER))
+        userRepository.save(User("010-0000-0005", "Tester 5", "010-0000-0005", Role.USER))
+        userRepository.save(User("010-0000-0006", "Tester 6", "010-0000-0006", Role.USER))
     }
 }
