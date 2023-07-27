@@ -14,4 +14,5 @@ data class PaymentCategoryDto(
     val deleted: Boolean
 ) {
     fun toUserResponse() = PaymentCategorySearchResponse(id, amounts, price, discountRate, price-(price*discountRate/100), discountExpiredDate, expiredDate)
+    fun toAdminResponse() = com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse(id, amounts, price, discountRate, price-(price*discountRate/100), discountExpiredDate, expiredDate, deleted)
 }
