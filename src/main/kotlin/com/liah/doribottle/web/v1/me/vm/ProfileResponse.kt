@@ -5,7 +5,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
 import java.util.*
 
-data class MeResponse(
+data class ProfileResponse(
     val id: UUID,
     val loginId: String,
     val name: String,
