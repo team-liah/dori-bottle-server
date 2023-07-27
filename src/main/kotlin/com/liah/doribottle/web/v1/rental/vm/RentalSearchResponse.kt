@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.rental.vm
 
+import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.service.common.AddressDto
 import java.time.Instant
@@ -15,12 +16,14 @@ data class RentalSearchResponse(
     val cost: Long,
     val succeededDate: Instant?,
     val expiredDate: Instant,
-    val status: RentalStatus
+    val status: RentalStatus,
+    val createdDate: Instant
 )
 
 data class RentalMachineInfo(
     val id: UUID,
     val no: String,
     val name: String,
+    val type: MachineType,
     val address: AddressDto?
 )

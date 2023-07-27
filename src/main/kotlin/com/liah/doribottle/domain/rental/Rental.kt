@@ -84,5 +84,5 @@ class Rental(
         cup.`return`()
     }
 
-    fun toDto() = RentalDto(id, user.id, cup.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status)
+    fun toDto() = RentalDto(id, user.id, cup.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }
