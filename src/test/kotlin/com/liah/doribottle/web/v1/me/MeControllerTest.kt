@@ -10,7 +10,7 @@ import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.v1.me.vm.UpdateMeRequest
+import com.liah.doribottle.web.v1.me.vm.UpdateProfileRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -49,13 +49,31 @@ class MeControllerTest : BaseControllerTest() {
         userRepository.deleteAll()
     }
 
-    @DisplayName("프로필 조회")
+    @DisplayName("현재 로그인 유저 조회")
     @Test
     fun get() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
             get(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("name", `is`(user.name)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
+    }
+
+    @DisplayName("프로필 조회")
+    @Test
+    fun getProfile() {
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get("${endPoint}/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -75,12 +93,12 @@ class MeControllerTest : BaseControllerTest() {
 
     @DisplayName("프로필 업데이트")
     @Test
-    fun update() {
+    fun updateProfile() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = UpdateMeRequest("Updated Name", MALE, "19970224")
+        val body = UpdateProfileRequest("Updated Name", MALE, "19970224")
 
         mockMvc.perform(
-            put(endPoint)
+            put("${endPoint}/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)

@@ -1,8 +1,9 @@
 package com.liah.doribottle.web.v1.me
 
+import com.liah.doribottle.extension.currentUser
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.user.UserService
-import com.liah.doribottle.web.v1.me.vm.UpdateMeRequest
+import com.liah.doribottle.web.v1.me.vm.UpdateProfileRequest
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
@@ -12,11 +13,14 @@ class MeController(
     private val userService: UserService
 ) {
     @GetMapping
-    fun get() = userService.get(currentUserId()!!).toMeResponse()
+    fun get() = currentUser()
 
-    @PutMapping
-    fun update(
-        @Valid @RequestBody request: UpdateMeRequest
+    @GetMapping("/profile")
+    fun getProfile() = userService.get(currentUserId()!!).toProfileResponse()
+
+    @PutMapping("/profile")
+    fun updateProfile(
+        @Valid @RequestBody request: UpdateProfileRequest
     ) {
         userService.update(
             id = currentUserId()!!,
