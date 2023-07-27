@@ -12,7 +12,7 @@ import java.time.Instant
 class PaymentCategory(
     amounts: Long,
     price: Long,
-    discountRate: Int?,
+    discountRate: Int,
     discountExpiredDate: Instant?,
     expiredDate: Instant?
 ) : SoftDeleteEntity() {
@@ -22,8 +22,8 @@ class PaymentCategory(
     @Column(nullable = false)
     val price: Long = price
 
-    @Column
-    val discountRate: Int? = discountRate
+    @Column(nullable = false)
+    val discountRate: Int = discountRate
 
     @Column
     val discountExpiredDate: Instant? = discountExpiredDate
