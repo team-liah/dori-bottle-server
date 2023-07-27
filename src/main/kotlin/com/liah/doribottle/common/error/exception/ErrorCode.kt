@@ -37,5 +37,8 @@ enum class ErrorCode(
 
     // Group
     GROUP_NOT_FOUND(404, "F001", "Group entity not found."),
-    GROUP_NOT_MEMBER(400, "F002", "User entity not a member of Group.")
+    GROUP_NOT_MEMBER(400, "F002", "User entity not a member of Group."),
+
+    // Payment
+    PAYMENT_CATEGORY_NOT_FOUND(404, "G001", "Payment Category entity not found.")
 }
