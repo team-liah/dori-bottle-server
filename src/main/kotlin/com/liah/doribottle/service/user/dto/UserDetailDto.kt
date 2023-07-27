@@ -4,7 +4,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
 import com.liah.doribottle.web.admin.user.vm.UserDetailResponse
-import com.liah.doribottle.web.v1.me.vm.MeResponse
+import com.liah.doribottle.web.v1.me.vm.ProfileResponse
 import java.util.*
 
 data class UserDetailDto(
@@ -19,6 +19,6 @@ data class UserDetailDto(
     val penalties: List<PenaltyDto>,
     val group: GroupDto?
 ) {
-    fun toMeResponse() = MeResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.size, group)
+    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.size, group)
     fun toResponse() = UserDetailResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties, group)
 }
