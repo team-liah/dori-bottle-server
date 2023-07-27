@@ -8,4 +8,8 @@ abstract class SoftDeleteEntity : PrimaryKeyEntity() {
     @Column(nullable = false)
     var deleted: Boolean = false
         protected set
+
+    fun delete() {
+        this.deleted = true
+    }
 }
