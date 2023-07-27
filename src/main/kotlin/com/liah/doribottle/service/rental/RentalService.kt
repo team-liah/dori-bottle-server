@@ -16,6 +16,7 @@ import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.rental.dto.RentalDto
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -34,6 +35,7 @@ class RentalService(
     private val pointQueryRepository: PointQueryRepository,
     private val pointHistoryRepository: PointHistoryRepository
 ) {
+    @CacheEvict(value = ["pointSum"], key = "#userId")
     fun rent(
         userId: UUID,
         cupRfid: String,
