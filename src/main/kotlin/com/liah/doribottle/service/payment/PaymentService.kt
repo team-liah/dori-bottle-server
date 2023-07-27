@@ -23,7 +23,7 @@ class PaymentService(
     fun registerCategory(
         amounts: Long,
         price: Long,
-        discountRate: Int?,
+        discountRate: Int,
         discountExpiredDate: Instant?,
         expiredDate: Instant?
     ): UUID {
