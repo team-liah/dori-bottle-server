@@ -17,7 +17,9 @@ data class RentalDto(
     val cost: Long,
     val succeededDate: Instant?,
     val expiredDate: Instant,
-    val status: RentalStatus
+    val status: RentalStatus,
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 ) {
     fun toUserResponse() = RentalSearchResponse(
         id = id,
@@ -27,6 +29,7 @@ data class RentalDto(
             id = fromMachine.id,
             no = fromMachine.no,
             name = fromMachine.name,
+            type = fromMachine.type,
             address = fromMachine.address
         ),
         toMachine = toMachine?.let {
@@ -34,6 +37,7 @@ data class RentalDto(
                 id = it.id,
                 no = it.no,
                 name = it.name,
+                type = it.type,
                 address = it.address
             )
         },
@@ -41,6 +45,7 @@ data class RentalDto(
         cost = cost,
         succeededDate = succeededDate,
         expiredDate = expiredDate,
-        status = status
+        status = status,
+        createdDate = createdDate
     )
 }
