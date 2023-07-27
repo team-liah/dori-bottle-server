@@ -9,6 +9,8 @@ import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointQueryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.service.point.dto.PointHistoryDto
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -23,6 +25,7 @@ class PointService(
     private val pointHistoryRepository: PointHistoryRepository,
     private val pointHistoryQueryRepository: PointHistoryQueryRepository
 ) {
+    @CacheEvict(value = ["pointSum"], key = "#userId")
     fun save(
         userId: UUID,
         saveType: PointSaveType,
@@ -35,6 +38,7 @@ class PointService(
         return point.id
     }
 
+    @Cacheable(value = ["pointSum"], key = "#userId")
     @Transactional(readOnly = true)
     fun getSum(userId: UUID) = pointQueryRepository.getSumByUserId(userId)
 
