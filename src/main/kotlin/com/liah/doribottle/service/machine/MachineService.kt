@@ -95,4 +95,20 @@ class MachineService(
         )
         machine.updateCupAmounts(cupAmounts)
     }
+
+    // TODO: Remove
+    fun createDummyMachine(
+        no: String,
+        no2: String
+    ) {
+        val vending = machineRepository.findByNo(no)
+        if (vending == null) {
+            register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), 100)
+        }
+
+        val collection = machineRepository.findByNo(no)
+        if (collection == null) {
+            register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), 100)
+        }
+    }
 }

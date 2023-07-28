@@ -89,4 +89,14 @@ class CupService(
     ) {
         // TODO: find cups user has
     }
+
+    //TODO: Remove
+    fun createDummyCup(rfidList: List<String>) {
+        rfidList.forEach {
+            val cup = cupRepository.findByRfid(it)
+            if (cup == null) {
+                register(it)
+            }
+        }
+    }
 }

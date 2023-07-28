@@ -112,4 +112,22 @@ class AdminAccountService(
 
         return admin.toDto()
     }
+
+    //TODO: Remove
+    fun createDummyAdmin(
+        adminLoginId: String,
+        adminLoginPassword: String,
+        machineLoginId: String,
+        machineLoginPassword: String,
+    ) {
+        val admin = adminRepository.findByLoginId(adminLoginId)
+        if (admin == null) {
+            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN)
+        }
+
+        val machine = adminRepository.findByLoginId(machineLoginId)
+        if (machine == null) {
+            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN)
+        }
+    }
 }
