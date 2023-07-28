@@ -2,8 +2,10 @@ package com.liah.doribottle.event
 
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.event.notification.NotificationSaveEvent
 import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.service.account.AdminAccountService
+import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.point.PointService
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
@@ -14,7 +16,8 @@ import org.springframework.transaction.event.TransactionalEventListener
 @Component
 class ApplicationEventListener(
     private val adminAccountService: AdminAccountService,
-    private val pointService: PointService
+    private val pointService: PointService,
+    private val notificationService: NotificationService
 ) {
     @EventListener(ContextRefreshedEvent::class)
     fun handleContextRefreshedEvent(event: ContextRefreshedEvent) {
@@ -36,5 +39,11 @@ class ApplicationEventListener(
     @TransactionalEventListener(PointSaveEvent::class)
     fun handlePointSaveEvent(event: PointSaveEvent) {
         pointService.save(event.userId, event.saveType, event.eventType, event.saveAmounts)
+    }
+
+    @Async
+    @TransactionalEventListener(NotificationSaveEvent::class)
+    fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
+        notificationService.save(event.userId, event.type, event.title, event.content, event.targetId)
     }
 }
