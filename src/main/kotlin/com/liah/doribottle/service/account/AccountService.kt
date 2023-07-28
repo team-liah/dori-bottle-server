@@ -150,4 +150,30 @@ class AccountService(
 
         return refreshToken.token
     }
+
+    // TODO: Remove
+    fun createDummyUser(
+        loginId: String
+    ) {
+        val user = userRepository.findByLoginId(loginId)
+        if (user == null) {
+            userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
+            register(loginId, "강백호", "19970224", Gender.MALE, true, true, true)
+        }
+    }
+
+    // TODO: Remove
+    fun dummyAuth(): AuthDto {
+        val user = userRepository.findByLoginId("010-7777-7777")
+            ?: throw UnauthorizedException()
+
+        val accessToken = tokenProvider.createToken(
+            user.id,
+            user.loginId,
+            user.name,
+            user.role
+        )
+        val refreshToken = createRefreshToken(user)
+        return AuthDto(accessToken, refreshToken)
+    }
 }
