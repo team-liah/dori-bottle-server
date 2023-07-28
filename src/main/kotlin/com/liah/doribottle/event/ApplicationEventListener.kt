@@ -1,13 +1,14 @@
 package com.liah.doribottle.event
 
-import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.event.notification.NotificationSaveEvent
 import com.liah.doribottle.event.point.PointSaveEvent
+import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.account.AdminAccountService
+import com.liah.doribottle.service.cup.CupService
+import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.point.PointService
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
@@ -15,26 +16,13 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class ApplicationEventListener(
-    private val adminAccountService: AdminAccountService,
     private val pointService: PointService,
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val accountService: AccountService,
+    private val adminAccountService: AdminAccountService,
+    private val machineService: MachineService,
+    private val cupService: CupService
 ) {
-    @EventListener(ContextRefreshedEvent::class)
-    fun handleContextRefreshedEvent(event: ContextRefreshedEvent) {
-        val initLoginId = "admin"
-        val initPassword = "qwer1234"
-        try {
-            adminAccountService.get(initLoginId)
-        } catch (e: NotFoundException) {
-            adminAccountService.register(
-                loginId = initLoginId,
-                loginPassword = initPassword,
-                name = "초기 관리자",
-                role = Role.ADMIN
-            )
-        }
-    }
-
     @Async
     @TransactionalEventListener(PointSaveEvent::class)
     fun handlePointSaveEvent(event: PointSaveEvent) {
@@ -45,5 +33,14 @@ class ApplicationEventListener(
     @TransactionalEventListener(NotificationSaveEvent::class)
     fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
         notificationService.save(event.userId, event.type, event.title, event.content, event.targetId)
+    }
+
+    // TODO: Remove
+    @EventListener(DummyInitEvent::class)
+    fun handleContextRefreshedEvent(event: DummyInitEvent) {
+        adminAccountService.createDummyAdmin("admin", "qwer1234", "machine", "qwer1234")
+        accountService.createDummyUser("010-7777-7777")
+        machineService.createDummyMachine("111-1111", "222-2222")
+        cupService.createDummyCup(listOf("00 00 00 00","11 11 11 11", "22 22 22 22", "33 33 33 33", "44 44 44 44", "55 55 55 55", "66 66 66 66", "77 77 77 77", "88 88 88 88", "99 99 99 99"))
     }
 }

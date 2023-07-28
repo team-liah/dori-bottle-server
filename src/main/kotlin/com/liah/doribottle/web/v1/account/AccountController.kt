@@ -3,6 +3,7 @@ package com.liah.doribottle.web.v1.account
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.extension.*
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
@@ -10,6 +11,7 @@ import com.liah.doribottle.web.v1.account.vm.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -22,7 +24,10 @@ class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
     @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
-    @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
+    @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
+
+    // TODO: Remove
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     @PostMapping("/auth/send-sms")
     fun sendSms(
@@ -159,5 +164,38 @@ class AccountController(
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()
+    }
+
+    //TODO: Remove
+    @PostMapping("/dummy-auth")
+    fun dummyAuth(
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<AuthResponse> {
+        val result = accountService.dummyAuth()
+
+        val accessTokenCookie = createCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN,
+            value = result.accessToken,
+            expiredMs = jwtExpiredMs
+        )
+        val refreshTokenCookie = createCookie(
+            url = httpRequest.requestURL.toString(),
+            name = REFRESH_TOKEN,
+            value = result.refreshToken,
+            expiredMs = refreshTokenExpiredMs
+        )
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
+            .body(result.toResponse())
+    }
+
+    //TODO: Remove
+    @PostMapping("/dummy-data")
+    fun dummyData() {
+        applicationEventPublisher.publishEvent(
+            DummyInitEvent(true)
+        )
     }
 }
