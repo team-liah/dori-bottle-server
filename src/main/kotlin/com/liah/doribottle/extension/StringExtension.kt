@@ -7,4 +7,4 @@ fun Any?.convertJsonToString(): String {
 }
 
 private val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-fun randomString() = List(6) { charPool.random() }.joinToString("")
+fun randomString(size: Int) = List(size) { charPool.random() }.joinToString("")

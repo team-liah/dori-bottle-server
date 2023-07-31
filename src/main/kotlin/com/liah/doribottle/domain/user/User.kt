@@ -53,7 +53,7 @@ class User(
         protected set
 
     @Column(nullable = false, unique = true)
-    val invitationCode: String = randomString()
+    val invitationCode: String = randomString(6)
 
     @Column(nullable = false)
     var active: Boolean = true
