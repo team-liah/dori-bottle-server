@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.v1.notification.vm
 
 import com.liah.doribottle.domain.notification.NotificationType
+import java.time.Instant
 import java.util.*
 
 data class NotificationSearchResponse(
@@ -10,5 +11,6 @@ data class NotificationSearchResponse(
     val title: String,
     val content: String,
     val targetId: UUID?,
-    val read: Boolean
+    val read: Boolean,
+    val createdDate: Instant
 )
