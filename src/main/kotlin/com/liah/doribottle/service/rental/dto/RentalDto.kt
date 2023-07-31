@@ -9,6 +9,7 @@ import java.util.*
 
 data class RentalDto(
     val id: UUID,
+    val no: String,
     val userId: UUID,
     val cupId: UUID,
     val fromMachine: MachineDto,
@@ -23,6 +24,7 @@ data class RentalDto(
 ) {
     fun toUserResponse() = RentalSearchResponse(
         id = id,
+        no = no,
         userId = userId,
         cupId = cupId,
         fromMachine = RentalMachineInfo(
