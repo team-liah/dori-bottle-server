@@ -41,5 +41,5 @@ class Notification(
         this.read = true
     }
 
-    fun toDto() = NotificationDto(id, userId, type, title, content, targetId, read)
+    fun toDto() = NotificationDto(id, userId, type, title, content, targetId, read, createdDate)
 }
