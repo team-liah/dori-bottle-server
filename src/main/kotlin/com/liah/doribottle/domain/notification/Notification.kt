@@ -2,10 +2,7 @@ package com.liah.doribottle.domain.notification
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.service.notification.dto.NotificationDto
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Index
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.util.*
 
 @Entity
@@ -23,6 +20,7 @@ class Notification(
     @Column(nullable = false)
     val userId: UUID = userId
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: NotificationType = type
 
