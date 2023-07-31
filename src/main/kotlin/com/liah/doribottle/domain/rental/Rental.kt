@@ -65,6 +65,7 @@ class Rental(
     var expiredDate: Instant = Instant.now().plus(dayLimit, ChronoUnit.DAYS)
         protected set
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: RentalStatus = PROCEEDING
         protected set

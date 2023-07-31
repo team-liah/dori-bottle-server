@@ -2,9 +2,7 @@ package com.liah.doribottle.domain.group
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.service.group.dto.GroupDto
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Table
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "`group`")
@@ -16,6 +14,7 @@ class Group(
     var name: String = name
         protected set
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var type: GroupType = type
         protected set
