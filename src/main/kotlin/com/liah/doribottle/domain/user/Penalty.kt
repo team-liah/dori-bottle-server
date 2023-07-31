@@ -19,6 +19,7 @@ class Penalty(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User = user
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var type: PenaltyType = type
         protected set
