@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.rental.RentalStatus.SUCCEEDED
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.rental.dto.RentalDto
 import jakarta.persistence.*
 import java.time.Instant
@@ -27,6 +28,9 @@ class Rental(
     withIce: Boolean,
     dayLimit: Long
 ) : PrimaryKeyEntity() {
+    @Column(nullable = false)
+    val no: String = randomString(8)
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User = user
@@ -84,5 +88,5 @@ class Rental(
         cup.`return`()
     }
 
-    fun toDto() = RentalDto(id, user.id, cup.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
+    fun toDto() = RentalDto(id, no, user.id, cup.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }

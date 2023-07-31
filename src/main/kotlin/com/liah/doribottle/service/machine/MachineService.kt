@@ -106,7 +106,7 @@ class MachineService(
             register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), 100)
         }
 
-        val collection = machineRepository.findByNo(no)
+        val collection = machineRepository.findByNo(no2)
         if (collection == null) {
             register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), 100)
         }
