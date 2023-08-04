@@ -5,10 +5,8 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.Admin
-import com.liah.doribottle.domain.user.AdminRefreshToken
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertJsonToString
-import com.liah.doribottle.repository.user.AdminRefreshTokenRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.account.vm.AuthRequest

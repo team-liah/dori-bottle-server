@@ -4,13 +4,16 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
-
   jpa:
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 logging.level:
   org.hibernate.SQL: debug

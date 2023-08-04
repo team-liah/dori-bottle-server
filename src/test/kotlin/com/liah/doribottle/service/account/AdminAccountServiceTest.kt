@@ -2,7 +2,6 @@ package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
-import com.liah.doribottle.repository.user.AdminRefreshTokenRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat

@@ -6,9 +6,7 @@ import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.Admin
-import com.liah.doribottle.domain.user.AdminRefreshToken
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.repository.user.AdminRefreshTokenRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.account.dto.AdminDto
 import com.liah.doribottle.service.account.dto.AuthDto
