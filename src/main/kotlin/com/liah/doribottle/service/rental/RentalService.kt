@@ -38,19 +38,16 @@ class RentalService(
     @CacheEvict(value = ["pointSum"], key = "#userId")
     fun rent(
         userId: UUID,
-        cupRfid: String,
-        fromMachineId: UUID,
+        fromMachineNo: String,
         withIce: Boolean
     ): UUID {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val cup = cupRepository.findByRfid(cupRfid)
-            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        val fromMachine = machineRepository.findByIdOrNull(fromMachineId)
+        val fromMachine = machineRepository.findByNo(fromMachineNo)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
-        val rental = rentalRepository.save(Rental(user, cup, fromMachine, withIce, 14))
-        usePoint(userId, rental.cost)
+        val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 14))
+        usePoint(user.id, rental.cost)
 
         return rental.id
     }
@@ -66,6 +63,18 @@ class RentalService(
             }
         }
         throw BusinessException(ErrorCode.LACK_OF_POINT)
+    }
+
+    fun updateRentalCup(
+        id: UUID,
+        cupRfid: String
+    ) {
+        val rental = rentalRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+        val cup = cupRepository.findByRfid(cupRfid)
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+
+        rental.setRentalCup(cup)
     }
 
     fun `return`(
