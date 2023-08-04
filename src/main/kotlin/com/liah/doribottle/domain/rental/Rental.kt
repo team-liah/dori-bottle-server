@@ -23,7 +23,6 @@ import java.time.temporal.ChronoUnit
 )
 class Rental(
     user: User,
-    cup: Cup,
     fromMachine: Machine,
     withIce: Boolean,
     dayLimit: Long
@@ -36,14 +35,14 @@ class Rental(
     val user: User = user
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "cup_id", nullable = false)
-    val cup: Cup = cup
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "from_machine_id", nullable = false)
     val fromMachine: Machine =
         if (fromMachine.type == MachineType.VENDING) fromMachine
         else throw IllegalArgumentException("Non VendingMachine is not allowed.")
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cup_id")
+    var cup: Cup? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_machine_id")
@@ -70,7 +69,9 @@ class Rental(
     var status: RentalStatus = PROCEEDING
         protected set
 
-    init {
+    fun setRentalCup(cup: Cup) {
+        this.cup = cup
+
         fromMachine.increaseCupAmounts(-1)
         cup.loan()
     }
@@ -86,8 +87,8 @@ class Rental(
         this.status = SUCCEEDED
         this.succeededDate = Instant.now()
 
-        cup.`return`()
+        cup?.`return`()
     }
 
-    fun toDto() = RentalDto(id, no, user.id, cup.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
+    fun toDto() = RentalDto(id, no, user.id, cup?.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }
