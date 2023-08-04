@@ -6,6 +6,7 @@ import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
+import com.liah.doribottle.web.v1.rental.vm.UpdateRentalCupRequest
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -25,9 +26,19 @@ class RentalController(
     ): UUID {
         return rentalService.rent(
             userId = currentUserId()!!,
-            cupRfid = request.cupRfid!!,
-            fromMachineId = request.machineId!!,
+            fromMachineNo = request.machineNo!!,
             withIce = request.withIce!!
+        )
+    }
+
+    @PatchMapping("/{id}")
+    fun updateRentalCup(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: UpdateRentalCupRequest
+    ) {
+        rentalService.updateRentalCup(
+            id = id,
+            cupRfid = request.cupRfid!!
         )
     }
 

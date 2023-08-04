@@ -11,7 +11,7 @@ data class RentalDto(
     val id: UUID,
     val no: String,
     val userId: UUID,
-    val cupId: UUID,
+    val cupId: UUID?,
     val fromMachine: MachineDto,
     val toMachine: MachineDto?,
     val withIce: Boolean,
