@@ -5,19 +5,19 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.DoriUser
+import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
-import com.liah.doribottle.domain.user.RefreshToken
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.point.PointSaveEvent
-import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
@@ -98,6 +98,7 @@ class AccountService(
             user.role
         )
         val refreshToken = createRefreshToken(user)
+
         return AuthDto(accessToken, refreshToken)
     }
 
@@ -105,6 +106,7 @@ class AccountService(
         refreshToken: String?,
         millis: Long
     ): AuthDto {
+        refreshTokenRepository.findByIdOrNull()
         val validRefreshToken = refreshTokenRepository
             .findByTokenAndExpiredDateIsAfter(refreshToken, Instant.now())
             ?: throw UnauthorizedException()

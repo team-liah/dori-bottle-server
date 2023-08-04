@@ -4,7 +4,6 @@ import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat

@@ -7,7 +7,6 @@ import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.extension.convertJsonToString
-import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.account.vm.AuthRequest
