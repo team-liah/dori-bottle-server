@@ -21,7 +21,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class RentalResourceTest : BaseControllerTest() {
@@ -52,7 +52,9 @@ class RentalResourceTest : BaseControllerTest() {
         val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
         val collectionMachine = machineRepository.save(Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), 100))
         val cup = cupRepository.save(Cup(CUP_RFID))
-        rentalRepository.save(Rental(user, cup, vendingMachine, true, 14))
+        val rental = Rental(user, vendingMachine, true, 14)
+        rental.setRentalCup(cup)
+        rentalRepository.save(rental)
         cupRepository.save(cup)
 
         val body = ReturnRequest(collectionMachine.id, CUP_RFID)
