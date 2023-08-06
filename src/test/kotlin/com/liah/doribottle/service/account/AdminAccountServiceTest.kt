@@ -1,7 +1,10 @@
 package com.liah.doribottle.service.account
 
+import com.liah.doribottle.config.security.RefreshToken
+import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.domain.user.Admin
+import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -16,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class AdminAccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var adminAccountService: AdminAccountService
     @Autowired private lateinit var adminRepository: AdminRepository
-    @Autowired private lateinit var adminRefreshTokenRepository: AdminRefreshTokenRepository
+    @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -81,17 +84,17 @@ class AdminAccountServiceTest : BaseServiceTest() {
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         val saveAdmin = adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
-        val saveRefreshToken = adminRefreshTokenRepository.save(AdminRefreshToken(saveAdmin))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveAdmin.id))
         clear()
 
         //when
-        val authDto = adminAccountService.refreshAuth(saveRefreshToken.token, 1209600000)
+        val authDto = adminAccountService.refreshAuth(saveRefreshToken.refreshToken)
         clear()
 
         //then
         assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
         assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
-        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
+        assertThat(saveRefreshToken.refreshToken).isNotEqualTo(authDto.refreshToken)
     }
 }

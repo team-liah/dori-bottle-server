@@ -1,6 +1,8 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.DoriUser
+import com.liah.doribottle.config.security.RefreshToken
+import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
@@ -113,18 +115,18 @@ class AccountServiceTest : BaseServiceTest() {
     fun refreshAuth() {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
-        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser.id))
         clear()
 
         //when
-        val authDto = accountService.refreshAuth(saveRefreshToken.token, 1209600000)
+        val authDto = accountService.refreshAuth(saveRefreshToken.refreshToken)
         clear()
 
         //then
         assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
-        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
+        assertThat(saveRefreshToken.refreshToken).isNotEqualTo(authDto.refreshToken)
     }
 
     @DisplayName("인증 토큰")
