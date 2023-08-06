@@ -6,7 +6,8 @@ import java.util.*
 
 @RedisHash(value = "refreshToken", timeToLive = 60)
 class RefreshToken(
-    @Id
-    val refreshToken: UUID,
     val userId: UUID
-)
+) {
+    @Id
+    val refreshToken: String? = UUID.randomUUID().toString()
+}
