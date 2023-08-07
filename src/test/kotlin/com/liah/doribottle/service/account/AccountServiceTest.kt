@@ -86,9 +86,9 @@ class AccountServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
         assertThat(authDto.refreshToken).isNotNull
     }
 
@@ -115,7 +115,7 @@ class AccountServiceTest : BaseServiceTest() {
     fun refreshAuth() {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
-        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser.id))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveUser.id.toString()))
         clear()
 
         //when
@@ -123,9 +123,9 @@ class AccountServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
         assertThat(saveRefreshToken.refreshToken).isNotEqualTo(authDto.refreshToken)
     }
 
@@ -140,8 +140,8 @@ class AccountServiceTest : BaseServiceTest() {
         val accessToken = accountService.preAuth(doriUser)
 
         //then
-        assertThat(tokenProvider.validateToken(accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(accessToken)).isEqualTo(id)
-        assertThat(tokenProvider.getUserRoleFromToken(accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateAccessToken(accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(accessToken)).isEqualTo(id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(accessToken)).isEqualTo("ROLE_USER")
     }
 }

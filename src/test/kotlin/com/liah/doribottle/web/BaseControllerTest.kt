@@ -64,7 +64,7 @@ class BaseControllerTest {
         name: String,
         role: Role
     ): Cookie {
-        val accessToken = tokenProvider.createToken(id, loginId, name, role)
+        val accessToken = tokenProvider.generateAccessToken(id, loginId, name, role)
 
         return Cookie(ACCESS_TOKEN, accessToken)
     }

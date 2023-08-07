@@ -6,6 +6,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.web.BaseControllerTest
 import org.hamcrest.Matchers.`is`
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +24,11 @@ class PaymentControllerTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
+
+    @AfterEach
+    internal fun destroy() {
+        paymentCategoryRepository.deleteAll()
+    }
 
     @DisplayName("결제 카테고리 목록 조회")
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)

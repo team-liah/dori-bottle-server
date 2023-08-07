@@ -44,10 +44,10 @@ class AccountControllerTest : BaseControllerTest() {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         userEntity.updatePassword(encodePassword("123456"))
         user = userRepository.save(userEntity)
-        userRefreshToken = refreshTokenRepository.save(RefreshToken(user.id))
+        userRefreshToken = refreshTokenRepository.save(RefreshToken(userId = user.id.toString()))
 
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
-        guestRefreshToken = refreshTokenRepository.save(RefreshToken(guest.id))
+        guestRefreshToken = refreshTokenRepository.save(RefreshToken(userId = guest.id.toString()))
     }
 
     @AfterEach

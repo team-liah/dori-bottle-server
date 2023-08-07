@@ -55,9 +55,9 @@ class AdminAccountServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
         assertThat(authDto.refreshToken).isNotNull
     }
 
@@ -84,7 +84,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         val saveAdmin = adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
-        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveAdmin.id))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveAdmin.id.toString()))
         clear()
 
         //when
@@ -92,9 +92,9 @@ class AdminAccountServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveAdmin.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_ADMIN")
         assertThat(saveRefreshToken.refreshToken).isNotEqualTo(authDto.refreshToken)
     }
 }

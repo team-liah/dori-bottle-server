@@ -42,7 +42,7 @@ class MeControllerTest : BaseControllerTest() {
         userEntity.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         userEntity.updateGroup(group)
         user = userRepository.save(userEntity)
-        userRefreshToken = refreshTokenRepository.save(RefreshToken(user.id))
+        userRefreshToken = refreshTokenRepository.save(RefreshToken(userId = user.id.toString()))
     }
 
     @AfterEach

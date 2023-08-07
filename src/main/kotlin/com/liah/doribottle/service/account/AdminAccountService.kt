@@ -4,8 +4,6 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
-import com.liah.doribottle.config.security.RefreshToken
-import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
@@ -17,17 +15,15 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.util.*
 
 @Service
-@Transactional
 class AdminAccountService(
     private val adminRepository: AdminRepository,
-    private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordEncoder: PasswordEncoder,
     private val tokenProvider: TokenProvider
 ) {
+    @Transactional
     fun register(
         loginId: String,
         loginPassword: String,
@@ -37,8 +33,14 @@ class AdminAccountService(
         verifyDuplicatedLoginId(loginId)
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val admin = adminRepository
-            .save(Admin(loginId, encryptedPassword, name, Role.ADMIN))
+        val admin = adminRepository.save(
+            Admin(
+                loginId = loginId,
+                loginPassword = encryptedPassword,
+                name = name,
+                role = Role.ADMIN
+            )
+        )
 
         return admin.id
     }
@@ -58,13 +60,15 @@ class AdminAccountService(
 
         verifyLoginPassword(admin, loginPassword)
 
-        val accessToken = tokenProvider.createToken(
-            admin.id,
-            admin.loginId,
-            admin.name,
-            admin.role
+        val accessToken = tokenProvider.generateAccessToken(
+            id = admin.id,
+            loginId = admin.loginId,
+            name = admin.name,
+            role = admin.role
         )
-        val refreshToken = createRefreshToken(admin.id).refreshToken!!
+        val refreshToken = tokenProvider.generateRefreshToken(
+            userId = admin.id.toString()
+        )
 
         return AuthDto(accessToken, refreshToken)
     }
@@ -80,33 +84,30 @@ class AdminAccountService(
     fun refreshAuth(
         refreshToken: String?
     ): AuthDto {
-        val validRefreshToken = refreshToken?.let { refreshTokenRepository.findByIdOrNull(it) }
+        val validRefreshToken = refreshToken?.let { tokenProvider.getRefreshToken(it) }
             ?: throw UnauthorizedException()
-        val admin = adminRepository.findByIdOrNull(validRefreshToken.userId)
+        val admin = adminRepository.findByIdOrNull(UUID.fromString(validRefreshToken.userId))
             ?: throw UnauthorizedException()
 
-        val newRefreshToken = refresh(origin = validRefreshToken, userId = admin.id).refreshToken!!
-        val accessToken = tokenProvider.createToken(
+        val accessToken = tokenProvider.generateAccessToken(
             id = admin.id,
             loginId = admin.loginId,
             name = admin.name,
             role = admin.role
         )
+        val newRefreshToken = refresh(
+            origin = validRefreshToken.refreshToken!!,
+            userId = admin.id
+        )
         return AuthDto(accessToken, newRefreshToken)
     }
 
     private fun refresh(
-        origin: RefreshToken,
+        origin: String,
         userId: UUID
-    ): RefreshToken {
-        refreshTokenRepository.delete(origin)
-        return createRefreshToken(userId)
-    }
-
-    private fun createRefreshToken(
-        userId: UUID
-    ): RefreshToken {
-        return refreshTokenRepository.save(RefreshToken(userId))
+    ): String {
+        tokenProvider.expireRefreshToken(origin)
+        return tokenProvider.generateRefreshToken(userId.toString())
     }
 
     // TODO: Migrate AdminService
