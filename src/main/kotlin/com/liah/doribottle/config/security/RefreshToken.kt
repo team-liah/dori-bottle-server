@@ -11,7 +11,7 @@ data class RefreshToken(
     var refreshToken: String? = UUID.randomUUID().toString(),
 
     @TimeToLive
-    val ttl: Long = 60,
+    val ttl: Long = 1209600,
 
     val userId: String?
 )
