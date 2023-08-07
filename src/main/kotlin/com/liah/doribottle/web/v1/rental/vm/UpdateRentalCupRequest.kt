@@ -2,9 +2,7 @@ package com.liah.doribottle.web.v1.rental.vm
 
 import jakarta.validation.constraints.NotNull
 
-data class RentRequest(
+data class UpdateRentalCupRequest(
     @field:NotNull
-    val machineNo: String?,
-    @field:NotNull
-    val withIce: Boolean?
+    val cupRfid: String?
 )

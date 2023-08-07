@@ -28,6 +28,7 @@ class RentalQueryRepository(
             .selectFrom(rental)
             .innerJoin(rental.fromMachine).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
+            .where(rental.cup.isNotNull)
             .where(
                 userEq(userId),
                 cupEq(cupId),

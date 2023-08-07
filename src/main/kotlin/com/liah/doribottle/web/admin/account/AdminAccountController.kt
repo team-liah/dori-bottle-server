@@ -52,7 +52,7 @@ class AdminAccountController(
         httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?
     ): ResponseEntity<AuthResponse> {
-        val result = adminAccountService.refreshAuth(refreshToken, refreshTokenExpiredMs)
+        val result = adminAccountService.refreshAuth(refreshToken)
 
         val accessTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
