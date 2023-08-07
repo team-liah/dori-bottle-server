@@ -38,7 +38,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
     @BeforeEach
     internal fun init() {
         admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encodePassword("123456"), "Admin", Role.ADMIN))
-        adminRefreshToken = refreshTokenRepository.save(RefreshToken(admin.id))
+        adminRefreshToken = refreshTokenRepository.save(RefreshToken(userId = admin.id.toString()))
     }
 
     @AfterEach

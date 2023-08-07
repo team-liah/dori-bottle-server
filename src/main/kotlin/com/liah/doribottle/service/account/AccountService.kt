@@ -5,8 +5,6 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.DoriUser
-import com.liah.doribottle.config.security.RefreshToken
-import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
@@ -29,14 +27,13 @@ import java.time.Instant
 import java.util.*
 
 @Service
-@Transactional
 class AccountService(
     private val userRepository: UserRepository,
-    private val refreshTokenRepository: RefreshTokenRepository,
     private val tokenProvider: TokenProvider,
     private val passwordEncoder: PasswordEncoder,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
+    @Transactional
     fun register(
         loginId: String,
         name: String,
@@ -67,6 +64,7 @@ class AccountService(
         return user.id
     }
 
+    @Transactional
     fun updatePassword(
         loginId: String,
         loginPassword: String
@@ -91,14 +89,17 @@ class AccountService(
         verifyAccount(user)
 
         user.authSuccess()
+        userRepository.save(user)
 
-        val accessToken = tokenProvider.createToken(
+        val accessToken = tokenProvider.generateAccessToken(
             id = user.id,
             loginId = user.loginId,
             name = user.name,
             role = user.role
         )
-        val refreshToken = createRefreshToken(user.id).refreshToken!!
+        val refreshToken = tokenProvider.generateRefreshToken(
+            userId = user.id.toString()
+        )
 
         return AuthDto(accessToken, refreshToken)
     }
@@ -106,38 +107,35 @@ class AccountService(
     fun refreshAuth(
         refreshToken: String?
     ): AuthDto {
-        val validRefreshToken = refreshToken?.let { refreshTokenRepository.findByIdOrNull(it) }
+        val validRefreshToken = refreshToken?.let { tokenProvider.getRefreshToken(it) }
             ?: throw UnauthorizedException()
-        val user = userRepository.findByIdOrNull(validRefreshToken.userId)
+        val user = userRepository.findByIdOrNull(UUID.fromString(validRefreshToken.userId))
             ?: throw UnauthorizedException()
 
         verifyAccount(user)
 
-        val newRefreshToken = refresh(origin = validRefreshToken, userId = user.id).refreshToken!!
-        val accessToken = tokenProvider.createToken(
+        val accessToken = tokenProvider.generateAccessToken(
             id = user.id,
             loginId = user.loginId,
             name = user.name,
             role = user.role
         )
+        val newRefreshToken = refresh(
+            origin = validRefreshToken.refreshToken!!,
+            userId = user.id
+        )
         return AuthDto(accessToken, newRefreshToken)
     }
 
     private fun refresh(
-        origin: RefreshToken,
+        origin: String,
         userId: UUID
-    ): RefreshToken {
-        refreshTokenRepository.delete(origin)
-        return createRefreshToken(userId)
+    ): String {
+        tokenProvider.expireRefreshToken(origin)
+        return tokenProvider.generateRefreshToken(userId.toString())
     }
 
-    private fun createRefreshToken(
-        userId: UUID
-    ): RefreshToken {
-        return refreshTokenRepository.save(RefreshToken(userId))
-    }
-
-    fun preAuth(doriUser: DoriUser) = tokenProvider.createPreAuthToken(doriUser)
+    fun preAuth(doriUser: DoriUser) = tokenProvider.preAuthAccessToken(doriUser)
 
     private fun verifyLoginPassword(
         user: User,
@@ -156,7 +154,6 @@ class AccountService(
         if (user.blocked)
             throw LockedException("Account is locked.")
     }
-    
 
     // TODO: Remove
     fun createDummyUser(
@@ -174,13 +171,15 @@ class AccountService(
         val user = userRepository.findByLoginId("010-7777-7777")
             ?: throw UnauthorizedException()
 
-        val accessToken = tokenProvider.createToken(
+        val accessToken = tokenProvider.generateAccessToken(
             user.id,
             user.loginId,
             user.name,
             user.role
         )
-        val refreshToken = createRefreshToken(user.id).refreshToken!!
+        val refreshToken = tokenProvider.generateRefreshToken(
+            user.id.toString()
+        )
         return AuthDto(accessToken, refreshToken)
     }
 }
