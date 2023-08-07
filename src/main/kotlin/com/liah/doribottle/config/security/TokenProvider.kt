@@ -7,30 +7,32 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class TokenProvider(
+    private val refreshTokenRepository: RefreshTokenRepository,
     @Value("\${jwt.secret}") private val secret: String,
     @Value("\${jwt.expiredMs}") private val expiredMs: Long,
     @Value("\${jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun createPreAuthToken(doriUser: DoriUser): String {
+    fun preAuthAccessToken(doriUser: DoriUser): String {
         val now = Date()
         val expiredDate = Date(now.time + preAuthExpiredMs)
-        return createToken(doriUser.id, doriUser.loginId, doriUser.name, doriUser.role, now, expiredDate)
+        return generateAccessToken(doriUser.id, doriUser.loginId, doriUser.name, doriUser.role, now, expiredDate)
     }
 
-    fun createToken(id: UUID, loginId: String, name: String, role: Role): String {
+    fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role): String {
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
-        return createToken(id, loginId, name, role, now, expiredDate)
+        return generateAccessToken(id, loginId, name, role, now, expiredDate)
     }
 
-    private fun createToken(id: UUID, loginId: String, name: String, role: Role, issueDate: Date, expiredDate: Date): String {
+    private fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role, issueDate: Date, expiredDate: Date): String {
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
@@ -44,12 +46,8 @@ class TokenProvider(
             .compact()
     }
 
-    fun getDoriUserFromToken(token: String): DoriUser {
-        val body = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
-            .build()
-            .parseClaimsJws(token)
-            .body
+    fun extractDoriUserFromAccessToken(accessToken: String): DoriUser {
+        val body = accessTokenClaims(accessToken)
 
         val id = UUID.fromString(body.subject)
         val loginId = getValueFromBody(body, "loginId")
@@ -58,40 +56,33 @@ class TokenProvider(
         return DoriUser(id, loginId, name, role)
     }
 
-    fun getUserIdFromToken(token: String): UUID {
-        val subject = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
-            .build()
-            .parseClaimsJws(token)
-            .body
-            .subject
+    fun extractUserIdFromAccessToken(accessToken: String): UUID {
+        val subject = accessTokenClaims(accessToken).subject
 
         return UUID.fromString(subject)
     }
 
-    fun getUserLoginIdFromToken(token: String): String {
-        val body = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
-            .build()
-            .parseClaimsJws(token)
-            .body
+    fun extractUserLoginIdFromAccessToken(accessToken: String): String {
+        val body = accessTokenClaims(accessToken)
 
         return getValueFromBody(body, "loginId")
     }
 
-    fun getUserRoleFromToken(token: String): String {
-        val body = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
-            .build()
-            .parseClaimsJws(token)
-            .body
+    fun extractUserRoleFromAccessToken(accessToken: String): String {
+        val body = accessTokenClaims(accessToken)
 
         return getValueFromBody(body, "role")
     }
 
+    private fun accessTokenClaims(accessToken: String) = Jwts.parserBuilder()
+        .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+        .build()
+        .parseClaimsJws(accessToken)
+        .body
+
     private fun getValueFromBody(body: Claims, key: String) = body.get(key, String::class.java)
 
-    fun validateToken(authToken: String): Boolean {
+    fun validateAccessToken(authToken: String): Boolean {
         try {
             Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
@@ -109,4 +100,10 @@ class TokenProvider(
         }
         return false
     }
+
+    fun generateRefreshToken(userId: String) = refreshTokenRepository.save(RefreshToken(userId = userId)).refreshToken!!
+
+    fun expireRefreshToken(refreshToken: String) = refreshTokenRepository.deleteById(refreshToken)
+
+    fun getRefreshToken(refreshToken: String) = refreshTokenRepository.findByIdOrNull(refreshToken)
 }

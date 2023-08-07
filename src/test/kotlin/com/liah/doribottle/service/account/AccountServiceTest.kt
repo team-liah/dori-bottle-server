@@ -1,10 +1,11 @@
 package com.liah.doribottle.service.account
 
 import com.liah.doribottle.config.security.DoriUser
+import com.liah.doribottle.config.security.RefreshToken
+import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.repository.user.RefreshTokenRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -85,9 +86,9 @@ class AccountServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
         assertThat(authDto.refreshToken).isNotNull
     }
 
@@ -114,18 +115,18 @@ class AccountServiceTest : BaseServiceTest() {
     fun refreshAuth() {
         //given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
-        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(saveUser))
+        val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveUser.id.toString()))
         clear()
 
         //when
-        val authDto = accountService.refreshAuth(saveRefreshToken.token, 1209600000)
+        val authDto = accountService.refreshAuth(saveRefreshToken.refreshToken)
         clear()
 
         //then
-        assertThat(tokenProvider.validateToken(authDto.accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(authDto.accessToken)).isEqualTo(saveUser.id)
-        assertThat(tokenProvider.getUserRoleFromToken(authDto.accessToken)).isEqualTo("ROLE_USER")
-        assertThat(saveRefreshToken.token).isNotEqualTo(authDto.refreshToken)
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(saveRefreshToken.refreshToken).isNotEqualTo(authDto.refreshToken)
     }
 
     @DisplayName("인증 토큰")
@@ -139,8 +140,8 @@ class AccountServiceTest : BaseServiceTest() {
         val accessToken = accountService.preAuth(doriUser)
 
         //then
-        assertThat(tokenProvider.validateToken(accessToken)).isTrue
-        assertThat(tokenProvider.getUserIdFromToken(accessToken)).isEqualTo(id)
-        assertThat(tokenProvider.getUserRoleFromToken(accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.validateAccessToken(accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(accessToken)).isEqualTo(id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(accessToken)).isEqualTo("ROLE_USER")
     }
 }
