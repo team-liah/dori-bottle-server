@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.utility.DockerImageName
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
@@ -44,6 +46,16 @@ class BaseControllerTest {
         const val USER_LOGIN_ID = "010-5638-3316"
         const val GUEST_LOGIN_ID = "010-1234-5678"
         const val CUP_RFID = "A1:A1:A1:A1"
+
+        private const val REDIS_IMAGE_NAME = "redis:5.0.3-alpine"
+        private val REDIS_CONTAINER: GenericContainer<*> = GenericContainer<Nothing>(DockerImageName.parse(REDIS_IMAGE_NAME))
+            .withExposedPorts(6379)
+
+        init {
+            REDIS_CONTAINER.start()
+            System.setProperty("spring.data.redis.host", REDIS_CONTAINER.host)
+            System.setProperty("spring.data.redis.port", REDIS_CONTAINER.getMappedPort(6379).toString())
+        }
     }
 
     protected fun createAccessTokenCookie(
@@ -52,7 +64,7 @@ class BaseControllerTest {
         name: String,
         role: Role
     ): Cookie {
-        val accessToken = tokenProvider.createToken(id, loginId, name, role)
+        val accessToken = tokenProvider.generateAccessToken(id, loginId, name, role)
 
         return Cookie(ACCESS_TOKEN, accessToken)
     }

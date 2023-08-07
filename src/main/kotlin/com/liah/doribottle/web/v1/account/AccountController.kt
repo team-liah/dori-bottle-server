@@ -4,7 +4,10 @@ import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.event.dummy.DummyInitEvent
-import com.liah.doribottle.extension.*
+import com.liah.doribottle.extension.createCookie
+import com.liah.doribottle.extension.currentUser
+import com.liah.doribottle.extension.currentUserLoginId
+import com.liah.doribottle.extension.expireCookie
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.v1.account.vm.*
@@ -15,7 +18,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 @RestController
@@ -72,7 +74,7 @@ class AccountController(
         httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?
     ): ResponseEntity<AuthResponse> {
-        val result = accountService.refreshAuth(refreshToken, refreshTokenExpiredMs)
+        val result = accountService.refreshAuth(refreshToken)
 
         val accessTokenCookie = createCookie(
             url = httpRequest.requestURL.toString(),
@@ -112,7 +114,7 @@ class AccountController(
         )
 
         val result = try {
-            accountService.refreshAuth(refreshToken, refreshTokenExpiredMs)
+            accountService.refreshAuth(refreshToken)
         } catch (e: UnauthorizedException) {
             null
         }
