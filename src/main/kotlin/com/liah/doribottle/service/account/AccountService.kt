@@ -156,6 +156,7 @@ class AccountService(
     }
 
     // TODO: Remove
+    @Transactional
     fun createDummyUser(
         loginId: String
     ) {
