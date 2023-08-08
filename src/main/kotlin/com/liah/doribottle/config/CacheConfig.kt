@@ -9,7 +9,6 @@ import org.springframework.data.redis.cache.RedisCacheManager.RedisCacheManagerB
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
-import java.time.Duration
 
 
 @EnableCaching
@@ -23,7 +22,6 @@ class CacheConfig {
                     "pointSum",
                     RedisCacheConfiguration.defaultCacheConfig()
                         .computePrefixWith { cacheName -> "cache :: $cacheName" }
-                        .entryTtl(Duration.ofDays(1))
                         .disableCachingNullValues()
                         .serializeKeysWith(
                             RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
