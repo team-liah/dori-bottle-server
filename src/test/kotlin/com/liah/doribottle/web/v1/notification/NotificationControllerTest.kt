@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -89,7 +89,7 @@ class NotificationControllerTest : BaseControllerTest() {
         val notification = notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
 
         mockMvc.perform(
-            patch("${endPoint}/${notification.id}/read")
+            put("${endPoint}/${notification.id}/read")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )

@@ -30,7 +30,7 @@ class NotificationController(
         return CustomPage.of(result)
     }
 
-    @PatchMapping("/{id}/read")
+    @PutMapping("/{id}/read")
     fun read(
         @PathVariable id: UUID
     ) {
