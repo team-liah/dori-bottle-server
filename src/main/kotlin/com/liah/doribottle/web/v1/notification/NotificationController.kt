@@ -25,6 +25,8 @@ class NotificationController(
             pageable = pageable
         ).map { it.toSearchResponse() }
 
+        notificationService.clearAlert(currentUserId()!!)
+
         return CustomPage.of(result)
     }
 
