@@ -4,12 +4,14 @@ import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
+import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.group.GroupRepository
+import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.me.vm.UpdateProfileRequest
@@ -31,6 +33,7 @@ class MeControllerTest : BaseControllerTest() {
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var groupRepository: GroupRepository
+    @Autowired private lateinit var alertRepository: AlertRepository
 
     private lateinit var user: User
     private lateinit var userRefreshToken: RefreshToken
@@ -67,6 +70,27 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("loginId", `is`(user.loginId)))
             .andExpect(jsonPath("name", `is`(user.name)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
+            .andExpect(jsonPath("alertCount", `is`(0)))
+    }
+
+    @DisplayName("현재 로그인 유저 조회 TC2")
+    @Test
+    fun getTc2() {
+        alertRepository.save(Alert(user.id.toString(), 7))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("name", `is`(user.name)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
+            .andExpect(jsonPath("alertCount", `is`(7)))
     }
 
     @DisplayName("프로필 조회")
