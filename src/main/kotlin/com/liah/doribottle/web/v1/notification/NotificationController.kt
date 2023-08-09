@@ -25,10 +25,12 @@ class NotificationController(
             pageable = pageable
         ).map { it.toSearchResponse() }
 
+        notificationService.clearAlert(currentUserId()!!)
+
         return CustomPage.of(result)
     }
 
-    @PatchMapping("/{id}/read")
+    @PutMapping("/{id}/read")
     fun read(
         @PathVariable id: UUID
     ) {

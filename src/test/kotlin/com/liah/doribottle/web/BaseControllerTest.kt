@@ -47,7 +47,7 @@ class BaseControllerTest {
         const val GUEST_LOGIN_ID = "010-1234-5678"
         const val CUP_RFID = "A1:A1:A1:A1"
 
-        private const val REDIS_IMAGE_NAME = "redis:5.0.3-alpine"
+        private const val REDIS_IMAGE_NAME = "redis:latest"
         private val REDIS_CONTAINER: GenericContainer<*> = GenericContainer<Nothing>(DockerImageName.parse(REDIS_IMAGE_NAME))
             .withExposedPorts(6379)
 

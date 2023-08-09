@@ -33,6 +33,7 @@ class ApplicationEventListener(
     @TransactionalEventListener(NotificationSaveEvent::class)
     fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
         notificationService.save(event.userId, event.type, event.title, event.content, event.targetId)
+        notificationService.alert(event.userId)
     }
 
     // TODO: Remove

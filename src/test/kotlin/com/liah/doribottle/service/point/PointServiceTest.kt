@@ -1,25 +1,30 @@
 package com.liah.doribottle.service.point
 
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
-import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointHistory
-import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
-import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
+import com.liah.doribottle.repository.point.PointQueryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
+import com.liah.doribottle.service.point.dto.PointSumDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.given
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import java.util.*
 
 class PointServiceTest : BaseServiceTest() {
     @Autowired private lateinit var pointService: PointService
@@ -27,6 +32,10 @@ class PointServiceTest : BaseServiceTest() {
     @Autowired private lateinit var pointEventRepository: PointEventRepository
     @Autowired private lateinit var pointHistoryRepository: PointHistoryRepository
     @Autowired private lateinit var userRepository: UserRepository
+
+    @Autowired private lateinit var cacheManager: CacheManager
+
+    @MockBean private lateinit var mockPointQueryRepository: PointQueryRepository
 
     private lateinit var user: User
 
@@ -41,9 +50,9 @@ class PointServiceTest : BaseServiceTest() {
     @Test
     fun getSum() {
         //given
-        pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
-        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
-        clear()
+        val pointSumDto = PointSumDto(user.id, 10, 20)
+        given(mockPointQueryRepository.getSumByUserId(user.id))
+            .willReturn(pointSumDto)
 
         //when
         val sum = pointService.getSum(user.id)
@@ -51,7 +60,27 @@ class PointServiceTest : BaseServiceTest() {
         //then
         assertThat(sum.userId).isEqualTo(user.id)
         assertThat(sum.totalPayAmounts).isEqualTo(10)
-        assertThat(sum.totalRewordAmounts).isEqualTo(10)
+        assertThat(sum.totalRewordAmounts).isEqualTo(20)
+    }
+
+    @DisplayName("포인트 총합 조회 - 캐싱")
+    @Test
+    fun getSumCache() {
+        //given
+        val pointSumDto = PointSumDto(user.id, 10, 20)
+        given(mockPointQueryRepository.getSumByUserId(user.id))
+            .willReturn(pointSumDto)
+
+        //when
+        val pointSumMiss = pointService.getSum(user.id)
+        val pointSumHit = pointService.getSum(user.id)
+
+        //then
+        assertThat(pointSumMiss).isEqualTo(pointSumDto)
+        assertThat(pointSumHit).isEqualTo(pointSumDto)
+
+        verify(mockPointQueryRepository, times(1)).getSumByUserId(user.id)
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)?.get()).isEqualTo(pointSumDto)
     }
 
     @DisplayName("적립")
