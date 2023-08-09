@@ -2,8 +2,10 @@ package com.liah.doribottle.service.notification
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.notification.Notification
 import com.liah.doribottle.domain.notification.NotificationType
+import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.notification.NotificationQueryRepository
 import com.liah.doribottle.repository.notification.NotificationRepository
 import com.liah.doribottle.service.notification.dto.NotificationDto
@@ -15,11 +17,12 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Transactional
 class NotificationService(
     private val notificationRepository: NotificationRepository,
-    private val notificationQueryRepository: NotificationQueryRepository
+    private val notificationQueryRepository: NotificationQueryRepository,
+    private val alertRepository: AlertRepository
 ) {
+    @Transactional
     fun save(
         userId: UUID,
         type: NotificationType,
@@ -51,6 +54,7 @@ class NotificationService(
         ).map { it.toDto() }
     }
 
+    @Transactional
     fun read(
         id: UUID
     ) {
@@ -59,4 +63,19 @@ class NotificationService(
 
         notification.read()
     }
+
+    fun alert(userId: UUID) {
+        val userIdString = userId.toString()
+        val alert = alertRepository.findByIdOrNull(userIdString)
+            ?: Alert(userId = userIdString)
+        alert.increaseCount()
+
+        alertRepository.save(alert)
+    }
+
+    fun clearAlert(userId: UUID) {
+        alertRepository.deleteById(userId.toString())
+    }
+
+    fun getAlertCount(userId: UUID) = alertRepository.findByIdOrNull(userId.toString())?.count ?: 0
 }
