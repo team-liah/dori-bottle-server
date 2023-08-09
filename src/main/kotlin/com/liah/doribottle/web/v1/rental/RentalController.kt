@@ -31,7 +31,7 @@ class RentalController(
         )
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     fun updateRentalCup(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateRentalCupRequest
