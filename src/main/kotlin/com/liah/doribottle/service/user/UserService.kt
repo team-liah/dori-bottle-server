@@ -65,7 +65,7 @@ class UserService(
         user.update(name, birthDate, gender)
     }
 
-    fun registerInviter(
+    fun registerInvitationCode(
         inviteeId: UUID,
         invitationCode: String
     ) {
