@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.user
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
@@ -84,21 +85,6 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(exception.message).isEqualTo(ErrorCode.USER_NOT_FOUND.message)
     }
 
-    @DisplayName("유저 업데이트")
-    @Test
-    fun update() {
-        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-        clear()
-
-        userService.update(user.id, "Updated Name", "19970224", MALE)
-        clear()
-
-        val findUser = userRepository.findByIdOrNull(user.id)
-        assertThat(findUser?.name).isEqualTo("Updated Name")
-        assertThat(findUser?.birthDate).isEqualTo("19970224")
-        assertThat(findUser?.gender).isEqualTo(MALE)
-    }
-
     @DisplayName("유저 목록 조회")
     @Test
     fun getAll() {
@@ -134,5 +120,115 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(User("010-0000-0004", "Tester 4", "010-0000-0004", Role.USER))
         userRepository.save(User("010-0000-0005", "Tester 5", "010-0000-0005", Role.USER))
         userRepository.save(User("010-0000-0006", "Tester 6", "010-0000-0006", Role.USER))
+    }
+
+    @DisplayName("유저 업데이트")
+    @Test
+    fun update() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        clear()
+
+        userService.update(user.id, "Updated Name", "19970224", MALE)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        assertThat(findUser?.name).isEqualTo("Updated Name")
+        assertThat(findUser?.birthDate).isEqualTo("19970224")
+        assertThat(findUser?.gender).isEqualTo(MALE)
+    }
+
+    @DisplayName("초대코드 등록")
+    @Test
+    fun registerInvitationCode() {
+        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
+        inviter.register()
+        userRepository.save(inviter)
+        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
+        invitee.register()
+        userRepository.save(invitee)
+        clear()
+
+        userService.registerInvitationCode(invitee.id, inviter.invitationCode)
+        clear()
+
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+        val findInvitee = userRepository.findByIdOrNull(invitee.id)
+
+        assertThat(findInviter?.invitationCount).isEqualTo(0)
+        assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
+    }
+
+    @DisplayName("초대코드 등록 TC2")
+    @Test
+    fun registerInvitationCodeTc2() {
+        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
+        inviter.register()
+        userRepository.save(inviter)
+        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
+        invitee.register()
+        invitee.use()
+        userRepository.save(invitee)
+        clear()
+
+        userService.registerInvitationCode(invitee.id, inviter.invitationCode)
+        clear()
+
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+        val findInvitee = userRepository.findByIdOrNull(invitee.id)
+
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
+        assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
+    }
+
+    @DisplayName("초대코드 등록 예외")
+    @Test
+    fun registerInvitationCodeException() {
+        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
+        invitee.register()
+        userRepository.save(invitee)
+        clear()
+
+        val exception1 = assertThrows<NotFoundException> {
+            userService.registerInvitationCode(invitee.id, "DummyCode")
+        }
+        assertThat(exception1.errorCode).isEqualTo(ErrorCode.INVITER_NOT_FOUND)
+
+        val exception2 = assertThrows<BusinessException> {
+            userService.registerInvitationCode(invitee.id, invitee.invitationCode)
+        }
+        assertThat(exception2.errorCode).isEqualTo(ErrorCode.INVITER_NOT_ALLOWED)
+
+        val exception3 = assertThrows<BusinessException> {
+            val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
+            inviter.register()
+            userRepository.save(inviter)
+
+            invitee.setInviter(inviter)
+            userRepository.save(invitee)
+            clear()
+
+            userService.registerInvitationCode(invitee.id, inviter.invitationCode)
+        }
+        assertThat(exception3.errorCode).isEqualTo(ErrorCode.INVITER_ALREADY_REGISTERED)
+    }
+
+    @DisplayName("초대자 보상 지급")
+    @Test
+    fun rewardInviterByInvitee() {
+        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
+        inviter.register()
+        userRepository.save(inviter)
+        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
+        invitee.register()
+        invitee.setInviter(inviter)
+        userRepository.save(invitee)
+        clear()
+
+        userService.rewardInviterByInvitee(invitee.id)
+        clear()
+
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
     }
 }
