@@ -1,5 +1,7 @@
 package com.liah.doribottle.domain.user
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.extension.randomString
@@ -56,6 +58,18 @@ class User(
     val invitationCode: String = randomString(6)
 
     @Column(nullable = false)
+    var invitationCount: Int = 0
+        protected set
+
+    @Column
+    var inviterId: UUID? = null
+        protected set
+
+    @Column(nullable = false)
+    var use: Boolean = false
+        protected set
+
+    @Column(nullable = false)
     var active: Boolean = true
         protected set
 
@@ -79,6 +93,10 @@ class User(
 
     @Column
     var agreedTermsOfMarketingDate: Instant? = null
+        protected set
+
+    @Column
+    var registeredDate: Instant? = null
         protected set
 
     @ManyToOne(fetch = LAZY)
@@ -110,8 +128,9 @@ class User(
         this.gender = gender
     }
 
-    fun changeRole(role: Role) {
-        this.role = role
+    fun register() {
+        this.role = Role.USER
+        this.registeredDate = Instant.now()
     }
 
     fun agreeOnTerms(
@@ -146,6 +165,22 @@ class User(
         this.group = group
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, group?.toDto())
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, penalties.map { it.toDto() }, group?.toDto())
+    fun setInviter(inviter: User) {
+        if (this.id == this.inviterId) throw BusinessException(ErrorCode.INVITER_NOT_ALLOWED)
+        if (this.inviterId != null) throw BusinessException(ErrorCode.INVITER_ALREADY_REGISTERED)
+        if (this.registeredDate!!.until(Instant.now(), ChronoUnit.DAYS) > 30) throw BusinessException(ErrorCode.INVITER_REGISTRATION_OVERDUE)
+
+        this.inviterId = inviter.id
+    }
+
+    fun increaseInvitationCount() {
+        this.invitationCount += 1
+    }
+
+    fun use() {
+        this.use = true
+    }
+
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, penalties.map { it.toDto() }, group?.toDto())
 }
