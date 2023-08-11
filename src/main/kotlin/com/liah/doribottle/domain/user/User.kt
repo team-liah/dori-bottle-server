@@ -166,7 +166,7 @@ class User(
     }
 
     fun setInviter(inviter: User) {
-        if (this.id == this.inviterId) throw BusinessException(ErrorCode.INVITER_NOT_ALLOWED)
+        if (this.id == inviter.id) throw BusinessException(ErrorCode.INVITER_NOT_ALLOWED)
         if (this.inviterId != null) throw BusinessException(ErrorCode.INVITER_ALREADY_REGISTERED)
         if (this.registeredDate!!.until(Instant.now(), ChronoUnit.DAYS) > 30) throw BusinessException(ErrorCode.INVITER_REGISTRATION_OVERDUE)
 
