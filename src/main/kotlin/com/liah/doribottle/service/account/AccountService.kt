@@ -50,7 +50,7 @@ class AccountService(
 
         user.update(name, birthDate, gender)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
-        user.changeRole(Role.USER)
+        user.register()
 
         applicationEventPublisher.publishEvent(
             PointSaveEvent(
