@@ -3,6 +3,9 @@ package com.liah.doribottle.web.v1.account
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.extension.createCookie
 import com.liah.doribottle.extension.currentUser
@@ -10,6 +13,8 @@ import com.liah.doribottle.extension.currentUserLoginId
 import com.liah.doribottle.extension.expireCookie
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.sms.SmsService
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.PointSaveMessage
 import com.liah.doribottle.web.v1.account.vm.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
@@ -25,6 +30,7 @@ import java.util.concurrent.ThreadLocalRandom
 class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
+    private val awsSqsSender: AwsSqsSender,
     @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
 
@@ -103,7 +109,7 @@ class AccountController(
         @CookieValue("refresh_token") refreshToken: String?,
         @Valid @RequestBody request: RegisterRequest
     ): ResponseEntity<AuthResponse> {
-        accountService.register(
+        val userId = accountService.register(
             loginId = currentUserLoginId()!!,
             name = request.name!!,
             birthDate = request.birthDate!!,
@@ -111,6 +117,14 @@ class AccountController(
             agreedTermsOfService = request.agreedTermsOfService!!,
             agreedTermsOfPrivacy = request.agreedTermsOfPrivacy!!,
             agreedTermsOfMarketing = request.agreedTermsOfMarketing!!
+        )
+        awsSqsSender.send(
+            PointSaveMessage(
+                userId = userId,
+                saveType = PointSaveType.REWARD,
+                eventType = PointEventType.SAVE_REGISTER_REWARD,
+                saveAmounts = SAVE_REGISTER_REWARD_AMOUNTS
+            )
         )
 
         val result = try {
