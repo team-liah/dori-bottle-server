@@ -52,15 +52,6 @@ class AccountService(
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.register()
 
-        applicationEventPublisher.publishEvent(
-            PointSaveEvent(
-                user.id,
-                PointSaveType.REWARD,
-                PointEventType.SAVE_REGISTER_REWARD,
-                SAVE_REGISTER_REWARD_AMOUNTS
-            )
-        )
-
         return user.id
     }
 
@@ -162,8 +153,17 @@ class AccountService(
     ) {
         val user = userRepository.findByLoginId(loginId)
         if (user == null) {
-            userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
+            val savedUser = userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
             register(loginId, "강백호", "19970224", Gender.MALE, true, true, true)
+
+            applicationEventPublisher.publishEvent(
+                PointSaveEvent(
+                    savedUser.id,
+                    PointSaveType.REWARD,
+                    PointEventType.SAVE_REGISTER_REWARD,
+                    SAVE_REGISTER_REWARD_AMOUNTS
+                )
+            )
         }
     }
 
