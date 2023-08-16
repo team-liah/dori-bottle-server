@@ -12,10 +12,10 @@ import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
-import org.springframework.context.ApplicationEventPublisher
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
@@ -29,9 +29,9 @@ import java.util.*
 @Service
 class AccountService(
     private val userRepository: UserRepository,
+    private val awsSqsSender: AwsSqsSender,
     private val tokenProvider: TokenProvider,
-    private val passwordEncoder: PasswordEncoder,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val passwordEncoder: PasswordEncoder
 ) {
     @Transactional
     fun register(
@@ -51,6 +51,15 @@ class AccountService(
         user.update(name, birthDate, gender)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.register()
+
+        awsSqsSender.send(
+            PointSaveMessage(
+                userId = user.id,
+                saveType = PointSaveType.REWARD,
+                eventType = PointEventType.SAVE_REGISTER_REWARD,
+                saveAmounts = SAVE_REGISTER_REWARD_AMOUNTS
+            )
+        )
 
         return user.id
     }
@@ -153,17 +162,8 @@ class AccountService(
     ) {
         val user = userRepository.findByLoginId(loginId)
         if (user == null) {
-            val savedUser = userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
+            userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
             register(loginId, "강백호", "19970224", Gender.MALE, true, true, true)
-
-            applicationEventPublisher.publishEvent(
-                PointSaveEvent(
-                    savedUser.id,
-                    PointSaveType.REWARD,
-                    PointEventType.SAVE_REGISTER_REWARD,
-                    SAVE_REGISTER_REWARD_AMOUNTS
-                )
-            )
         }
     }
 
