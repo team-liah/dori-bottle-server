@@ -24,18 +24,20 @@ spring:
 logging.level:
   org.hibernate.SQL: debug
 
-jwt:
-  secret: ${JWT_SECRET}
-  expiredMs: 3600000 # 1hour
-  preAuthExpiredMs: 300000 # 5minute
-
 app:
-  refreshToken:
-    expiredMs: 1209600000 # 2weeks
-
-toast:
-  sms:
-    url: https://api-sms.cloud.toast.com/
-    appKey: ${TOAST_APP_KEY}
-    secretKey: ${TOAST_SECRET_KEY}
-    sendNo: ${TOAST_SEND_NO}
+  auth:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiredMs: 3600000 # 1hour
+      preAuthExpiredMs: 300000 # 5minute
+    refreshToken:
+      expiredMs: 1209600000 # 2weeks
+  toast:
+    sms:
+      url: https://api-sms.cloud.toast.com/
+      appKey: ${TOAST_APP_KEY}
+      secretKey: ${TOAST_SECRET_KEY}
+      sendNo: ${TOAST_SEND_NO}
+  aws:
+    sqs:
+      queueName: PointSaveEventQueue.fifo
