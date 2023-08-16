@@ -8,11 +8,11 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.service.user.dto.UserDto
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -25,7 +25,7 @@ import java.util.*
 class UserService(
     private val userRepository: UserRepository,
     private val userQueryRepository: UserQueryRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val awsSqsSender: AwsSqsSender
 ) {
     @Transactional(readOnly = true)
     fun get(id: UUID) = userQueryRepository.get(id).toDetailDto()
@@ -77,8 +77,8 @@ class UserService(
         invitee.setInviter(inviter)
 
         // invitee reward
-        applicationEventPublisher.publishEvent(
-            PointSaveEvent(
+        awsSqsSender.send(
+            PointSaveMessage(
                 invitee.id,
                 PointSaveType.REWARD,
                 PointEventType.SAVE_REGISTER_INVITER_REWARD,
@@ -108,8 +108,8 @@ class UserService(
         inviter.increaseInvitationCount()
         val inviteRewardAmounts = SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
         if (inviteRewardAmounts != null) {
-            applicationEventPublisher.publishEvent(
-                PointSaveEvent(
+            awsSqsSender.send(
+                PointSaveMessage(
                     inviter.id,
                     PointSaveType.REWARD,
                     PointEventType.SAVE_INVITE_REWARD,
