@@ -14,7 +14,7 @@ import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.v1.me.vm.UpdateProfileRequest
+import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -121,7 +121,7 @@ class MeControllerTest : BaseControllerTest() {
     @Test
     fun updateProfile() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = UpdateProfileRequest("Updated Name", MALE, "19970224")
+        val body = ProfileUpdateRequest("Updated Name", MALE, "19970224")
 
         mockMvc.perform(
             put("${endPoint}/profile")
