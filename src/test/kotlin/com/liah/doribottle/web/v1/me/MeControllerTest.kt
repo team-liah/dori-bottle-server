@@ -123,6 +123,8 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("name", `is`(user.name)))
             .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
             .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
+            .andExpect(jsonPath("invitationCount", `is`(user.invitationCount)))
+            .andExpect(jsonPath("inviterId", `is`(user.inviterId)))
             .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))

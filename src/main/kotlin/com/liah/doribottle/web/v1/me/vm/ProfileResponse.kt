@@ -12,6 +12,8 @@ data class ProfileResponse(
     val name: String,
     val phoneNumber: String,
     val invitationCode: String,
+    val invitationCount: Int,
+    val inviterId: UUID?,
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,

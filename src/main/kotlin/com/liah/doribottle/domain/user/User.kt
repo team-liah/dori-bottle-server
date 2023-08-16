@@ -182,5 +182,5 @@ class User(
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, penalties.map { it.toDto() }, group?.toDto())
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties.map { it.toDto() }, group?.toDto())
 }

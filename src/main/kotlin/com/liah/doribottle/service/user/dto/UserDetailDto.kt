@@ -14,6 +14,8 @@ data class UserDetailDto(
     val name: String,
     val phoneNumber: String,
     val invitationCode: String,
+    val invitationCount: Int,
+    val inviterId: UUID?,
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,
@@ -21,6 +23,6 @@ data class UserDetailDto(
     val penalties: List<PenaltyDto>,
     val group: GroupDto?
 ) {
-    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, penalties.size, group)
-    fun toResponse() = UserDetailResponse(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, penalties, group)
+    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties.size, group)
+    fun toResponse() = UserDetailResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties, group)
 }
