@@ -4,8 +4,9 @@ import com.liah.doribottle.extension.currentUser
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.user.UserService
+import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.MeResponse
-import com.liah.doribottle.web.v1.me.vm.UpdateProfileRequest
+import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
@@ -26,7 +27,7 @@ class MeController(
 
     @PutMapping("/profile")
     fun updateProfile(
-        @Valid @RequestBody request: UpdateProfileRequest
+        @Valid @RequestBody request: ProfileUpdateRequest
     ) {
         userService.update(
             id = currentUserId()!!,
@@ -34,5 +35,12 @@ class MeController(
             birthDate = request.birthDate!!,
             gender = request.gender
         )
+    }
+
+    @PostMapping("/invitation-code")
+    fun registerInvitationCode(
+        @Valid @RequestBody request: InvitationCodeRegisterRequest
+    ) {
+        userService.registerInvitationCode(currentUserId()!!, request.invitationCode!!)
     }
 }
