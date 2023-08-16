@@ -2,14 +2,12 @@ package com.liah.doribottle.event
 
 import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.event.notification.NotificationSaveEvent
-import com.liah.doribottle.event.point.PointSaveEvent
 import com.liah.doribottle.event.user.FirstRentalUsedEvent
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.account.AdminAccountService
 import com.liah.doribottle.service.cup.CupService
 import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.service.notification.NotificationService
-import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.user.UserService
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -18,7 +16,6 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class ApplicationEventListener(
-    private val pointService: PointService,
     private val notificationService: NotificationService,
     private val accountService: AccountService,
     private val adminAccountService: AdminAccountService,
@@ -26,12 +23,6 @@ class ApplicationEventListener(
     private val cupService: CupService,
     private val userService: UserService
 ) {
-    @Async
-    @TransactionalEventListener(PointSaveEvent::class)
-    fun handlePointSaveEvent(event: PointSaveEvent) {
-        pointService.save(event.userId, event.saveType, event.eventType, event.saveAmounts)
-    }
-
     @Async
     @TransactionalEventListener(NotificationSaveEvent::class)
     fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
