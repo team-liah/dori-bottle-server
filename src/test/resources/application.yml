@@ -19,6 +19,8 @@ spring:
       credentials:
         access-key: dummyKey
         secret-key: dummyKey
+      sqs:
+        enabled: false
 
 logging.level:
   org.hibernate.SQL: debug
