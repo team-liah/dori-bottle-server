@@ -12,12 +12,14 @@ class AwsSqsSender(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun send(message: PointSaveMessage) {
-        sqsTemplate.send<PointSaveMessage> { to -> to
-            .queue(queueName)
-            .payload(message)
-        }
+    fun send(message: PointSaveMessage?) {
+        message?.let {
+            sqsTemplate.send<PointSaveMessage> { to -> to
+                .queue(queueName)
+                .payload(it)
+            }
 
-        log.info("Send point-save-message : $message")
+            log.info("Send point-save-message : $message")
+        }
     }
 }
