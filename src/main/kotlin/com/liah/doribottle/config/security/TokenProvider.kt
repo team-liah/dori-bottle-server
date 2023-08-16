@@ -14,9 +14,9 @@ import java.util.*
 @Service
 class TokenProvider(
     private val refreshTokenRepository: RefreshTokenRepository,
-    @Value("\${jwt.secret}") private val secret: String,
-    @Value("\${jwt.expiredMs}") private val expiredMs: Long,
-    @Value("\${jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long
+    @Value("\${app.auth.jwt.secret}") private val secret: String,
+    @Value("\${app.auth.jwt.expiredMs}") private val expiredMs: Long,
+    @Value("\${app.auth.jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
