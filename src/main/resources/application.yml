@@ -40,4 +40,4 @@ app:
       sendNo: ${TOAST_SEND_NO}
   aws:
     sqs:
-      queueName: PointSaveEventQueue.fifo
+      queueName: point-save-queue.fifo

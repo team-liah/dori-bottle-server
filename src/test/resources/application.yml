@@ -39,4 +39,4 @@ app:
       sendNo: dummyNo
   aws:
     sqs:
-      queueName: PointSaveEventQueue.fifo
+      queueName: dummyQueue

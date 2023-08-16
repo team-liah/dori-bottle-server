@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 @Configuration
 class AwsSqsConfig(
     @Value("\${spring.cloud.aws.credentials.access-key}") private val accessKey: String,
-    @Value("\${spring.cloud.aws.credentials.secret-key}") private val secretKey: String,
+    @Value("\${spring.cloud.aws.credentials.secret-key}") private val secretKey: String
 ) {
     @Bean
     fun sqsAsyncClient(): SqsAsyncClient {
@@ -25,7 +25,7 @@ class AwsSqsConfig(
     }
 
     @Bean
-    fun defaultSqlListenerContainerFactory(): SqsMessageListenerContainerFactory<Any> {
+    fun defaultSqsListenerContainerFactory(): SqsMessageListenerContainerFactory<Any> {
         return SqsMessageListenerContainerFactory
             .builder<Any>()
             .sqsAsyncClient(sqsAsyncClient())
