@@ -12,11 +12,18 @@ import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.BDDMockito.doNothing
+import org.mockito.BDDMockito.times
+import org.mockito.Mockito.any
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.util.*
@@ -25,6 +32,9 @@ class UserServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userService: UserService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var groupRepository: GroupRepository
+
+    @MockBean
+    private lateinit var mockAwsSqsSender: AwsSqsSender
 
     @DisplayName("유저 조회")
     @Test
@@ -140,6 +150,8 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("초대코드 등록")
     @Test
     fun registerInvitationCode() {
+        //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         userRepository.save(inviter)
@@ -148,19 +160,25 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
+        //when
         userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         clear()
 
+        //then
         val findInviter = userRepository.findByIdOrNull(inviter.id)
         val findInvitee = userRepository.findByIdOrNull(invitee.id)
 
         assertThat(findInviter?.invitationCount).isEqualTo(0)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
+
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
     }
 
     @DisplayName("초대코드 등록 TC2")
     @Test
     fun registerInvitationCodeTc2() {
+        //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         userRepository.save(inviter)
@@ -170,6 +188,7 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
+        //when
         userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         clear()
 
@@ -178,16 +197,19 @@ class UserServiceTest : BaseServiceTest() {
 
         assertThat(findInviter?.invitationCount).isEqualTo(1)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
     }
 
     @DisplayName("초대코드 등록 예외")
     @Test
     fun registerInvitationCodeException() {
+        //given
         val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
         invitee.register()
         userRepository.save(invitee)
         clear()
 
+        //when, then
         val exception1 = assertThrows<NotFoundException> {
             userService.registerInvitationCode(invitee.id, "DummyCode")
         }
@@ -212,9 +234,11 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(exception3.errorCode).isEqualTo(ErrorCode.INVITER_ALREADY_REGISTERED)
     }
 
+    // TODO: Add Tc2: invitationCount is 5
     @DisplayName("초대자 보상 지급")
     @Test
     fun rewardInviterByInvitee() {
+        //given
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         userRepository.save(inviter)
@@ -224,9 +248,11 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
+        //when
         userService.rewardInviterByInvitee(invitee.id)
         clear()
 
+        //then
         val findInviter = userRepository.findByIdOrNull(inviter.id)
 
         assertThat(findInviter?.invitationCount).isEqualTo(1)
