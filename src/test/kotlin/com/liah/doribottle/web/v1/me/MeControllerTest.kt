@@ -13,17 +13,26 @@ import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.doNothing
+import org.mockito.BDDMockito.times
+import org.mockito.Mockito.any
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -35,6 +44,9 @@ class MeControllerTest : BaseControllerTest() {
     @Autowired private lateinit var groupRepository: GroupRepository
     @Autowired private lateinit var alertRepository: AlertRepository
 
+    @MockBean
+    private lateinit var mockAwsSqsSender: AwsSqsSender
+
     private lateinit var user: User
     private lateinit var userRefreshToken: RefreshToken
 
@@ -42,6 +54,7 @@ class MeControllerTest : BaseControllerTest() {
     internal fun init() {
         val group = groupRepository.save(Group("리아", GroupType.COMPANY))
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
+        userEntity.register()
         userEntity.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         userEntity.updateGroup(group)
         user = userRepository.save(userEntity)
@@ -131,5 +144,105 @@ class MeControllerTest : BaseControllerTest() {
                 .content(body.convertJsonToString())
         )
             .andExpect(status().isOk)
+    }
+
+    @DisplayName("초대코드 등록")
+    @Test
+    fun registerInvitationCode() {
+        //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
+        inviter.register()
+        userRepository.save(inviter)
+        val body = InvitationCodeRegisterRequest(inviter.invitationCode)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/invitation-code")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+
+        val findInvitee = userRepository.findByIdOrNull(user.id)
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+
+        assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
+        assertThat(findInviter?.invitationCount).isEqualTo(0)
+
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+    }
+
+    @DisplayName("초대코드 등록 TC2")
+    @Test
+    fun registerInvitationCodeTc2() {
+        //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
+        inviter.register()
+        userRepository.save(inviter)
+
+        user.use()
+        userRepository.save(user)
+        val body = InvitationCodeRegisterRequest(inviter.invitationCode)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/invitation-code")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+
+        val findInvitee = userRepository.findByIdOrNull(user.id)
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+
+        assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
+
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+    }
+
+    @DisplayName("초대코드 등록 TC3")
+    @Test
+    fun registerInvitationCodeTc3() {
+        //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
+        inviter.register()
+        (0..3).forEach { _ -> inviter.increaseInvitationCount() }
+        userRepository.save(inviter)
+
+        user.use()
+        userRepository.save(user)
+        val body = InvitationCodeRegisterRequest(inviter.invitationCode)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/invitation-code")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+
+        val findInvitee = userRepository.findByIdOrNull(user.id)
+        val findInviter = userRepository.findByIdOrNull(inviter.id)
+
+        assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
+        assertThat(findInviter?.invitationCount).isEqualTo(5)
+
+        verify(mockAwsSqsSender, times(2)).send(any(PointSaveMessage::class.java))
     }
 }
