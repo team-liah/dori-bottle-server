@@ -41,12 +41,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.security:spring-security-test")
 
-	// aws
-	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
-
 	// aws sqs
-	implementation("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1")
-	implementation("io.awspring.cloud:spring-cloud-aws-sqs:3.0.1")
+	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1"))
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
