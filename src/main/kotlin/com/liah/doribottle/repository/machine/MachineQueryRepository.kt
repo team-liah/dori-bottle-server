@@ -15,6 +15,7 @@ class MachineQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
+        no: String? = null,
         name: String? = null,
         type: MachineType? = null,
         state: MachineState? = null,
@@ -24,6 +25,7 @@ class MachineQueryRepository(
         return queryFactory
             .selectFrom(machine)
             .where(
+                noEq(no),
                 nameContains(name),
                 typeEq(type),
                 stateEq(state),
@@ -32,6 +34,7 @@ class MachineQueryRepository(
             .toPage(pageable)
     }
 
+    private fun noEq(no: String?) = no?.let { machine.no.eq(it) }
     private fun nameContains(name: String?) = name?.let { machine.name.contains(it) }
     private fun typeEq(type: MachineType?) = type?.let { machine.type.eq(it) }
     private fun stateEq(state: MachineState?) = state?.let { machine.state.eq(it) }

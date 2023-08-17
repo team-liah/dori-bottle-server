@@ -63,6 +63,7 @@ class MachineService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        no: String? = null,
         name: String? = null,
         type: MachineType? = null,
         state: MachineState? = null,
@@ -70,6 +71,7 @@ class MachineService(
         pageable: Pageable
     ): Page<MachineDto> {
         return machineQueryRepository.getAll(
+            no = no,
             name = name,
             type = type,
             state = state,
@@ -93,6 +95,16 @@ class MachineService(
             address = address?.toEmbeddable(),
             capacity = capacity
         )
+        machine.updateCupAmounts(cupAmounts)
+    }
+
+    fun updateCupAmounts(
+        id: UUID,
+        cupAmounts: Int
+    ) {
+        val machine = machineRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+
         machine.updateCupAmounts(cupAmounts)
     }
 

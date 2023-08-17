@@ -12,6 +12,7 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
@@ -84,6 +85,29 @@ class MachineResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("message", `is`(ErrorCode.MACHINE_ALREADY_REGISTERED.message)))
     }
 
+    @DisplayName("자판기 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun get() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+
+        mockMvc.perform(
+            get("${endPoint}/${machine.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("no", `is`(machine.no)))
+            .andExpect(jsonPath("name", `is`(machine.name)))
+            .andExpect(jsonPath("type", `is`(machine.type.name)))
+            .andExpect(jsonPath("address.zipCode", `is`(machine.address?.zipCode)))
+            .andExpect(jsonPath("address.address1", `is`(machine.address?.address1)))
+            .andExpect(jsonPath("address.address2", `is`(machine.address?.address2)))
+            .andExpect(jsonPath("capacity", `is`(machine.capacity)))
+            .andExpect(jsonPath("cupAmounts", `is`(machine.cupAmounts)))
+            .andExpect(jsonPath("state", `is`(machine.state.name)))
+    }
+
     @DisplayName("자판기 목록 조회")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
@@ -104,6 +128,15 @@ class MachineResourceTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].no", `is`(expectValue)))
+    }
+
+    private fun insertMachines() {
+        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), 100))
     }
 
     @DisplayName("자판기 정보 수정")
@@ -139,12 +172,53 @@ class MachineResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
     }
 
-    private fun insertMachines() {
-        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), 100))
+    @DisplayName("자판기 정보 수정 - 예외 TC2")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun updateExceptionTc2() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, -1)
+
+        mockMvc.perform(
+            put("$endPoint/${machine.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("code", `is`(ErrorCode.INVALID_INPUT_VALUE.code)))
+    }
+
+    @DisplayName("자판기 컵 개수 수정")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun updateCupAmounts() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineCupAmountsUpdateRequest(100)
+
+        mockMvc.perform(
+            put("$endPoint/${machine.id}/cup-amounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("자판기 컵 개수 수정 - 예외")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun updateCupAmountsException() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachineCupAmountsUpdateRequest(102)
+
+        mockMvc.perform(
+            put("$endPoint/${machine.id}/cup-amounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
     }
 }
