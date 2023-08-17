@@ -2,10 +2,7 @@ package com.liah.doribottle.web.admin.machine
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.machine.MachineService
-import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
-import com.liah.doribottle.web.admin.machine.vm.MachineSearchRequest
-import com.liah.doribottle.web.admin.machine.vm.MachineSearchResponse
-import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.*
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -30,6 +27,13 @@ class MachineResource(
             address = request.address!!,
             capacity = request.capacity!!
         )
+    }
+
+    @GetMapping("/{id}")
+    fun get(
+        @PathVariable id: UUID
+    ): MachineResponse {
+        return machineService.get(id).toResponse()
     }
 
     @GetMapping
@@ -59,6 +63,17 @@ class MachineResource(
             name = request.name!!,
             address = request.address!!,
             capacity = request.capacity!!,
+            cupAmounts = request.cupAmounts!!
+        )
+    }
+
+    @PutMapping("/{id}/cup-amounts")
+    fun updateCupAmounts(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: MachineCupAmountsUpdateRequest
+    ) {
+        machineService.updateCupAmounts(
+            id = id,
             cupAmounts = request.cupAmounts!!
         )
     }

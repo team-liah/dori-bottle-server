@@ -3,6 +3,7 @@ package com.liah.doribottle.service.machine.dto
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.AddressDto
+import com.liah.doribottle.web.admin.machine.vm.MachineResponse
 import com.liah.doribottle.web.admin.machine.vm.MachineSearchResponse
 import java.util.*
 
@@ -16,5 +17,6 @@ data class MachineDto(
     val cupAmounts: Int,
     val state: MachineState
 ) {
+    fun toResponse() = MachineResponse(id, no, name, type, address, capacity, cupAmounts, state)
     fun toSearchResponse() = MachineSearchResponse(id, no, name, type, address, capacity, cupAmounts, state)
 }

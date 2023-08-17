@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.admin.machine.vm
 
 import com.liah.doribottle.service.common.AddressDto
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 
 data class MachineUpdateRequest(
@@ -8,8 +9,10 @@ data class MachineUpdateRequest(
     val name: String?,
     @field:NotNull
     val address: AddressDto?,
+    @field:Min(0)
     @field:NotNull
     val capacity: Int?,
+    @field:Min(0)
     @field:NotNull
     val cupAmounts: Int?
 )
