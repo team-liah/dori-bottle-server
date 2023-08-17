@@ -2,10 +2,7 @@ package com.liah.doribottle.web.admin.machine
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.machine.MachineService
-import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
-import com.liah.doribottle.web.admin.machine.vm.MachineSearchRequest
-import com.liah.doribottle.web.admin.machine.vm.MachineSearchResponse
-import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.*
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -32,12 +29,20 @@ class MachineResource(
         )
     }
 
+    @GetMapping("/{id}")
+    fun get(
+        @PathVariable id: UUID
+    ): MachineResponse {
+        return machineService.get(id).toResponse()
+    }
+
     @GetMapping
     fun getAll(
         @ParameterObject request: MachineSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<MachineSearchResponse> {
         val result = machineService.getAll(
+                no = request.no,
                 name = request.name,
                 type = request.type,
                 state = request.state,
@@ -58,6 +63,17 @@ class MachineResource(
             name = request.name!!,
             address = request.address!!,
             capacity = request.capacity!!,
+            cupAmounts = request.cupAmounts!!
+        )
+    }
+
+    @PutMapping("/{id}/cup-amounts")
+    fun updateCupAmounts(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: MachineCupAmountsUpdateRequest
+    ) {
+        machineService.updateCupAmounts(
+            id = id,
             cupAmounts = request.cupAmounts!!
         )
     }

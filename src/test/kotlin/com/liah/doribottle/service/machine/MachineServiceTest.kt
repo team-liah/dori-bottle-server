@@ -89,7 +89,7 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result = machineService.getAll(null, null, null, null, Pageable.unpaged())
+        val result = machineService.getAll(null, null, null, null, null, Pageable.unpaged())
 
         //then
         assertThat(result)
@@ -105,9 +105,9 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result1 = machineService.getAll(null, null, null, "도산대로", Pageable.unpaged())
-        val result2 = machineService.getAll(null, COLLECTION, null, null, Pageable.unpaged())
-        val result3 = machineService.getAll(null, null, NORMAL, "삼성", Pageable.unpaged())
+        val result1 = machineService.getAll(null, null, null, null, "도산대로", Pageable.unpaged())
+        val result2 = machineService.getAll(null, null, COLLECTION, null, null, Pageable.unpaged())
+        val result3 = machineService.getAll(null, null, null, NORMAL, "삼성", Pageable.unpaged())
 
         //then
         assertThat(result1)
@@ -129,8 +129,8 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result1 = machineService.getAll(null, null, null, "도산대로", Pageable.ofSize(1))
-        val result2 = machineService.getAll(null, null, null, null, Pageable.ofSize(3))
+        val result1 = machineService.getAll(null, null, null, null, "도산대로", Pageable.ofSize(1))
+        val result2 = machineService.getAll(null, null, null, null, null, Pageable.ofSize(3))
 
         //then
         assertThat(result1)
@@ -139,6 +139,15 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(result2)
             .extracting("no")
             .containsExactly("0000001", "0000002", "0000003")
+    }
+
+    fun insertMachines() {
+        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), 100))
+        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), 100))
+        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), 100))
+        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), 100))
+        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), 100))
+        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), 100))
     }
 
     @DisplayName("자판기 정보 수정")
@@ -167,12 +176,35 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(findMachine?.state).isEqualTo(NORMAL)
     }
 
-    fun insertMachines() {
-        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), 100))
+    @DisplayName("자판기 컵 개수 수정")
+    @Test
+    fun updateCupAmounts() {
+        //given
+        val address = Address("12345", "삼성로", null)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        clear()
+
+        //when
+        machineService.updateCupAmounts(machine.id, 100)
+        clear()
+
+        //then
+        val findMachine = machineRepository.findByIdOrNull(machine.id)
+        assertThat(findMachine?.cupAmounts).isEqualTo(100)
+    }
+
+    @DisplayName("자판기 컵 개수 수정 TC2")
+    @Test
+    fun updateCupAmountsTc2() {
+        //given
+        val address = Address("12345", "삼성로", null)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        clear()
+
+        //when
+        val exception = assertThrows<BusinessException> {
+            machineService.updateCupAmounts(machine.id, 101)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.FULL_OF_CUP)
     }
 }
