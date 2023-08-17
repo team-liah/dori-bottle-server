@@ -13,10 +13,10 @@ import org.springframework.web.client.RestTemplate
 
 @Service
 class ToastApiClient(
-    @Value("\${toast.sms.url}") private val smsUrl: String,
-    @Value("\${toast.sms.appKey}") private val smsAppKey: String,
-    @Value("\${toast.sms.secretKey}") private val smsSecretKey: String,
-    @Value("\${toast.sms.sendNo}") private val sendNo: String
+    @Value("\${app.toast.sms.url}") private val smsUrl: String,
+    @Value("\${app.toast.sms.appKey}") private val smsAppKey: String,
+    @Value("\${app.toast.sms.secretKey}") private val smsSecretKey: String,
+    @Value("\${app.toast.sms.sendNo}") private val sendNo: String
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val authSmsSendRequestUrl = "${smsUrl}/sms/v3.0/appKeys/${smsAppKey}/sender/auth/sms"

@@ -4,15 +4,23 @@ import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.BDDMockito.doNothing
+import org.mockito.BDDMockito.times
+import org.mockito.Mockito.any
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -26,12 +34,16 @@ class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
+    @MockBean
+    private lateinit var mockAwsSqsSender: AwsSqsSender
+
     private val loginId = "010-0000-0000"
 
     @DisplayName("회원가입")
     @Test
     fun register() {
         //given
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
         val saveUser = userRepository.save(User(loginId, "사용자", loginId, Role.GUEST))
         clear()
 
@@ -50,6 +62,8 @@ class AccountServiceTest : BaseServiceTest() {
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
+
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
     }
 
     @DisplayName("비밀번호 업데이트")

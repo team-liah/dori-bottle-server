@@ -6,10 +6,14 @@ import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
-import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.domain.user.Gender.MALE
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.sms.SmsService
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.account.vm.AuthRequest
 import com.liah.doribottle.web.v1.account.vm.RegisterRequest
@@ -20,7 +24,11 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.*
+import org.mockito.Mockito.any
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -32,6 +40,11 @@ class AccountControllerTest : BaseControllerTest() {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
+    @MockBean
+    private lateinit var mockSmsService: SmsService
+    @MockBean
+    private lateinit var mockAwsSqsSender: AwsSqsSender
 
     private lateinit var user: User
     private lateinit var guest: User
@@ -59,6 +72,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("인증요청")
     @Test
     fun sendSms() {
+        doNothing().`when`(mockSmsService).sendLoginAuthSms(anyString(), anyString())
         val body = SendSmsRequest(USER_LOGIN_ID)
 
         mockMvc.perform(
@@ -67,8 +81,9 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertJsonToString())
         )
-            .andExpect(status().is5xxServerError)
-            .andExpect(jsonPath("message", `is`(ErrorCode.SMS_SENDING_ERROR.message)))
+            .andExpect(status().isOk)
+
+        verify(mockSmsService, times(1)).sendLoginAuthSms(anyString(), anyString())
     }
 
     @DisplayName("인증")
@@ -173,6 +188,7 @@ class AccountControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = GUEST_LOGIN_ID, role = Role.GUEST)
     @Test
     fun register() {
+        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
         val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.refreshToken)
         val body = RegisterRequest("Tester 2", MALE, "19970101", true, true, false)
 
@@ -187,5 +203,7 @@ class AccountControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
             .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
             .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+
+        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
     }
 }

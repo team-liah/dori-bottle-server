@@ -1,7 +1,9 @@
 package com.liah.doribottle.service.notification
 
+import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.notification.Notification
 import com.liah.doribottle.domain.notification.NotificationType.*
+import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.notification.NotificationRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,6 +19,8 @@ class NotificationServiceTest : BaseServiceTest() {
     private lateinit var notificationService: NotificationService
     @Autowired
     private lateinit var notificationRepository: NotificationRepository
+    @Autowired
+    private lateinit var alertRepository: AlertRepository
 
     @DisplayName("알림 저장")
     @Test
@@ -78,7 +82,8 @@ class NotificationServiceTest : BaseServiceTest() {
     @Test
     fun read() {
         //given
-        val notification = notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
+        val userId = UUID.randomUUID()
+        val notification = notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
         clear()
 
         //when
@@ -88,5 +93,82 @@ class NotificationServiceTest : BaseServiceTest() {
         //then
         val findNotification = notificationRepository.findByIdOrNull(notification.id)
         assertThat(findNotification?.read).isTrue
+    }
+
+    @DisplayName("Alert")
+    @Test
+    fun alert() {
+        //given
+        val userId = UUID.randomUUID()
+        val userIdString = userId.toString()
+
+        //when
+        notificationService.alert(userId)
+
+        //then
+        val alert = alertRepository.findByIdOrNull(userIdString)
+        assertThat(alert?.userId).isEqualTo(userIdString)
+        assertThat(alert?.count).isEqualTo(1)
+    }
+
+    @DisplayName("Alert TC2")
+    @Test
+    fun alertTc2() {
+        //given
+        val userId = UUID.randomUUID()
+        val userIdString = userId.toString()
+        alertRepository.save(Alert(userIdString, 3))
+
+        //when
+        notificationService.alert(userId)
+
+        //then
+        val alert = alertRepository.findByIdOrNull(userIdString)
+        assertThat(alert?.userId).isEqualTo(userIdString)
+        assertThat(alert?.count).isEqualTo(4)
+    }
+
+    @DisplayName("Clear Alert")
+    @Test
+    fun clearAlert() {
+        //given
+        val userId = UUID.randomUUID()
+        val userIdString = userId.toString()
+        alertRepository.save(Alert(userIdString, 3))
+
+        //when
+        notificationService.clearAlert(userId)
+
+        //then
+        val alert = alertRepository.findByIdOrNull(userIdString)
+        assertThat(alert).isNull()
+    }
+
+    @DisplayName("Get Alert Count")
+    @Test
+    fun getAlertCount() {
+        //given
+        val userId = UUID.randomUUID()
+        val userIdString = userId.toString()
+        alertRepository.save(Alert(userIdString, 3))
+
+        //when
+        val alertCount = notificationService.getAlertCount(userId)
+
+        //then
+        assertThat(alertCount).isEqualTo(3)
+    }
+
+    @DisplayName("Get Alert Count TC2")
+    @Test
+    fun getAlertCountTc2() {
+        //given
+        val userId = UUID.randomUUID()
+
+        //when
+        val alertCount = notificationService.getAlertCount(userId)
+
+        //then
+        assertThat(alertCount).isEqualTo(0)
     }
 }

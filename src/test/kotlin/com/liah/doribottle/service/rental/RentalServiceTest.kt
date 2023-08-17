@@ -80,6 +80,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
+        val findUser = userRepository.findByIdOrNull(user.id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
@@ -93,6 +94,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(findUser?.use).isTrue()
 
         assertThat(findPoint.remainAmounts).isEqualTo(8L)
 
@@ -127,6 +130,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
+        val findUser = userRepository.findByIdOrNull(user.id)
         val findPoints = pointRepository.findAllByUserId(user.id)
         val firstPoint = findPoints.first()
         val secondPoint = findPoints.last()
@@ -143,6 +147,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(findUser?.use).isTrue()
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(0L)
@@ -186,6 +192,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
+        val findUser = userRepository.findByIdOrNull(user.id)
         val findPoints = pointRepository.findAllByUserId(user.id)
         val firstPoint = findPoints[0]
         val secondPoint = findPoints[1]
@@ -204,6 +211,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(findUser?.use).isTrue()
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(1L)
@@ -250,6 +259,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
+        val findUser = userRepository.findByIdOrNull(user.id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
@@ -263,6 +273,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
+
+        assertThat(findUser?.use).isTrue()
 
         assertThat(findPoint.remainAmounts).isEqualTo(9L)
 

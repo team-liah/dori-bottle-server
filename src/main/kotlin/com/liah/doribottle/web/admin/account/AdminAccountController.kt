@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/admin/api/account")
 class AdminAccountController(
     private val adminAccountService: AdminAccountService,
-    @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
-    @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
+    @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
+    @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
     @PostMapping("/auth")
     fun auth(

@@ -4,6 +4,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
 import com.liah.doribottle.service.user.dto.PenaltyDto
+import java.time.Instant
 import java.util.*
 
 data class UserDetailResponse(
@@ -12,9 +13,12 @@ data class UserDetailResponse(
     val name: String,
     val phoneNumber: String,
     val invitationCode: String,
+    val invitationCount: Int,
+    val inviterId: UUID?,
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,
+    val registeredDate: Instant?,
     val penalties: List<PenaltyDto>,
     val group: GroupDto?
 )

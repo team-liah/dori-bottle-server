@@ -3,6 +3,7 @@ package com.liah.doribottle.web.v1.me.vm
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
+import java.time.Instant
 import java.util.*
 
 data class ProfileResponse(
@@ -11,9 +12,12 @@ data class ProfileResponse(
     val name: String,
     val phoneNumber: String,
     val invitationCode: String,
+    val invitationCount: Int,
+    val inviterId: UUID?,
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,
+    val registeredDate: Instant?,
     val penaltyCount: Int,
     val group: GroupDto?
 )

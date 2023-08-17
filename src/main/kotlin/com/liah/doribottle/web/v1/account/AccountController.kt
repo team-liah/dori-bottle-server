@@ -25,8 +25,8 @@ import java.util.concurrent.ThreadLocalRandom
 class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
-    @Value("\${jwt.expiredMs}") private val jwtExpiredMs: Long,
-    @Value("\${app.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
+    @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
+    @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
 
     // TODO: Remove
     private val applicationEventPublisher: ApplicationEventPublisher
