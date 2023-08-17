@@ -65,7 +65,7 @@ class User(
     var inviterId: UUID? = null
         protected set
 
-    @Column(nullable = false)
+    @Column(name = "`use`", nullable = false)
     var use: Boolean = false
         protected set
 
