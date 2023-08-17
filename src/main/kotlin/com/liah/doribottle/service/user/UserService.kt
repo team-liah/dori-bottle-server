@@ -2,9 +2,16 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
+import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.sqs.AwsSqsSender
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.service.user.dto.UserDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -17,7 +24,8 @@ import java.util.*
 @Transactional
 class UserService(
     private val userRepository: UserRepository,
-    private val userQueryRepository: UserQueryRepository
+    private val userQueryRepository: UserQueryRepository,
+    private val awsSqsSender: AwsSqsSender
 ) {
     @Transactional(readOnly = true)
     fun get(id: UUID) = userQueryRepository.get(id).toDetailDto()
@@ -55,5 +63,59 @@ class UserService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.update(name, birthDate, gender)
+    }
+
+    fun registerInvitationCode(
+        inviteeId: UUID,
+        invitationCode: String
+    ) {
+        val invitee = userRepository.findByIdOrNull(inviteeId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val inviter = userRepository.findByInvitationCode(invitationCode)
+            ?: throw NotFoundException(ErrorCode.INVITER_NOT_FOUND)
+
+        invitee.setInviter(inviter)
+
+        // invitee reward
+        awsSqsSender.send(
+            PointSaveMessage(
+                invitee.id,
+                PointSaveType.REWARD,
+                PointEventType.SAVE_REGISTER_INVITER_REWARD,
+                SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+            )
+        )
+
+        if (invitee.use) {
+            // inviter reward
+            rewardInviter(inviter)
+        }
+    }
+
+    fun rewardInviterByInvitee(
+        inviteeId: UUID
+    ) {
+        val invitee = userRepository.findByIdOrNull(inviteeId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val inviter = invitee.inviterId?.let { userRepository.findByIdOrNull(it) }
+
+        inviter?.let { rewardInviter(it) }
+    }
+
+    private fun rewardInviter(
+        inviter: User
+    ) {
+        inviter.increaseInvitationCount()
+        val inviteRewardAmounts = SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
+        if (inviteRewardAmounts != null) {
+            awsSqsSender.send(
+                PointSaveMessage(
+                    inviter.id,
+                    PointSaveType.REWARD,
+                    PointEventType.SAVE_INVITE_REWARD,
+                    inviteRewardAmounts
+                )
+            )
+        }
     }
 }

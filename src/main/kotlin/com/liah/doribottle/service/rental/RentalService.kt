@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.event.user.FirstRentalUsedEvent
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
@@ -17,6 +18,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.rental.dto.RentalDto
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -33,7 +35,8 @@ class RentalService(
     private val cupRepository: CupRepository,
     private val machineRepository: MachineRepository,
     private val pointQueryRepository: PointQueryRepository,
-    private val pointHistoryRepository: PointHistoryRepository
+    private val pointHistoryRepository: PointHistoryRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     @CacheEvict(value = ["pointSum"], key = "#userId")
     fun rent(
@@ -48,6 +51,11 @@ class RentalService(
 
         val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 14))
         usePoint(user.id, rental.cost)
+
+        if (!user.use) {
+            user.use()
+            applicationEventPublisher.publishEvent(FirstRentalUsedEvent(user.id))
+        }
 
         return rental.id
     }

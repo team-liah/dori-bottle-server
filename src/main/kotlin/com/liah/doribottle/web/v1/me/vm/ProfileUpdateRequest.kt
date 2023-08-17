@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 
-data class UpdateProfileRequest(
+data class ProfileUpdateRequest(
     @field:NotEmpty
     val name: String?,
     val gender: Gender?,

@@ -6,7 +6,7 @@ import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchRequest
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
-import com.liah.doribottle.web.v1.rental.vm.UpdateRentalCupRequest
+import com.liah.doribottle.web.v1.rental.vm.RentalCupUpdateRequest
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -34,7 +34,7 @@ class RentalController(
     @PutMapping("/{id}")
     fun updateRentalCup(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: UpdateRentalCupRequest
+        @Valid @RequestBody request: RentalCupUpdateRequest
     ) {
         rentalService.updateRentalCup(
             id = id,

@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.sqs
 
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
