@@ -261,7 +261,6 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(exception3.errorCode).isEqualTo(ErrorCode.INVITER_ALREADY_REGISTERED)
     }
 
-    // TODO: Add Tc2: invitationCount is 5
     @DisplayName("초대자 보상 지급")
     @Test
     fun rewardInviterByInvitee() {
