@@ -13,7 +13,7 @@ import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.PointSaveMessage
+import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.account.vm.AuthRequest
 import com.liah.doribottle.web.v1.account.vm.RegisterRequest

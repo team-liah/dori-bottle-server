@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.user.vm
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
+import java.time.Instant
 import java.util.*
 
 data class UserSearchResponse(
@@ -14,5 +15,6 @@ data class UserSearchResponse(
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,
+    val registeredDate: Instant?,
     val group: GroupDto?
 )

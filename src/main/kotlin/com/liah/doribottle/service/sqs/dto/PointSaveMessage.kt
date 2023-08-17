@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.sqs
+package com.liah.doribottle.service.sqs.dto
 
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType

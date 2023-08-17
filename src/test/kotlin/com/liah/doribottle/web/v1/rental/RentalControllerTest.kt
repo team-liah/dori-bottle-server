@@ -22,7 +22,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
-import com.liah.doribottle.web.v1.rental.vm.UpdateRentalCupRequest
+import com.liah.doribottle.web.v1.rental.vm.RentalCupUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -132,7 +132,7 @@ class RentalControllerTest : BaseControllerTest() {
     @Test
     fun updateRentalCup() {
         val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
-        val body = UpdateRentalCupRequest(cup.rfid)
+        val body = RentalCupUpdateRequest(cup.rfid)
 
         mockMvc.perform(
             put("${endPoint}/${rental.id}")

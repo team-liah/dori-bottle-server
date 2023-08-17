@@ -24,6 +24,10 @@ enum class ErrorCode(
     // User
     USER_NOT_FOUND(404, "C001", "User entity not found."),
     USER_ALREADY_REGISTERED(400, "C002", "User is already registered."),
+    INVITER_ALREADY_REGISTERED(400, "C003", "Inviter is already registered."),
+    INVITER_NOT_ALLOWED(400, "C004", "Invalid inviter."),
+    INVITER_REGISTRATION_OVERDUE(400, "C005", "Inviter registration is overdue."),
+    INVITER_NOT_FOUND(404, "C006", "Inviter entity not found."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
