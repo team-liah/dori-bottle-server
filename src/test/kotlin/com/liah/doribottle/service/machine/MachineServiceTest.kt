@@ -89,7 +89,7 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result = machineService.getAll(null, null, null, null, Pageable.unpaged())
+        val result = machineService.getAll(null, null, null, null, null, Pageable.unpaged())
 
         //then
         assertThat(result)
@@ -105,9 +105,9 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result1 = machineService.getAll(null, null, null, "도산대로", Pageable.unpaged())
-        val result2 = machineService.getAll(null, COLLECTION, null, null, Pageable.unpaged())
-        val result3 = machineService.getAll(null, null, NORMAL, "삼성", Pageable.unpaged())
+        val result1 = machineService.getAll(null, null, null, null, "도산대로", Pageable.unpaged())
+        val result2 = machineService.getAll(null, null, COLLECTION, null, null, Pageable.unpaged())
+        val result3 = machineService.getAll(null, null, null, NORMAL, "삼성", Pageable.unpaged())
 
         //then
         assertThat(result1)
@@ -129,8 +129,8 @@ class MachineServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result1 = machineService.getAll(null, null, null, "도산대로", Pageable.ofSize(1))
-        val result2 = machineService.getAll(null, null, null, null, Pageable.ofSize(3))
+        val result1 = machineService.getAll(null, null, null, null, "도산대로", Pageable.ofSize(1))
+        val result2 = machineService.getAll(null, null, null, null, null, Pageable.ofSize(3))
 
         //then
         assertThat(result1)

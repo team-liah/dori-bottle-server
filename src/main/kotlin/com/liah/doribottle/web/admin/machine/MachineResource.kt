@@ -38,6 +38,7 @@ class MachineResource(
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<MachineSearchResponse> {
         val result = machineService.getAll(
+                no = request.no,
                 name = request.name,
                 type = request.type,
                 state = request.state,
