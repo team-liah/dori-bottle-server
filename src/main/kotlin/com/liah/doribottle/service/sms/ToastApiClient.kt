@@ -2,7 +2,7 @@ package com.liah.doribottle.service.sms
 
 import com.liah.doribottle.common.error.exception.SmsSendingException
 import com.liah.doribottle.service.sms.dto.Recipient
-import com.liah.doribottle.service.sms.dto.SendAuthSmsTemplateRequest
+import com.liah.doribottle.service.sms.dto.AuthSmsSendRequest
 import com.liah.doribottle.service.sms.dto.ToastRestApiResponse
 import com.liah.doribottle.service.sms.dto.ToastTemplate
 import org.slf4j.LoggerFactory
@@ -21,13 +21,13 @@ class ToastApiClient(
     private val log = LoggerFactory.getLogger(javaClass)
     private val authSmsSendRequestUrl = "${smsUrl}/sms/v3.0/appKeys/${smsAppKey}/sender/auth/sms"
 
-    fun sendAuthSmsTemplate(
+    fun sendAuthSms(
         template: ToastTemplate,
         recipientNo: String,
         templateParameter: Map<String, String>
     ) {
         val recipient = Recipient(recipientNo, "82", templateParameter)
-        val request = SendAuthSmsTemplateRequest(
+        val request = AuthSmsSendRequest(
             templateId = template.id,
             sendNo = sendNo,
             recipientList = listOf(recipient)
