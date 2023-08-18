@@ -86,10 +86,10 @@ class RentalService(
     }
 
     fun `return`(
-        toMachineId: UUID,
+        toMachineNo: String,
         cupRfid: String
     ) {
-        val toMachine = machineRepository.findByIdOrNull(toMachineId)
+        val toMachine = machineRepository.findByNo(toMachineNo)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
         val cup = cupRepository.findByRfid(cupRfid)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
