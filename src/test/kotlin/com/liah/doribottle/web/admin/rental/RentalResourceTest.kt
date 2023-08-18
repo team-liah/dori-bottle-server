@@ -78,7 +78,7 @@ class RentalResourceTest : BaseControllerTest() {
         rentalRepository.save(rental)
         cupRepository.save(cup)
 
-        val body = ReturnRequest(collectionMachine.id, CUP_RFID)
+        val body = ReturnRequest(collectionMachine.no, CUP_RFID)
         mockMvc.perform(
             post("${endPoint}/return")
                 .contentType(MediaType.APPLICATION_JSON)
