@@ -38,7 +38,7 @@ class AdminAccountService(
                 loginId = loginId,
                 loginPassword = encryptedPassword,
                 name = name,
-                role = Role.ADMIN
+                role = role
             )
         )
 
