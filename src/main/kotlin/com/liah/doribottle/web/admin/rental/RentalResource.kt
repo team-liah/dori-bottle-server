@@ -1,8 +1,8 @@
 package com.liah.doribottle.web.admin.rental
 
 import com.liah.doribottle.service.rental.RentalService
-import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
 import com.liah.doribottle.web.admin.rental.vm.RentalCupUpdateRequest
+import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -28,7 +28,7 @@ class RentalResource(
         @Valid @RequestBody request: ReturnRequest
     ) {
         rentalService.`return`(
-            toMachineId = request.machineId!!,
+            toMachineNo = request.machineNo!!,
             cupRfid = request.cupRfid!!
         )
     }
