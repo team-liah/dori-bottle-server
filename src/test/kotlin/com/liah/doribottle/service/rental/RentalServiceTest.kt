@@ -335,7 +335,7 @@ class RentalServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        rentalService.`return`(collectionMachine.id, cup.rfid)
+        rentalService.`return`(collectionMachine.no, cup.rfid)
 
         //then
         val findRental = rentalRepository.findByIdOrNull(rental.id)
@@ -362,12 +362,12 @@ class RentalServiceTest : BaseServiceTest() {
 
         //when, then
         val exception1 = assertThrows<BusinessException> {
-            rentalService.`return`(collectionMachine.id, "000000000")
+            rentalService.`return`(collectionMachine.no, "000000000")
         }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.CUP_NOT_FOUND)
 
         val exception2 = assertThrows<BusinessException> {
-            rentalService.`return`(collectionMachine.id, "B1:B1:B1:B1")
+            rentalService.`return`(collectionMachine.no, "B1:B1:B1:B1")
         }
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.RENTAL_NOT_FOUND)
     }
