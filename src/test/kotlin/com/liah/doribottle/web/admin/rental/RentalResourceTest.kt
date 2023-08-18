@@ -15,12 +15,14 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.admin.rental.vm.RentalCupUpdateRequest
 import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -44,6 +46,25 @@ class RentalResourceTest : BaseControllerTest() {
         cupRepository.deleteAll()
     }
 
+    @DisplayName("대여 컵 업데이트")
+    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @Test
+    fun updateRentalCup() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val cup = cupRepository.save(Cup(CUP_RFID))
+        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
+        val body = RentalCupUpdateRequest(cup.rfid)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put("${endPoint}/${rental.id}/cup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("반납")
     @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
     @Test
@@ -57,7 +78,7 @@ class RentalResourceTest : BaseControllerTest() {
         rentalRepository.save(rental)
         cupRepository.save(cup)
 
-        val body = ReturnRequest(collectionMachine.id, CUP_RFID)
+        val body = ReturnRequest(collectionMachine.no, CUP_RFID)
         mockMvc.perform(
             post("${endPoint}/return")
                 .contentType(MediaType.APPLICATION_JSON)
