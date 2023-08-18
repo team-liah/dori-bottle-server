@@ -1,7 +1,6 @@
 package com.liah.doribottle.web.v1.rental
 
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
@@ -22,7 +21,6 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.rental.vm.RentRequest
-import com.liah.doribottle.web.v1.rental.vm.RentalCupUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -30,7 +28,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -125,22 +124,6 @@ class RentalControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
-    }
-
-    @DisplayName("대여 컵 업데이트")
-    @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
-    @Test
-    fun updateRentalCup() {
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
-        val body = RentalCupUpdateRequest(cup.rfid)
-
-        mockMvc.perform(
-            put("${endPoint}/${rental.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
-        )
-            .andExpect(status().isOk)
     }
 
     @DisplayName("대여 내역 조회")
