@@ -1,10 +1,11 @@
 package com.liah.doribottle.service.payment
 
-import com.liah.doribottle.service.payment.dto.BillingKeyIssueRequest
+import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
+import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueRequest
+import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 
@@ -19,19 +20,20 @@ class TossPaymentsApiClient(
     fun issueBillingKey(
         authKey: String,
         customerKey: String
-    ) {
-        val request = BillingKeyIssueRequest(
+    ): TossBillingKeyIssueResponse? {
+        val request = TossBillingKeyIssueRequest(
             authKey = authKey,
             customerKey = customerKey
         ).toHttpEntityForJson(secretKey)
 
-        val response = try {
-            RestTemplate().postForEntity<Any>(
+        return try {
+            RestTemplate().postForEntity<TossBillingKeyIssueResponse>(
                 url = billingKeyIssueRequestUrl,
                 request = request
-            )
-        } catch (e: HttpClientErrorException) {
-            null
+            ).body
+        } catch (e: Exception) {
+            log.error(e.message)
+            throw BillingKeyIssuanceException()
         }
     }
 }

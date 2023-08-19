@@ -9,10 +9,11 @@ enum class ErrorCode(
     INVALID_INPUT_VALUE(400, "A001", "Invalid input value."),
     METHOD_NOT_ALLOWED(405, "A002", "Invalid input value."),
     INTERNAL_SERVER_ERROR(500, "A003", "Server Error."),
-    SMS_SENDING_ERROR(500, "A004", "Sending Sms Error."),
+    SMS_SENDING_ERROR(500, "A004", "Sms Sending Error."),
     INVALID_TYPE_VALUE(400, "A005", "Invalid type value."),
     ACCESS_DENIED(403, "A006", "Access is denied."),
     UNAUTHORIZED(401, "A007", "Unauthorized."),
+    BILLING_KEY_ISSUANCE_ERROR(500, "A008", "Billing Key Issuance Error."),
 
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
