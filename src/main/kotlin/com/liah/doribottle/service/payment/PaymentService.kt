@@ -26,6 +26,7 @@ class PaymentService(
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
     private val userRepository: UserRepository
 ) {
+    //TODO: Test
     fun registerMethod(
         userId: UUID,
         billingInfo: BillingInfo
