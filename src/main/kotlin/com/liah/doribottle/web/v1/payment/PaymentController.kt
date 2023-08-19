@@ -1,7 +1,10 @@
 package com.liah.doribottle.web.v1.payment
 
 import com.liah.doribottle.common.pageable.CustomPage
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.payment.PaymentService
+import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.web.v1.payment.vm.PaymentCategorySearchResponse
 import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
 import jakarta.validation.Valid
@@ -14,13 +17,21 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/payment")
 class PaymentController(
-    private val paymentService: PaymentService
+    private val paymentService: PaymentService,
+    private val tossPaymentsService: TossPaymentsService
 ) {
     @PostMapping("/method")
     fun registerMethod(
         @Valid @RequestBody request: PaymentMethodRegisterRequest
     ) {
-
+        val billingInfo = when (request.providerType!!) {
+            PaymentMethodProviderType.TOSS_PAYMENTS -> {
+                tossPaymentsService.issueBillingKey(
+                    authKey = request.authKey!!,
+                    userId = currentUserId()!!
+                )
+            }
+        }
     }
 
     @GetMapping("/category")
