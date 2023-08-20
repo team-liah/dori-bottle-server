@@ -6,10 +6,12 @@ import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.repository.payment.PaymentCategoryQueryRepository
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
+import com.liah.doribottle.repository.payment.PaymentMethodQueryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.PaymentCategoryDto
+import com.liah.doribottle.service.payment.dto.PaymentMethodDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -22,6 +24,7 @@ import java.util.*
 @Transactional
 class PaymentService(
     private val paymentMethodRepository: PaymentMethodRepository,
+    private val paymentMethodQueryRepository: PaymentMethodQueryRepository,
     private val paymentCategoryRepository: PaymentCategoryRepository,
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
     private val userRepository: UserRepository
@@ -47,6 +50,16 @@ class PaymentService(
         )
 
         return method.id
+    }
+
+    fun getAllMethods(
+        userId: UUID,
+        pageable: Pageable
+    ): Page<PaymentMethodDto> {
+        return paymentMethodQueryRepository.getAll(
+            userId = userId,
+            pageable = pageable
+        ).map { it.toDto() }
     }
 
     fun registerCategory(
