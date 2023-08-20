@@ -3,6 +3,7 @@ package com.liah.doribottle.domain.payment
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.service.payment.dto.PaymentMethodDto
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
 import java.time.Instant
@@ -11,12 +12,12 @@ import java.time.Instant
 @Table(name = "payment_method")
 class PaymentMethod(
     user: User,
-    providerType: PaymentMethodProviderType,
     billingKey: String,
+    providerType: PaymentMethodProviderType,
     type: PaymentMethodType,
     card: Card,
-    authenticatedDate: Instant,
-    default: Boolean
+    default: Boolean,
+    authenticatedDate: Instant
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,13 +34,15 @@ class PaymentMethod(
     @Column(nullable = false)
     val type: PaymentMethodType = type
 
-    @Column(nullable = false)
-    val authenticatedDate: Instant = authenticatedDate
-
     @Embedded
     val card: Card = card
 
     @Column(name = "`default`", nullable = false)
     var default: Boolean = default
         protected set
+
+    @Column(nullable = false)
+    val authenticatedDate: Instant = authenticatedDate
+
+    fun toDto() = PaymentMethodDto(id, user.id, billingKey, providerType, type, card.toDto(), default, authenticatedDate)
 }
