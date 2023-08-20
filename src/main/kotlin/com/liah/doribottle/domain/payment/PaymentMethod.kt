@@ -39,7 +39,7 @@ class PaymentMethod(
     @Embedded
     val card: Card = card
 
-    @Column(nullable = false)
+    @Column(name = "`default`", nullable = false)
     var default: Boolean = default
         protected set
 }
