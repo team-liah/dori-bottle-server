@@ -5,9 +5,9 @@ import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
-import com.liah.doribottle.domain.payment.card.CardProvider.HYUNDAI
-import com.liah.doribottle.domain.payment.card.CardProvider.KOOKMIN
+import com.liah.doribottle.domain.payment.card.CardProvider.*
 import com.liah.doribottle.domain.payment.card.CardType.CREDIT
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
@@ -68,7 +68,7 @@ class PaymentServiceTest : BaseServiceTest() {
     fun registerMethodTc2() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        paymentMethodRepository.save(PaymentMethod(user, TOSS_PAYMENTS, "dummyKey1", CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), Instant.now(), true))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
         val billingInfo = BillingInfo("dummyKey2", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
         clear()
 
@@ -89,6 +89,38 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(findMethod?.card?.number).isEqualTo("1234")
         assertThat(findMethod?.card?.cardType).isEqualTo(CREDIT)
         assertThat(findMethod?.card?.cardOwnerType).isEqualTo(PERSONAL)
+    }
+
+    @DisplayName("결제 수단 목록 조회")
+    @Test
+    fun getAllMethods() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        insertMethods(user)
+        clear()
+
+        //when
+        val result = paymentService.getAllMethods(user.id, Pageable.ofSize(3))
+
+        //then
+        assertThat(result)
+            .extracting("billingKey")
+            .containsExactly("dummyKey1", "dummyKey2", "dummyKey3")
+        assertThat(result)
+            .extracting("card.issuerProvider")
+            .containsExactly(KOOKMIN, HYUNDAI, SAMSUNG)
+        assertThat(result)
+            .extracting("default")
+            .containsExactly(false, true, false)
+    }
+
+    private fun insertMethods(user: User) {
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "1", CREDIT, PERSONAL), false, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "2", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey3", TOSS_PAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "3", CREDIT, PERSONAL), false, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey4", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4", CREDIT, CORPORATE), false, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "5", CREDIT, PERSONAL), false, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user,"dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()))
     }
 
     @DisplayName("결제 카테고리 등록")
