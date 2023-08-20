@@ -1,5 +1,6 @@
 package com.liah.doribottle.domain.payment.card
 
+import com.liah.doribottle.service.payment.dto.CardDto
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 import jakarta.persistence.EnumType
@@ -26,7 +27,5 @@ data class Card(
     @Column(nullable = false)
     val cardOwnerType: CardOwnerType
 ){
-    fun toDto() {
-
-    }
+    fun toDto() = CardDto(issuerProvider, acquirerProvider, number, cardType, cardOwnerType)
 }
