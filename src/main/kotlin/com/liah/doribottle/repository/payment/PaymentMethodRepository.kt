@@ -7,5 +7,6 @@ import java.util.*
 
 @Repository
 interface PaymentMethodRepository : JpaRepository<PaymentMethod, UUID> {
+    fun findByIdAndUserId(id: UUID, userId: UUID): PaymentMethod?
     fun findFirstByUserIdAndDefaultIsTrue(userId: UUID): PaymentMethod?
 }

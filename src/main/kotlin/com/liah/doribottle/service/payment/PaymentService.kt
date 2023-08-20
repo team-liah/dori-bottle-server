@@ -52,6 +52,7 @@ class PaymentService(
         return method.id
     }
 
+    @Transactional(readOnly = true)
     fun getAllMethods(
         userId: UUID,
         pageable: Pageable
@@ -60,6 +61,19 @@ class PaymentService(
             userId = userId,
             pageable = pageable
         ).map { it.toDto() }
+    }
+
+    // TODO: Test
+    fun changeDefaultMethod(
+        id: UUID,
+        userId: UUID
+    ) {
+        val originDefaultMethod = paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(userId)
+        val newDefaultMethod = paymentMethodRepository.findByIdAndUserId(id, userId)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+
+        originDefaultMethod?.update(default = false)
+        newDefaultMethod.update(default = true)
     }
 
     fun registerCategory(
@@ -104,6 +118,8 @@ class PaymentService(
             pageable = pageable
         ).map { it.toDto() }
     }
+
+    //TODO: Update
 
     fun removeCategory(
         categoryId: UUID

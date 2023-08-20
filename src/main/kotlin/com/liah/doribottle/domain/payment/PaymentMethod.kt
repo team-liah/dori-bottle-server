@@ -44,5 +44,9 @@ class PaymentMethod(
     @Column(nullable = false)
     val authenticatedDate: Instant = authenticatedDate
 
+    fun update(default: Boolean) {
+        this.default = default
+    }
+
     fun toDto() = PaymentMethodDto(id, user.id, billingKey, providerType, type, card.toDto(), default, authenticatedDate)
 }

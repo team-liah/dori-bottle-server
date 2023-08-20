@@ -46,6 +46,7 @@ enum class ErrorCode(
 
     // Payment
     PAYMENT_CATEGORY_NOT_FOUND(404, "G001", "Payment Category entity not found."),
+    PAYMENT_METHOD_NOT_FOUND(404, "G002", "Payment Method entity not found."),
 
     // Notification
     NOTIFICATION_NOT_FOUNT(404, "H001", "Notification entity not found.")
