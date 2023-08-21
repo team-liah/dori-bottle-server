@@ -11,7 +11,10 @@ class SmsService(
         phoneNumber: String,
         authCode: String
     ) {
-        toastApiClient
-            .sendAuthSmsTemplate(LOGIN, phoneNumber.replace("-", ""), mapOf("authCode" to authCode))
+        toastApiClient.sendAuthSms(
+            template = LOGIN,
+            recipientNo = phoneNumber.replace("-", ""),
+            templateParameter = mapOf("authCode" to authCode)
+        )
     }
 }
