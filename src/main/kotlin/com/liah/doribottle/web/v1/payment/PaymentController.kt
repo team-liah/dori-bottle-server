@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.payment
 
+import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.extension.currentUserId
@@ -51,6 +52,26 @@ class PaymentController(
         ).map { it.toResponse() }
 
         return CustomPage.of(result)
+    }
+
+    @PostMapping("/method/{id}/default")
+    fun changeDefaultMethod(
+        @PathVariable id: UUID
+    ) {
+        paymentService.changeDefaultMethod(
+            id = id,
+            userId = currentUserId()!!
+        )
+    }
+
+    @DeleteMapping("/method/{id}")
+    fun removeMethod(
+        @PathVariable id: UUID
+    ) {
+        val method = paymentService.getMethod(id)
+        if (method.userId != currentUserId()) throw ForbiddenException()
+
+        paymentService.removeMethod(id)
     }
 
     @GetMapping("/category")
