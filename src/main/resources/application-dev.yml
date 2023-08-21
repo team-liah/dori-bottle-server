@@ -38,6 +38,10 @@ app:
       appKey: ${TOAST_APP_KEY}
       secretKey: ${TOAST_SECRET_KEY}
       sendNo: ${TOAST_SEND_NO}
+  toss:
+    payments:
+      url: https://api.tosspayments.com/
+      secretKey: ${TOSS_PAYMENTS_SECRET_KEY}
   aws:
     sqs:
       queueName: point-save-queue.fifo

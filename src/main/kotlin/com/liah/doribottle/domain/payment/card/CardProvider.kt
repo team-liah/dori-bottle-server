@@ -1,0 +1,37 @@
+package com.liah.doribottle.domain.payment.card
+
+enum class CardProvider(
+    val code: String,
+    val title: String,
+) {
+    IBK_BC("3K", "기업비씨"),
+    GWANGJUBANK("46", "광주"),
+    LOTTE("71", "롯데"),
+    KDBBANK("30", "산업"),
+    BC("31", "비씨"),
+    SAMSUNG("51", "삼성"),
+    SAEMAUL("38", "새마을"),
+    SHINHAN("41", "신한"),
+    SHINHYEOP("62", "신협"),
+    CITI("36", "씨티"),
+    WOORI_BC("33", "우리"),
+    WOORI("W1", "우리"),
+    POST("37", "우체국"),
+    SAVINGBANK("39", "저축"),
+    JEONBUKBANK("35", "전북"),
+    JEJUBANK("42", "제주"),
+    KAKAOBANK("15", "카카오뱅크"),
+    KBANK("3A", "케이뱅크"),
+    TOSSBANK("24", "토스뱅크"),
+    HANA("21", "하나"),
+    HYUNDAI("61", "현대"),
+    KOOKMIN("11", "국민"),
+    NONGHYEOP("91", "농협"),
+    SUHYEOP("34", "수협"),
+    DINERS("6D", "다이너스"),
+    MASTER("4M", "마스터"),
+    UNIONPAY("3C", "유니온페이"),
+    AMEX("7A", "아메리칸 익스프레스"),
+    JCB("4J", "제이씨비"),
+    VISA("4V", "비자")
+}
