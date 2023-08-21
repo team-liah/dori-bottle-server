@@ -42,7 +42,7 @@ app:
   toss:
     payments:
       url: https://api.tosspayments.com/
-      secretKey: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==
+      secretKey: dummyKey
   aws:
     sqs:
       queueName: dummyQueue
