@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.payment
 
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
@@ -21,6 +22,7 @@ import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -28,9 +30,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -119,6 +121,90 @@ class PaymentControllerTest : BaseControllerTest() {
         paymentMethodRepository.save(PaymentMethod(user,"dummyKey4", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "45674567", CREDIT, CORPORATE), false, Instant.now()))
         paymentMethodRepository.save(PaymentMethod(user,"dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "56785678", CREDIT, PERSONAL), false, Instant.now()))
         paymentMethodRepository.save(PaymentMethod(user,"dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "67896789", CREDIT, PERSONAL), false, Instant.now()))
+    }
+
+    @DisplayName("기본 결제 수단 변경")
+    @Test
+    fun changeDefaultMethod() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method1 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val method2 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            post("$endPoint/method/${method2.id}/default")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        val findMethod1 = paymentMethodRepository.findByIdOrNull(method1.id)
+        val findMethod2 = paymentMethodRepository.findByIdOrNull(method2.id)
+        assertThat(findMethod1?.default).isFalse()
+        assertThat(findMethod2?.default).isTrue()
+    }
+
+    @DisplayName("결제 수단 제거")
+    @Test
+    fun removeMethod() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            delete("$endPoint/method/${method.id}")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        val findMethod = paymentMethodRepository.findByIdOrNull(method.id)
+        assertThat(findMethod).isNull()
+    }
+
+    @DisplayName("결제 수단 제거 예외")
+    @Test
+    fun removeMethodException() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            delete("$endPoint/method/${method.id}")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED.message)))
+    }
+
+    @DisplayName("결제 수단 제거 예외 TC2")
+    @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
+    @Test
+    fun removeMethodExceptionTc2() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+
+        //when, then
+        mockMvc.perform(
+            delete("$endPoint/method/${method.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
+            .andExpect(jsonPath("code", `is`(ErrorCode.ACCESS_DENIED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
     }
 
     @DisplayName("결제 카테고리 목록 조회")
