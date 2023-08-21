@@ -1,6 +1,7 @@
 package com.liah.doribottle.service.payment
 
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
+import com.liah.doribottle.service.payment.dto.TossBillingExecuteRequest
 import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueRequest
 import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueResponse
 import org.slf4j.LoggerFactory
@@ -16,6 +17,7 @@ class TossPaymentsApiClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val billingKeyIssueRequestUrl = "${url}/v1/billing/authorizations/issue"
+    private fun billingExecuteRequestUrl(billingKey: String) = "${url}/v1/billing/${billingKey}"
 
     fun issueBillingKey(
         authKey: String,
@@ -24,6 +26,31 @@ class TossPaymentsApiClient(
         val request = TossBillingKeyIssueRequest(
             authKey = authKey,
             customerKey = customerKey
+        ).toHttpEntityForJson(secretKey)
+
+        return try {
+            RestTemplate().postForEntity<TossBillingKeyIssueResponse>(
+                url = billingKeyIssueRequestUrl,
+                request = request
+            ).body
+        } catch (e: Exception) {
+            log.error(e.message)
+            throw BillingKeyIssuanceException()
+        }
+    }
+
+    fun executeBilling(
+        billingKey: String,
+        customerKey: String,
+        amount: Long,
+        orderId: String,
+        orderName: String
+    ) {
+        val request = TossBillingExecuteRequest(
+            customerKey = customerKey,
+            amount = amount,
+            orderId = orderId,
+            orderName = orderName
         ).toHttpEntityForJson(secretKey)
 
         return try {
