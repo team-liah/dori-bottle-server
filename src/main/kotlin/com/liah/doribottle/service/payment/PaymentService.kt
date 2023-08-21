@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.payment
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.payment.PaymentCategory
@@ -53,6 +54,16 @@ class PaymentService(
     }
 
     @Transactional(readOnly = true)
+    fun getMethod(
+        id: UUID
+    ): PaymentMethodDto {
+        val method = paymentMethodRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+
+        return method.toDto()
+    }
+
+    @Transactional(readOnly = true)
     fun getAllMethods(
         userId: UUID,
         pageable: Pageable
@@ -73,6 +84,16 @@ class PaymentService(
 
         originDefaultMethod?.update(default = false)
         newDefaultMethod.update(default = true)
+    }
+
+    fun removeMethod(
+        id: UUID
+    ) {
+        val method = paymentMethodRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+        if (method.default) throw BusinessException(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
+
+        paymentMethodRepository.delete(method)
     }
 
     fun registerCategory(
@@ -120,6 +141,7 @@ class PaymentService(
 
     //TODO: Update
 
+    //TODO: Hard Delete
     fun removeCategory(
         categoryId: UUID
     ) {
