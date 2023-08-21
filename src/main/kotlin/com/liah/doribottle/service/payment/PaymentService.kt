@@ -63,7 +63,6 @@ class PaymentService(
         ).map { it.toDto() }
     }
 
-    // TODO: Test
     fun changeDefaultMethod(
         id: UUID,
         userId: UUID
