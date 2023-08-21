@@ -123,6 +123,26 @@ class PaymentServiceTest : BaseServiceTest() {
         paymentMethodRepository.save(PaymentMethod(user,"dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()))
     }
 
+    @DisplayName("기본 결제 수단 변경")
+    @Test
+    fun changeDefaultMethod() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method1 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val method2 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        clear()
+
+        //when
+        paymentService.changeDefaultMethod(method2.id, user.id)
+        clear()
+
+        //then
+        val findMethod1 = paymentMethodRepository.findByIdOrNull(method1.id)
+        val findMethod2 = paymentMethodRepository.findByIdOrNull(method2.id)
+        assertThat(findMethod1?.default).isFalse()
+        assertThat(findMethod2?.default).isTrue()
+    }
+
     @DisplayName("결제 카테고리 등록")
     @Test
     fun registerCategory() {
