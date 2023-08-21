@@ -1,5 +1,7 @@
 package com.liah.doribottle.service.payment
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
@@ -20,6 +22,7 @@ import com.liah.doribottle.service.payment.dto.CardDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -91,6 +94,31 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(findMethod?.card?.cardOwnerType).isEqualTo(PERSONAL)
     }
 
+    @DisplayName("결제 수단 조회")
+    @Test
+    fun getMethod() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        clear()
+
+        //when
+        val result = paymentService.getMethod(method.id)
+        clear()
+
+        //then
+        assertThat(result.userId).isEqualTo(user.id)
+        assertThat(result.billingKey).isEqualTo("dummyKey")
+        assertThat(result.providerType).isEqualTo(TOSS_PAYMENTS)
+        assertThat(result.type).isEqualTo(CARD)
+        assertThat(result.card.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(result.card.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(result.card.number).isEqualTo("4321")
+        assertThat(result.card.cardType).isEqualTo(CREDIT)
+        assertThat(result.card.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(result.default).isEqualTo(true)
+    }
+
     @DisplayName("결제 수단 목록 조회")
     @Test
     fun getAllMethods() {
@@ -141,6 +169,38 @@ class PaymentServiceTest : BaseServiceTest() {
         val findMethod2 = paymentMethodRepository.findByIdOrNull(method2.id)
         assertThat(findMethod1?.default).isFalse()
         assertThat(findMethod2?.default).isTrue()
+    }
+
+    @DisplayName("결제 수단 제거")
+    @Test
+    fun removeMethod() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()))
+        clear()
+
+        //when
+        paymentService.removeMethod(method.id)
+        clear()
+
+        //then
+        val findMethod = paymentMethodRepository.findByIdOrNull(method.id)
+        assertThat(findMethod).isNull()
+    }
+
+    @DisplayName("결제 수단 제거 예외")
+    @Test
+    fun removeMethodException() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            paymentService.removeMethod(defaultMethod.id)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
     }
 
     @DisplayName("결제 카테고리 등록")
