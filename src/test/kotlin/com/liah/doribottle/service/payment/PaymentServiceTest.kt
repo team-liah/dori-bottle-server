@@ -2,10 +2,14 @@ package com.liah.doribottle.service.payment
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.domain.payment.Payment
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
+import com.liah.doribottle.domain.payment.PaymentStatus.*
+import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
+import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
@@ -15,10 +19,12 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
+import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -28,16 +34,157 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 class PaymentServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var paymentService: PaymentService
+    @Autowired
+    private lateinit var paymentRepository: PaymentRepository
     @Autowired
     private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
     @Autowired
     private lateinit var userRepository: UserRepository
+
+    @DisplayName("결제 생성")
+    @Test
+    fun create() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        clear()
+
+        //when
+        val id = paymentService.create(user.id, 1000, SAVE_POINT, card)
+        clear()
+
+        //then
+        val findPayment = paymentRepository.findByIdOrNull(id)
+        assertThat(findPayment?.user).isEqualTo(user)
+        assertThat(findPayment?.price).isEqualTo(1000)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PROCEEDING)
+        assertThat(findPayment?.result).isNull()
+        assertThat(findPayment?.pointId).isNull()
+    }
+
+    @DisplayName("결제 결과 업데이트")
+    @Test
+    fun updateResult() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val payment = paymentRepository.save(Payment(user, 3000, SAVE_POINT, card))
+        val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "")
+        val pointId = UUID.randomUUID()
+        clear()
+
+        //when
+        paymentService.updateResult(payment.id, result, pointId)
+        clear()
+
+        //then
+        val findPayment = paymentRepository.findByIdOrNull(payment.id)
+        assertThat(findPayment?.user).isEqualTo(user)
+        assertThat(findPayment?.price).isEqualTo(3000)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(SUCCEEDED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo("dummyPaymentKey")
+        assertThat(findPayment?.pointId).isEqualTo(pointId)
+    }
+
+    @DisplayName("결제 결과 업데이트 TC2")
+    @Test
+    fun updateResultTc2() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val payment = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
+        val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "")
+        clear()
+
+        //when
+        paymentService.updateResult(payment.id, result, null)
+        clear()
+
+        //then
+        val findPayment = paymentRepository.findByIdOrNull(payment.id)
+        assertThat(findPayment?.user).isEqualTo(user)
+        assertThat(findPayment?.price).isEqualTo(5000)
+        assertThat(findPayment?.type).isEqualTo(LOST_CUP)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(SUCCEEDED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo("dummyPaymentKey")
+        assertThat(findPayment?.pointId).isNull()
+    }
+
+    @DisplayName("결제 결과 업데이트 TC3")
+    @Test
+    fun updateResultTc3() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val payment = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
+        clear()
+
+        //when
+        paymentService.updateResult(payment.id, null, null)
+        clear()
+
+        //then
+        val findPayment = paymentRepository.findByIdOrNull(payment.id)
+        assertThat(findPayment?.user).isEqualTo(user)
+        assertThat(findPayment?.price).isEqualTo(5000)
+        assertThat(findPayment?.type).isEqualTo(LOST_CUP)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(FAILED)
+        assertThat(findPayment?.result).isNull()
+        assertThat(findPayment?.pointId).isNull()
+    }
+
+    @DisplayName("결제 결과 업데이트 예외")
+    @Test
+    fun updateResultException() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val paymentToSavePoint = paymentRepository.save(Payment(user, 5000, SAVE_POINT, card))
+        val paymentToLostCup = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
+        clear()
+
+        //when, then
+        val exception1 = assertThrows<IllegalArgumentException> {
+            val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "")
+            paymentService.updateResult(paymentToSavePoint.id, result, null)
+        }
+        assertThat(exception1.message).isEqualTo("Null pointId is not allowed if payment type is SAVE_POINT")
+
+        val exception2 = assertThrows<IllegalArgumentException> {
+            val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "")
+            paymentService.updateResult(paymentToLostCup.id, result, UUID.randomUUID())
+        }
+        assertThat(exception2.message).isEqualTo("PointId is not allowed if payment type is not SAVE_POINT")
+    }
 
     @DisplayName("결제 수단 등록")
     @Test
