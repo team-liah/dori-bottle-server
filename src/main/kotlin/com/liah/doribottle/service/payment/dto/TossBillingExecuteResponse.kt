@@ -40,7 +40,7 @@ data class TossBillingExecuteResponse(
     val taxExemptionAmount: Int, // 과세를 제외한 결제 금액
     val method: String // 결제수단
 ) {
-    fun toPaymentInfo() = PaymentInfo(paymentKey, approvedAt, receipt?.url)
+    fun toPaymentResultDto() = PaymentResultDto(paymentKey, approvedAt, receipt?.url)
 }
 
 data class TossBillingCardResponse(

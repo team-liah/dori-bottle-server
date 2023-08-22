@@ -30,5 +30,5 @@ class TossPaymentsService(
         amount = price,
         orderId = paymentId.toString(),
         orderName = paymentType.title
-    )?.toPaymentInfo() ?: throw BillingExecuteException()
+    )?.toPaymentResultDto() ?: throw BillingExecuteException()
 }

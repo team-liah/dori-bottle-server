@@ -49,6 +49,7 @@ enum class ErrorCode(
     PAYMENT_CATEGORY_NOT_FOUND(404, "G001", "Payment Category entity not found."),
     PAYMENT_METHOD_NOT_FOUND(404, "G002", "Payment Method entity not found."),
     PAYMENT_METHOD_REMOVE_NOT_ALLOWED(400, "G003", "Default Payment Method is can't removed."),
+    PAYMENT_NOT_FOUND(404, "G004", "Payment entity not found."),
 
     // Notification
     NOTIFICATION_NOT_FOUNT(404, "H001", "Notification entity not found.")
