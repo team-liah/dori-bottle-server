@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.payment
 
+import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.payment.PaymentCategory
@@ -102,6 +103,7 @@ class PaymentControllerTest : BaseControllerTest() {
 
         verify(mockTossPaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
+
         val findPayment = paymentRepository.findAll().firstOrNull()
         val findPoint = pointRepository.findAll().firstOrNull()
 
@@ -118,6 +120,55 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.pointId!!).isEqualTo(findPoint?.id)
 
         assertThat(findPoint?.saveAmounts).isEqualTo(category.amounts)
+    }
+
+    @DisplayName("포인트 충전 결제 예외")
+    @Test
+    fun payToSavePointException() {
+        //given
+        val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val billingKey = "dummyBillingKey"
+        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+            .willThrow(BillingExecuteException())
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = PayToSavePointRequest(category.id)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/save-point")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().is5xxServerError)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
+
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findPoint = pointRepository.findAll().firstOrNull()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(900)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.number).isEqualTo("12341234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PaymentStatus.FAILED)
+        assertThat(findPayment?.result).isNull()
+        assertThat(findPayment?.pointId).isNull()
+
+        assertThat(findPoint).isNull()
     }
 
     @DisplayName("결제 수단 등록")
