@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.payment
 
+import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
@@ -70,6 +71,7 @@ class PaymentController(
                 result = null,
                 pointId = null
             )
+            throw BillingExecuteException()
         }
 
         return id
