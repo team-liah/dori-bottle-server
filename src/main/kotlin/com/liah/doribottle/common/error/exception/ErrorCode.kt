@@ -14,6 +14,7 @@ enum class ErrorCode(
     ACCESS_DENIED(403, "A006", "Access is denied."),
     UNAUTHORIZED(401, "A007", "Unauthorized."),
     BILLING_KEY_ISSUANCE_ERROR(500, "A008", "Billing Key Issuance Error."),
+    BILLING_EXECUTE_ERROR(500, "A009", "Billing Execute Error."),
 
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
