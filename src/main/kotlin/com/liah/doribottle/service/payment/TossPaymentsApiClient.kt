@@ -1,7 +1,9 @@
 package com.liah.doribottle.service.payment
 
+import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
 import com.liah.doribottle.service.payment.dto.TossBillingExecuteRequest
+import com.liah.doribottle.service.payment.dto.TossBillingExecuteResponse
 import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueRequest
 import com.liah.doribottle.service.payment.dto.TossBillingKeyIssueResponse
 import org.slf4j.LoggerFactory
@@ -45,7 +47,7 @@ class TossPaymentsApiClient(
         amount: Long,
         orderId: String,
         orderName: String
-    ) {
+    ): TossBillingExecuteResponse? {
         val request = TossBillingExecuteRequest(
             customerKey = customerKey,
             amount = amount,
@@ -54,13 +56,13 @@ class TossPaymentsApiClient(
         ).toHttpEntityForJson(secretKey)
 
         return try {
-            RestTemplate().postForEntity<TossBillingKeyIssueResponse>(
-                url = billingKeyIssueRequestUrl,
+            RestTemplate().postForEntity<TossBillingExecuteResponse>(
+                url = billingExecuteRequestUrl(billingKey),
                 request = request
             ).body
         } catch (e: Exception) {
             log.error(e.message)
-            throw BillingKeyIssuanceException()
+            throw BillingExecuteException()
         }
     }
 }

@@ -14,7 +14,7 @@ data class TossBillingKeyIssueResponse(
     val authenticatedAt: Instant,
     val method: String,
     val billingKey: String,
-    val card: CardResponse
+    val card: TossCardResponse
 ) {
     fun toBillingInfo() = BillingInfo(
         billingKey = billingKey,
@@ -25,7 +25,7 @@ data class TossBillingKeyIssueResponse(
     )
 }
 
-data class CardResponse(
+data class TossCardResponse(
     val issuerCode: String,
     val acquirerCode: String,
     val number: String,
