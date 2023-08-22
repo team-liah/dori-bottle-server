@@ -6,6 +6,8 @@ import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
+import com.liah.doribottle.domain.payment.PaymentStatus
+import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
@@ -16,18 +18,22 @@ import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertJsonToString
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.payment.PaymentRepository
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
+import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.v1.payment.vm.PayToSavePointRequest
 import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.given
+import org.mockito.kotlin.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
@@ -39,25 +45,79 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 class PaymentControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/payment"
 
+    @Autowired
+    private lateinit var paymentRepository: PaymentRepository
     @Autowired
     private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
     @Autowired
     private lateinit var userRepository: UserRepository
+    @Autowired
+    private lateinit var pointRepository: PointRepository
 
     @MockBean
     private lateinit var mockTossPaymentsService: TossPaymentsService
 
     @AfterEach
     internal fun destroy() {
+        pointRepository.deleteAll()
+        paymentRepository.deleteAll()
         paymentMethodRepository.deleteAll()
         paymentCategoryRepository.deleteAll()
         userRepository.deleteAll()
+    }
+
+    @DisplayName("포인트 충전 결제")
+    @Test
+    fun payToSavePoint() {
+        //given
+        val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val billingKey = "dummyBillingKey"
+        val paymentKey = "dummyPaymentKey"
+        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = PayToSavePointRequest(category.id)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/save-point")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertJsonToString())
+        )
+            .andExpect(status().isOk)
+
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findPoint = pointRepository.findAll().firstOrNull()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(900)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.number).isEqualTo("12341234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PaymentStatus.SUCCEEDED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
+        assertThat(findPayment?.pointId!!).isEqualTo(findPoint?.id)
+
+        assertThat(findPoint?.saveAmounts).isEqualTo(category.amounts)
     }
 
     @DisplayName("결제 수단 등록")
