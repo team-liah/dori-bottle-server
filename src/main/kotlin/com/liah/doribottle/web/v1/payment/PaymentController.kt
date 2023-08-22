@@ -3,9 +3,14 @@ package com.liah.doribottle.web.v1.payment
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentType
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.point.PointService
+import com.liah.doribottle.web.v1.payment.vm.PayToSavePointRequest
 import com.liah.doribottle.web.v1.payment.vm.PaymentCategorySearchResponse
 import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
 import com.liah.doribottle.web.v1.payment.vm.PaymentMethodSearchResponse
@@ -21,8 +26,55 @@ import java.util.*
 @RequestMapping("/api/v1/payment")
 class PaymentController(
     private val paymentService: PaymentService,
-    private val tossPaymentsService: TossPaymentsService
+    private val tossPaymentsService: TossPaymentsService,
+    private val pointService: PointService
 ) {
+    @PostMapping("/save-point")
+    fun payToSavePoint(
+        @Valid @RequestBody request: PayToSavePointRequest
+    ): UUID {
+        val currentUserId = currentUserId()!!
+        val category = paymentService.getCategory(request.categoryId!!)
+        val price = category.getFinalPrice()
+        val method = paymentService.getDefaultMethod(currentUserId)
+        val id = paymentService.create(
+            userId = currentUserId,
+            price = price,
+            type = PaymentType.SAVE_POINT,
+            card = method.card
+        )
+
+        runCatching {
+            tossPaymentsService.executeBilling(
+                billingKey = method.billingKey,
+                userId = currentUserId,
+                price = price,
+                paymentId = id,
+                paymentType = PaymentType.SAVE_POINT
+            )
+        }.onSuccess { result ->
+            val pointId = pointService.save(
+                userId = currentUserId,
+                saveType = PointSaveType.PAY,
+                eventType = PointEventType.SAVE_PAY,
+                saveAmounts = category.amounts
+            )
+            paymentService.updateResult(
+                id = id,
+                result = result,
+                pointId = pointId
+            )
+        }.onFailure {
+            paymentService.updateResult(
+                id = id,
+                result = null,
+                pointId = null
+            )
+        }
+
+        return id
+    }
+
     @PostMapping("/method")
     fun registerMethod(
         @Valid @RequestBody request: PaymentMethodRegisterRequest
