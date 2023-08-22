@@ -15,10 +15,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.BDDMockito.doNothing
-import org.mockito.BDDMockito.times
-import org.mockito.Mockito.any
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
@@ -43,7 +43,7 @@ class AccountServiceTest : BaseServiceTest() {
     @Test
     fun register() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val saveUser = userRepository.save(User(loginId, "사용자", loginId, Role.GUEST))
         clear()
 
@@ -63,7 +63,7 @@ class AccountServiceTest : BaseServiceTest() {
         assertThat(findUser?.agreedTermsOfServiceDate).isNotNull
         assertThat(findUser?.agreedTermsOfMarketingDate).isNull()
 
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("비밀번호 업데이트")
