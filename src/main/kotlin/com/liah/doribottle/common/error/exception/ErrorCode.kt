@@ -55,4 +55,7 @@ enum class ErrorCode(
 
     // Notification
     NOTIFICATION_NOT_FOUNT(404, "H001", "Notification entity not found."),
+
+    // Point
+    POINT_NOT_FOUNT(404, "I001", "Point entity not found."),
 }
