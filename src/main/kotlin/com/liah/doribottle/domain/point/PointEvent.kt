@@ -3,7 +3,6 @@ package com.liah.doribottle.domain.point
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
-import java.util.*
 
 @Entity
 @Table(
