@@ -13,6 +13,7 @@ import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.*
+import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -32,7 +33,8 @@ class PaymentService(
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
     private val userRepository: UserRepository,
     private val pointRepository: PointRepository,
-    private val pointHistoryRepository: PointHistoryRepository
+    private val pointHistoryRepository: PointHistoryRepository,
+    private val cacheManager: CacheManager
 ) {
     fun create(
         userId: UUID,
@@ -92,6 +94,7 @@ class PaymentService(
     private fun expirePoint(point: Point) {
         point.expire()
         pointHistoryRepository.save(PointHistory(point.userId, CANCEL_SAVE, -point.saveAmounts))
+        cacheManager.getCache("pointSum")?.evict(point.userId)
     }
 
     fun registerMethod(
