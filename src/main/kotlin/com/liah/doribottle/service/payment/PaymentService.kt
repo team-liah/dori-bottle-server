@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.repository.payment.*
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.*
 import org.springframework.data.domain.Page
@@ -26,7 +27,8 @@ class PaymentService(
     private val paymentMethodQueryRepository: PaymentMethodQueryRepository,
     private val paymentCategoryRepository: PaymentCategoryRepository,
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val pointRepository: PointRepository
 ) {
     fun create(
         userId: UUID,
@@ -42,15 +44,26 @@ class PaymentService(
         return payment.id
     }
 
-    fun updateResult(
-        id: UUID,
-        result: PaymentResultDto?,
-        pointId: UUID?
-    ) {
+    @Transactional(readOnly = true)
+    fun get(
+        id: UUID
+    ): PaymentDto {
         val payment = paymentRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
-        payment.updateResult(result?.toEmbeddable(), pointId)
+        return payment.toDto()
+    }
+
+    fun updateResult(
+        id: UUID,
+        result: PaymentResultDto?,
+        pointId: UUID? = null
+    ) {
+        val payment = paymentRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+        val point = pointId?.let { pointRepository.findByIdOrNull(pointId) }
+
+        payment.updateResult(result?.toEmbeddable(), point)
     }
 
     fun registerMethod(

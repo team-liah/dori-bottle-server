@@ -4,10 +4,11 @@ import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.payment.PaymentStatus.*
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.service.payment.dto.PaymentDto
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
-import java.util.*
 
 @Entity
 @Table(name = "payment")
@@ -40,29 +41,40 @@ class Payment(
     var result: PaymentResult? = null
         protected set
 
-    @Column
-    var pointId: UUID? = null
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "point_id")
+    var point: Point? = null
         protected set
 
     fun updateResult(
         result: PaymentResult?,
-        pointId: UUID?
+        point: Point?
     ) {
-        if (result == null) {
-            this.status = FAILED
+        val status = if (result == null) {
+            FAILED
+        } else if (result.cancelKey != null) {
+            this.point?.expire()
+            this.result = result
+
+            CANCELED
         } else {
             this.result = result
-            this.pointId = pointId
-            this.status = SUCCEEDED
+            this.point = point
 
-            verifyType()
+            SUCCEEDED
         }
+
+        this.status = status
+
+        verifyResult()
     }
 
-    private fun verifyType() {
-        if (type == SAVE_POINT && pointId == null)
-            throw IllegalArgumentException("Null pointId is not allowed if payment type is SAVE_POINT")
-        if (type != SAVE_POINT && pointId != null)
-            throw IllegalArgumentException("PointId is not allowed if payment type is not SAVE_POINT")
+    private fun verifyResult() {
+        if ((type == SAVE_POINT) && (status == SUCCEEDED) && (point == null))
+            throw IllegalArgumentException("Null point is not allowed if payment type is SAVE_POINT")
+        if (type != SAVE_POINT && point != null)
+            throw IllegalArgumentException("Point is not allowed if payment type is not SAVE_POINT")
     }
+
+    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.id)
 }

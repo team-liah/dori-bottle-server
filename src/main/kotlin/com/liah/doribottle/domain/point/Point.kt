@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.point
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
 import com.liah.doribottle.domain.point.PointEventType.USE_CUP
 import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
@@ -37,6 +38,7 @@ class Point(
 
     @OneToMany(mappedBy = "point", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
     protected val mutableEvents: MutableList<PointEvent> = mutableListOf()
+    val events: List<PointEvent> get() = mutableEvents
 
     init {
         mutableEvents.add(PointEvent(this, eventType, saveAmounts))
@@ -53,5 +55,10 @@ class Point(
             remainAmounts = 0
             -remain
         }
+    }
+
+    fun expire() {
+        mutableEvents.add(PointEvent(this, CANCEL_SAVE, -remainAmounts))
+        remainAmounts = 0
     }
 }

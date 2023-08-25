@@ -2,6 +2,7 @@ package com.liah.doribottle.service.payment
 
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
+import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.domain.payment.PaymentType
 import org.springframework.stereotype.Service
 import java.util.*
@@ -31,4 +32,12 @@ class TossPaymentsService(
         orderId = paymentId.toString(),
         orderName = paymentType.title
     )?.toPaymentResultDto() ?: throw BillingExecuteException()
+
+    fun cancelPayment(
+        paymentKey: String,
+        cancelReason: String
+    ) = tossPaymentsApiClient.cancelPayment(
+        paymentKey = paymentKey,
+        cancelReason = cancelReason
+    )?.toPaymentResultDto() ?: throw PaymentCancelException()
 }
