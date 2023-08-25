@@ -3,10 +3,7 @@ package com.liah.doribottle.service.payment
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.payment.Payment
-import com.liah.doribottle.domain.payment.PaymentCategory
-import com.liah.doribottle.domain.payment.PaymentMethod
-import com.liah.doribottle.domain.payment.PaymentType
+import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.repository.payment.*
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -23,6 +20,7 @@ import java.util.*
 @Transactional
 class PaymentService(
     private val paymentRepository: PaymentRepository,
+    private val paymentQueryRepository: PaymentQueryRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
     private val paymentMethodQueryRepository: PaymentMethodQueryRepository,
     private val paymentCategoryRepository: PaymentCategoryRepository,
@@ -52,6 +50,21 @@ class PaymentService(
             ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         return payment.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getAll(
+        userId: UUID? = null,
+        type: PaymentType? = null,
+        statuses: Set<PaymentStatus>? = null,
+        pageable: Pageable
+    ): Page<PaymentDto> {
+        return paymentQueryRepository.getAll(
+            userId = userId,
+            type = type,
+            statuses = statuses,
+            pageable = pageable
+        ).map { it.toDto() }
     }
 
     fun updateResult(
