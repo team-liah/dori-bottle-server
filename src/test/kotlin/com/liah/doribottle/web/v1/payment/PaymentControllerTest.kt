@@ -7,6 +7,9 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
+import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
+import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
+import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
@@ -173,6 +176,72 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPoint).isNull()
     }
 
+    @DisplayName("결제 내역 조회")
+    @Test
+    fun getAll() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        insertPayments(user)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("page", "0")
+        params.add("size", "3")
+
+        val expectUserId = listOf(user.id.toString(), user.id.toString(), user.id.toString())
+        val expectPrice = listOf(6000, 5000, 4000)
+        val expectType = listOf(SAVE_POINT.name, LOST_CUP.name, SAVE_POINT.name)
+        val expectStatus = listOf(CANCELED.name, SUCCEEDED.name, SUCCEEDED.name)
+
+        mockMvc.perform(
+            get(endPoint)
+                .cookie(cookie)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
+            .andExpect(jsonPath("content[*].price", `is`(expectPrice)))
+            .andExpect(jsonPath("content[*].type", `is`(expectType)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
+
+    private fun insertPayments(user: User) {
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val payment1 = Payment(user, 1000, SAVE_POINT, card)
+        val point1 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+        val result1 = PaymentResult("dummyPaymentKey1", Instant.now(), null, null)
+        payment1.updateResult(result1, point1)
+        paymentRepository.save(payment1)
+
+        val payment2 = Payment(user, 2000, LOST_CUP, card)
+        val result2 = PaymentResult("dummyPaymentKey2", Instant.now(), null, null)
+        payment2.updateResult(result2, null)
+        paymentRepository.save(payment2)
+
+        val payment3 = Payment(user, 3000, SAVE_POINT, card)
+        val result3 = PaymentResult("dummyPaymentKey3", Instant.now(), null, "dummyCancelKey3")
+        payment3.updateResult(result3, null)
+        paymentRepository.save(payment3)
+
+        val payment4 = Payment(user, 4000, SAVE_POINT, card)
+        val point4 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 40))
+        val result4 = PaymentResult("dummyPaymentKey4", Instant.now(), null, null)
+        payment4.updateResult(result4, point4)
+        paymentRepository.save(payment4)
+
+        val payment5 = Payment(user, 5000, LOST_CUP, card)
+        val result5 = PaymentResult("dummyPaymentKey5", Instant.now(), null, null)
+        payment5.updateResult(result5, null)
+        paymentRepository.save(payment5)
+
+        val payment6 = Payment(user, 6000, SAVE_POINT, card)
+        val point6 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 60))
+        val result6 = PaymentResult("dummyPaymentKey6", Instant.now(), null, "dummyCancelKey6")
+        payment6.updateResult(result6, point6)
+        paymentRepository.save(payment6)
+    }
+
     @DisplayName("포인트 충전 결제 취소")
     @Test
     fun cancelPayment() {
@@ -214,7 +283,7 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.card?.number).isEqualTo("1234")
         assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
         assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
-        assertThat(findPayment?.status).isEqualTo(PaymentStatus.CANCELED)
+        assertThat(findPayment?.status).isEqualTo(CANCELED)
         assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
         assertThat(findPayment?.result?.cancelKey).isEqualTo(cancelKey)
         assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)

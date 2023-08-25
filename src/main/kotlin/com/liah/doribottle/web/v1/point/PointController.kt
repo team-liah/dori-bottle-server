@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController
 class PointController(
     private val pointService: PointService
 ) {
-    //TODO: Caching
     @GetMapping("/remain-point")
     fun getRemainPoint() = pointService.getSum(currentUserId()!!).toRemainPoint()
 
