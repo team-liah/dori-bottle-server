@@ -2,18 +2,20 @@ package com.liah.doribottle.web.v1.payment
 
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.config.security.WithMockDoriUser
-import com.liah.doribottle.domain.payment.PaymentCategory
-import com.liah.doribottle.domain.payment.PaymentMethod
+import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
-import com.liah.doribottle.domain.payment.PaymentStatus
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
 import com.liah.doribottle.domain.payment.card.CardProvider.*
 import com.liah.doribottle.domain.payment.card.CardType.CREDIT
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertJsonToString
@@ -67,8 +69,8 @@ class PaymentControllerTest : BaseControllerTest() {
 
     @AfterEach
     internal fun destroy() {
-        pointRepository.deleteAll()
         paymentRepository.deleteAll()
+        pointRepository.deleteAll()
         paymentMethodRepository.deleteAll()
         paymentCategoryRepository.deleteAll()
         userRepository.deleteAll()
@@ -86,7 +88,7 @@ class PaymentControllerTest : BaseControllerTest() {
         paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
 
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
-            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = PayToSavePointRequest(category.id)
@@ -117,9 +119,9 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
         assertThat(findPayment?.status).isEqualTo(PaymentStatus.SUCCEEDED)
         assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
-        assertThat(findPayment?.pointId!!).isEqualTo(findPoint?.id)
+        assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)
 
-        assertThat(findPoint?.saveAmounts).isEqualTo(category.amounts)
+        assertThat(findPoint.saveAmounts).isEqualTo(category.amounts)
     }
 
     @DisplayName("포인트 충전 결제 예외")
@@ -166,9 +168,87 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
         assertThat(findPayment?.status).isEqualTo(PaymentStatus.FAILED)
         assertThat(findPayment?.result).isNull()
-        assertThat(findPayment?.pointId).isNull()
+        assertThat(findPayment?.point).isNull()
 
         assertThat(findPoint).isNull()
+    }
+
+    @DisplayName("포인트 충전 결제 취소")
+    @Test
+    fun cancelPayment() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
+        val payment = Payment(user, 3000, SAVE_POINT, card)
+        val paymentKey = "dummyPaymentKey"
+        val cancelKey = "dummyCancelKey"
+        payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
+        paymentRepository.save(payment)
+
+        given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/${payment.id}/cancel")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        verify(mockTossPaymentsService, times(1))
+            .cancelPayment(eq(paymentKey), eq("포인트 적립 취소"))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findPoint = pointRepository.findAll().firstOrNull()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(3000)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PaymentStatus.CANCELED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
+        assertThat(findPayment?.result?.cancelKey).isEqualTo(cancelKey)
+        assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)
+
+        assertThat(findPoint.remainAmounts).isEqualTo(0)
+    }
+
+    @DisplayName("포인트 충전 결제 취소 예외")
+    @Test
+    fun cancelPaymentException() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
+        val payment = Payment(user, 3000, SAVE_POINT, card)
+        val paymentKey = "dummyPaymentKey"
+        payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
+        paymentRepository.save(payment)
+
+        given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+            .willThrow(PaymentCancelException())
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/${payment.id}/cancel")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().is5xxServerError)
+            .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_CANCEL_ERROR.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.PAYMENT_CANCEL_ERROR.message)))
     }
 
     @DisplayName("결제 수단 등록")
