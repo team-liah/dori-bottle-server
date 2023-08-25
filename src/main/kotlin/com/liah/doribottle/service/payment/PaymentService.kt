@@ -3,17 +3,20 @@ package com.liah.doribottle.service.payment
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
 import com.liah.doribottle.domain.point.PointHistory
+import com.liah.doribottle.event.notification.NotificationSaveEvent
 import com.liah.doribottle.repository.payment.*
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.*
 import org.springframework.cache.CacheManager
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -34,7 +37,8 @@ class PaymentService(
     private val userRepository: UserRepository,
     private val pointRepository: PointRepository,
     private val pointHistoryRepository: PointHistoryRepository,
-    private val cacheManager: CacheManager
+    private val cacheManager: CacheManager,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     fun create(
         userId: UUID,
@@ -93,8 +97,18 @@ class PaymentService(
 
     private fun expirePoint(point: Point) {
         point.expire()
-        pointHistoryRepository.save(PointHistory(point.userId, CANCEL_SAVE, -point.saveAmounts))
+        val pointHistory = pointHistoryRepository.save(PointHistory(point.userId, CANCEL_SAVE, -point.saveAmounts))
         cacheManager.getCache("pointSum")?.evict(point.userId)
+
+        applicationEventPublisher.publishEvent(
+            NotificationSaveEvent(
+                userId = point.userId,
+                type = NotificationType.REFUND,
+                title = CANCEL_SAVE.title,
+                content = "버블 ${point.saveAmounts}개 환불 요청이 처리되었습니다.",
+                targetId = pointHistory.id
+            )
+        )
     }
 
     fun registerMethod(
