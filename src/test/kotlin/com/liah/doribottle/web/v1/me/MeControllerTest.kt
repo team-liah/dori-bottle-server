@@ -24,10 +24,10 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.doNothing
-import org.mockito.BDDMockito.times
-import org.mockito.Mockito.any
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
@@ -152,7 +152,7 @@ class MeControllerTest : BaseControllerTest() {
     @Test
     fun registerInvitationCode() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
@@ -176,14 +176,14 @@ class MeControllerTest : BaseControllerTest() {
         assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
         assertThat(findInviter?.invitationCount).isEqualTo(0)
 
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대코드 등록 TC2")
     @Test
     fun registerInvitationCodeTc2() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
@@ -210,14 +210,14 @@ class MeControllerTest : BaseControllerTest() {
         assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
         assertThat(findInviter?.invitationCount).isEqualTo(1)
 
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대코드 등록 TC3")
     @Test
     fun registerInvitationCodeTc3() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
@@ -245,6 +245,6 @@ class MeControllerTest : BaseControllerTest() {
         assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
         assertThat(findInviter?.invitationCount).isEqualTo(5)
 
-        verify(mockAwsSqsSender, times(2)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(2)).send(any<PointSaveMessage>())
     }
 }

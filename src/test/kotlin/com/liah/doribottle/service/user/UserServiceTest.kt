@@ -18,10 +18,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.BDDMockito.doNothing
-import org.mockito.BDDMockito.times
-import org.mockito.Mockito.any
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.Pageable
@@ -151,7 +151,7 @@ class UserServiceTest : BaseServiceTest() {
     @Test
     fun registerInvitationCode() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         userRepository.save(inviter)
@@ -171,14 +171,14 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findInviter?.invitationCount).isEqualTo(0)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
 
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대코드 등록 TC2")
     @Test
     fun registerInvitationCodeTc2() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         userRepository.save(inviter)
@@ -197,14 +197,14 @@ class UserServiceTest : BaseServiceTest() {
 
         assertThat(findInviter?.invitationCount).isEqualTo(1)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대코드 등록 TC3")
     @Test
     fun registerInvitationCodeTc3() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         (0..3).forEach { _ -> inviter.increaseInvitationCount() } // +4
         inviter.register()
@@ -224,7 +224,7 @@ class UserServiceTest : BaseServiceTest() {
 
         assertThat(findInviter?.invitationCount).isEqualTo(5)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
-        verify(mockAwsSqsSender, times(2)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(2)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대코드 등록 예외")
@@ -288,7 +288,7 @@ class UserServiceTest : BaseServiceTest() {
     @Test
     fun rewardInviterByInviteeTc2() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         (0..3).forEach { _ -> inviter.increaseInvitationCount() } // +4
@@ -307,14 +307,14 @@ class UserServiceTest : BaseServiceTest() {
         val findInviter = userRepository.findByIdOrNull(inviter.id)
 
         assertThat(findInviter?.invitationCount).isEqualTo(5)
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("초대자 보상 지급 TC3")
     @Test
     fun rewardInviterByInviteeTc3() {
         //given
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
         (0..8).forEach { _ -> inviter.increaseInvitationCount() } // +8
@@ -333,6 +333,6 @@ class UserServiceTest : BaseServiceTest() {
         val findInviter = userRepository.findByIdOrNull(inviter.id)
 
         assertThat(findInviter?.invitationCount).isEqualTo(10)
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 }

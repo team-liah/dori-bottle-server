@@ -9,7 +9,10 @@ import jakarta.persistence.FetchType.LAZY
 import java.time.Instant
 
 @Entity
-@Table(name = "payment_method")
+@Table(
+    name = "payment_method",
+    indexes = [Index(name = "IDX_PAYMENT_METHOD_USER_ID", columnList = "user_id")]
+)
 class PaymentMethod(
     user: User,
     billingKey: String,
