@@ -104,7 +104,7 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(result.card.cardOwnerType).isEqualTo(PERSONAL)
         assertThat(result.status).isEqualTo(PROCEEDING)
         assertThat(result.result).isNull()
-        assertThat(result.pointId).isNull()
+        assertThat(result.point).isNull()
     }
 
     @DisplayName("결제 내역 조회")

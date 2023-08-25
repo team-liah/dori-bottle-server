@@ -11,7 +11,10 @@ import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
 
 @Entity
-@Table(name = "payment")
+@Table(
+    name = "payment",
+    indexes = [Index(name = "IDX_PAYMENT_USER_ID", columnList = "user_id")]
+)
 class Payment(
     user: User,
     price: Long,
@@ -53,7 +56,6 @@ class Payment(
         val status = if (result == null) {
             FAILED
         } else if (result.cancelKey != null) {
-            this.point?.expire()
             this.result = result
 
             CANCELED
@@ -76,5 +78,5 @@ class Payment(
             throw IllegalArgumentException("Point is not allowed if payment type is not SAVE_POINT")
     }
 
-    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.id)
+    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.toDto())
 }

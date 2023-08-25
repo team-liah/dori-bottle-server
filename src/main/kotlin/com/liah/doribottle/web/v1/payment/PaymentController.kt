@@ -3,6 +3,7 @@ package com.liah.doribottle.web.v1.payment
 import com.liah.doribottle.common.error.exception.*
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentStatus
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
@@ -10,10 +11,7 @@ import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.point.PointService
-import com.liah.doribottle.web.v1.payment.vm.PayToSavePointRequest
-import com.liah.doribottle.web.v1.payment.vm.PaymentCategorySearchResponse
-import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
-import com.liah.doribottle.web.v1.payment.vm.PaymentMethodSearchResponse
+import com.liah.doribottle.web.v1.payment.vm.*
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -73,6 +71,21 @@ class PaymentController(
         }
 
         return id
+    }
+
+    @GetMapping
+    fun getAll(
+        @RequestParam(value = "type", required = false) type: PaymentType?,
+        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
+    ): CustomPage<PaymentSearchResponse> {
+        val result = paymentService.getAll(
+            userId = currentUserId()!!,
+            type = type,
+            statuses = setOf(PaymentStatus.SUCCEEDED, PaymentStatus.CANCELED),
+            pageable
+        ).map { it.toSearchResponse() }
+
+        return CustomPage.of(result)
     }
 
     @PostMapping("/{id}/cancel")
