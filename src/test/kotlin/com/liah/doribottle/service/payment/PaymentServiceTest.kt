@@ -9,8 +9,7 @@ import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENT
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentResult
 import com.liah.doribottle.domain.payment.PaymentStatus.*
-import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
-import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
+import com.liah.doribottle.domain.payment.PaymentType.*
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
@@ -106,6 +105,41 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(result.status).isEqualTo(PROCEEDING)
         assertThat(result.result).isNull()
         assertThat(result.pointId).isNull()
+    }
+
+    @DisplayName("결제 내역 조회")
+    @Test
+    fun getAll() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        insertPayments(user)
+        clear()
+
+        //when
+        val result = paymentService.getAll(user.id, null, setOf(PROCEEDING), Pageable.ofSize(3))
+
+        //then
+        assertThat(result.totalElements).isEqualTo(6)
+        assertThat(result.totalPages).isEqualTo(2)
+        assertThat(result)
+            .extracting("userId")
+            .containsExactly(user.id, user.id, user.id)
+        assertThat(result)
+            .extracting("type")
+            .containsExactly(SAVE_POINT, LOST_CUP, UNBLOCK_ACCOUNT)
+        assertThat(result)
+            .extracting("price")
+            .containsExactly(1000L, 2000L, 3000L)
+    }
+
+    private fun insertPayments(user: User) {
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        paymentRepository.save(Payment(user, 1000, SAVE_POINT, card))
+        paymentRepository.save(Payment(user, 2000, LOST_CUP, card))
+        paymentRepository.save(Payment(user, 3000, UNBLOCK_ACCOUNT, card))
+        paymentRepository.save(Payment(user, 4000, SAVE_POINT, card))
+        paymentRepository.save(Payment(user, 5000, SAVE_POINT, card))
+        paymentRepository.save(Payment(user, 6000, LOST_CUP, card))
     }
 
     @DisplayName("결제 결과 업데이트: 포인트 적립")
