@@ -3,6 +3,7 @@ package com.liah.doribottle.domain.point
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
 import com.liah.doribottle.domain.point.PointEventType.USE_CUP
+import com.liah.doribottle.service.point.dto.PointDto
 import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.FetchType.LAZY
@@ -61,4 +62,6 @@ class Point(
         mutableEvents.add(PointEvent(this, CANCEL_SAVE, -remainAmounts))
         remainAmounts = 0
     }
+
+    fun toDto() = PointDto(id, userId, saveType, description, saveAmounts, remainAmounts)
 }

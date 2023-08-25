@@ -4,7 +4,12 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.payment.*
+import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
+import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.repository.payment.*
+import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.*
@@ -26,7 +31,8 @@ class PaymentService(
     private val paymentCategoryRepository: PaymentCategoryRepository,
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
     private val userRepository: UserRepository,
-    private val pointRepository: PointRepository
+    private val pointRepository: PointRepository,
+    private val pointHistoryRepository: PointHistoryRepository
 ) {
     fun create(
         userId: UUID,
@@ -77,6 +83,15 @@ class PaymentService(
         val point = pointId?.let { pointRepository.findByIdOrNull(pointId) }
 
         payment.updateResult(result?.toEmbeddable(), point)
+
+        if (payment.status == CANCELED) {
+            payment.point?.let { expirePoint(it) }
+        }
+    }
+
+    private fun expirePoint(point: Point) {
+        point.expire()
+        pointHistoryRepository.save(PointHistory(point.userId, CANCEL_SAVE, -point.saveAmounts))
     }
 
     fun registerMethod(
