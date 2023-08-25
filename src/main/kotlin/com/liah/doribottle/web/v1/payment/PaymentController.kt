@@ -96,6 +96,7 @@ class PaymentController(
 
         if (payment.userId != currentUserId()) throw ForbiddenException()
         if (payment.type != PaymentType.SAVE_POINT) throw BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED)
+        if (payment.point!!.saveAmounts != payment.point.remainAmounts) throw BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED)
         val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         runCatching {
