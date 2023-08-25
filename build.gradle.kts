@@ -40,6 +40,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.security:spring-security-test")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
 	// aws sqs
 	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1"))

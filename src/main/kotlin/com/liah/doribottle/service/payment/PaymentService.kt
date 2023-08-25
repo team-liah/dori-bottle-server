@@ -3,16 +3,16 @@ package com.liah.doribottle.service.payment
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.domain.payment.PaymentCategory
-import com.liah.doribottle.domain.payment.PaymentMethod
-import com.liah.doribottle.repository.payment.PaymentCategoryQueryRepository
-import com.liah.doribottle.repository.payment.PaymentCategoryRepository
-import com.liah.doribottle.repository.payment.PaymentMethodQueryRepository
-import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.domain.payment.*
+import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
+import com.liah.doribottle.domain.point.PointHistory
+import com.liah.doribottle.repository.payment.*
+import com.liah.doribottle.repository.point.PointHistoryRepository
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.payment.dto.BillingInfo
-import com.liah.doribottle.service.payment.dto.PaymentCategoryDto
-import com.liah.doribottle.service.payment.dto.PaymentMethodDto
+import com.liah.doribottle.service.payment.dto.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -24,12 +24,76 @@ import java.util.*
 @Service
 @Transactional
 class PaymentService(
+    private val paymentRepository: PaymentRepository,
+    private val paymentQueryRepository: PaymentQueryRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
     private val paymentMethodQueryRepository: PaymentMethodQueryRepository,
     private val paymentCategoryRepository: PaymentCategoryRepository,
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val pointRepository: PointRepository,
+    private val pointHistoryRepository: PointHistoryRepository
 ) {
+    fun create(
+        userId: UUID,
+        price: Long,
+        type: PaymentType,
+        card: CardDto
+    ): UUID {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        val payment = paymentRepository.save(Payment(user, price, type, card.toEmbeddable()))
+
+        return payment.id
+    }
+
+    @Transactional(readOnly = true)
+    fun get(
+        id: UUID
+    ): PaymentDto {
+        val payment = paymentRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+
+        return payment.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getAll(
+        userId: UUID? = null,
+        type: PaymentType? = null,
+        statuses: Set<PaymentStatus>? = null,
+        pageable: Pageable
+    ): Page<PaymentDto> {
+        return paymentQueryRepository.getAll(
+            userId = userId,
+            type = type,
+            statuses = statuses,
+            pageable = pageable
+        ).map { it.toDto() }
+    }
+
+    fun updateResult(
+        id: UUID,
+        result: PaymentResultDto?,
+        pointId: UUID? = null
+    ) {
+        val payment = paymentRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+        val point = pointId?.let { pointRepository.findByIdOrNull(pointId) }
+
+        payment.updateResult(result?.toEmbeddable(), point)
+
+        if (payment.status == CANCELED) {
+            payment.point?.let { expirePoint(it) }
+        }
+    }
+
+    private fun expirePoint(point: Point) {
+        point.expire()
+        pointHistoryRepository.save(PointHistory(point.userId, CANCEL_SAVE, -point.saveAmounts))
+    }
+
     fun registerMethod(
         userId: UUID,
         billingInfo: BillingInfo
@@ -58,6 +122,16 @@ class PaymentService(
         id: UUID
     ): PaymentMethodDto {
         val method = paymentMethodRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+
+        return method.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getDefaultMethod(
+        userId: UUID
+    ): PaymentMethodDto {
+        val method = paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(userId)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         return method.toDto()

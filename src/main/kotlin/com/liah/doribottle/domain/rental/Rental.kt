@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit
 @Table(
     name = "rental",
     indexes = [
+        Index(name = "INDEX_RENTAL_EXPIRED_DATE", columnList = "expiredDate"),
         Index(name = "INDEX_RENTAL_USER_ID", columnList = "user_id"),
         Index(name = "INDEX_RENTAL_CUP_ID", columnList = "cup_id")
     ]
@@ -60,7 +61,7 @@ class Rental(
     var succeededDate: Instant? = null
         protected set
 
-    @Column
+    @Column(nullable = false)
     var expiredDate: Instant = Instant.now().plus(dayLimit, ChronoUnit.DAYS)
         protected set
 

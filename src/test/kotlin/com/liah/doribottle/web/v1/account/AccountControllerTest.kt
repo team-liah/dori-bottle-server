@@ -24,9 +24,10 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.*
-import org.mockito.Mockito.any
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
@@ -72,7 +73,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("인증요청")
     @Test
     fun sendSms() {
-        doNothing().`when`(mockSmsService).sendLoginAuthSms(anyString(), anyString())
+        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest(USER_LOGIN_ID)
 
         mockMvc.perform(
@@ -83,7 +84,7 @@ class AccountControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockSmsService, times(1)).sendLoginAuthSms(anyString(), anyString())
+        verify(mockSmsService, times(1)).sendLoginAuthSms(any<String>(), any<String>())
     }
 
     @DisplayName("인증")
@@ -188,7 +189,7 @@ class AccountControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = GUEST_LOGIN_ID, role = Role.GUEST)
     @Test
     fun register() {
-        doNothing().`when`(mockAwsSqsSender).send(any(PointSaveMessage::class.java))
+        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.refreshToken)
         val body = RegisterRequest("Tester 2", MALE, "19970101", true, true, false)
 
@@ -204,6 +205,6 @@ class AccountControllerTest : BaseControllerTest() {
             .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
             .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
 
-        verify(mockAwsSqsSender, times(1)).send(any(PointSaveMessage::class.java))
+        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 }
