@@ -1,7 +1,6 @@
 package com.liah.doribottle.web.v1.payment
 
-import com.liah.doribottle.common.error.exception.BillingExecuteException
-import com.liah.doribottle.common.error.exception.ForbiddenException
+import com.liah.doribottle.common.error.exception.*
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentType
@@ -68,13 +67,37 @@ class PaymentController(
         }.onFailure {
             paymentService.updateResult(
                 id = id,
-                result = null,
-                pointId = null
+                result = null
             )
             throw BillingExecuteException()
         }
 
         return id
+    }
+
+    @PostMapping("/{id}/cancel")
+    fun cancelPayment(
+        @PathVariable id: UUID
+    ) {
+        val payment = paymentService.get(id)
+
+        if (payment.userId != currentUserId()) throw ForbiddenException()
+        if (payment.type != PaymentType.SAVE_POINT) throw BusinessException(ErrorCode.PAYMENT_CANCEL_NOT_ALLOWED)
+        val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+
+        runCatching {
+            tossPaymentsService.cancelPayment(
+                paymentKey = paymentResult.paymentKey,
+                cancelReason = "포인트 적립 취소"
+            )
+        }.onSuccess { result ->
+            paymentService.updateResult(
+                id = id,
+                result = result
+            )
+        }.onFailure {
+            throw PaymentCancelException()
+        }
     }
 
     @PostMapping("/method")

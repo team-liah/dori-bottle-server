@@ -14,5 +14,5 @@ data class CardDto(
     val cardOwnerType: CardOwnerType
 ) {
     fun toEmbeddable() = Card(issuerProvider, acquirerProvider, number, cardType, cardOwnerType)
-    fun toResponse() = CardResponse(acquirerProvider.title, number.substring(0 until 4), cardType.title, cardOwnerType.title)
+    fun toResponse() = CardResponse(acquirerProvider.title, number.substring(number.length-4, number.length), cardType.title, cardOwnerType.title)
 }

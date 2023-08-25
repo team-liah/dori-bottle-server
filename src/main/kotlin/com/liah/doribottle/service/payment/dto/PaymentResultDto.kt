@@ -6,7 +6,8 @@ import java.time.Instant
 data class PaymentResultDto(
     val paymentKey: String,
     val approvedDate: Instant,
-    val receiptUrl: String?
+    val receiptUrl: String?,
+    val cancelKey: String?
 ) {
-    fun toEmbeddable() = PaymentResult(paymentKey, approvedDate, receiptUrl)
+    fun toEmbeddable() = PaymentResult(paymentKey, approvedDate, receiptUrl, cancelKey)
 }

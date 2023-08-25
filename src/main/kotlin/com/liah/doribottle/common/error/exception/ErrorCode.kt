@@ -15,6 +15,7 @@ enum class ErrorCode(
     UNAUTHORIZED(401, "A007", "Unauthorized."),
     BILLING_KEY_ISSUANCE_ERROR(500, "A008", "Billing Key Issuance Error."),
     BILLING_EXECUTE_ERROR(500, "A009", "Billing Execute Error."),
+    PAYMENT_CANCEL_ERROR(500, "A010", "Payment Cancel Error."),
 
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
@@ -50,7 +51,8 @@ enum class ErrorCode(
     PAYMENT_METHOD_NOT_FOUND(404, "G002", "Payment Method entity not found."),
     PAYMENT_METHOD_REMOVE_NOT_ALLOWED(400, "G003", "Default Payment Method is can't removed."),
     PAYMENT_NOT_FOUND(404, "G004", "Payment entity not found."),
+    PAYMENT_CANCEL_NOT_ALLOWED(400, "G005", "Payment can not be canceled."),
 
     // Notification
-    NOTIFICATION_NOT_FOUNT(404, "H001", "Notification entity not found.")
+    NOTIFICATION_NOT_FOUNT(404, "H001", "Notification entity not found."),
 }

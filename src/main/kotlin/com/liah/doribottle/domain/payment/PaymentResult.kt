@@ -1,5 +1,6 @@
 package com.liah.doribottle.domain.payment
 
+import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 import java.time.Instant
@@ -13,5 +14,10 @@ data class PaymentResult(
     val approvedDate: Instant,
 
     @Column
-    val receiptUrl: String?
-)
+    val receiptUrl: String?,
+
+    @Column
+    val cancelKey: String?
+) {
+    fun toDto() = PaymentResultDto(paymentKey, approvedDate, receiptUrl, cancelKey)
+}
