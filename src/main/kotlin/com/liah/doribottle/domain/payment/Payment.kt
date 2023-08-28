@@ -75,5 +75,5 @@ class Payment(
             throw IllegalArgumentException("Point is not allowed if payment type is not SAVE_POINT")
     }
 
-    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.toDto())
+    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.toDto(), createdDate)
 }
