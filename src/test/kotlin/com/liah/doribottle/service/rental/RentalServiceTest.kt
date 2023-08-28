@@ -33,6 +33,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
@@ -46,6 +47,8 @@ class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var machineRepository: MachineRepository
+
+    @Autowired private lateinit var cacheManager: CacheManager
 
     private lateinit var user: User
     private lateinit var cup: Cup
@@ -112,6 +115,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findPointHistories)
             .extracting("amounts")
             .containsExactly(10L, -2L)
+
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
     @DisplayName("얼음 컵 대여 요청 TC2")
@@ -172,6 +177,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findPointHistories)
             .extracting("amounts")
             .containsExactly(1L, 1L, -2L)
+
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
     @DisplayName("얼음 컵 대여 요청 TC3")
@@ -243,6 +250,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findPointHistories)
             .extracting("amounts")
             .containsExactly(1L, 1L, 1L, -2L)
+
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
     @DisplayName("컵 대여 요청")
@@ -291,6 +300,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findPointHistories)
             .extracting("amounts")
             .containsExactly(10L, -1L)
+
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
     @DisplayName("컵 대여 요청 예외")
