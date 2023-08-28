@@ -220,8 +220,9 @@ class PaymentControllerTest : BaseControllerTest() {
         paymentRepository.save(payment2)
 
         val payment3 = Payment(user, 3000, SAVE_POINT, card)
+        val point3 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
         val result3 = PaymentResult("dummyPaymentKey3", Instant.now(), null, "dummyCancelKey3")
-        payment3.updateResult(result3, null)
+        payment3.updateResult(result3, point3)
         paymentRepository.save(payment3)
 
         val payment4 = Payment(user, 4000, SAVE_POINT, card)
