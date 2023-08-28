@@ -107,7 +107,8 @@ class PaymentController(
         }.onSuccess { result ->
             paymentService.updateResult(
                 id = id,
-                result = result
+                result = result,
+                pointId = payment.point.id
             )
         }.onFailure {
             throw PaymentCancelException()

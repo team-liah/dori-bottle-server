@@ -35,6 +35,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
@@ -53,6 +54,8 @@ class PaymentServiceTest : BaseServiceTest() {
     private lateinit var userRepository: UserRepository
     @Autowired
     private lateinit var pointRepository: PointRepository
+
+    @Autowired private lateinit var cacheManager: CacheManager
 
     @DisplayName("결제 생성")
     @Test
@@ -243,7 +246,7 @@ class PaymentServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        paymentService.updateResult(payment.id, result, null)
+        paymentService.updateResult(payment.id, result, point.id)
         clear()
 
         //then
@@ -269,6 +272,8 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(findPayment?.point?.events)
             .extracting("amounts")
             .containsExactly(30L, -30L)
+
+        assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
     @DisplayName("결제 결과 업데이트 TC5: 컵 분실 결제 취소")

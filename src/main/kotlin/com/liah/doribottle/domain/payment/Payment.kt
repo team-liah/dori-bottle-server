@@ -56,27 +56,24 @@ class Payment(
         val status = if (result == null) {
             FAILED
         } else if (result.cancelKey != null) {
-            this.result = result
-
             CANCELED
         } else {
-            this.result = result
-            this.point = point
-
             SUCCEEDED
         }
 
+        this.result = result
+        this.point = point
         this.status = status
 
         verifyResult()
     }
 
     private fun verifyResult() {
-        if ((type == SAVE_POINT) && (status == SUCCEEDED) && (point == null))
+        if ((type == SAVE_POINT) && (status == SUCCEEDED || status == CANCELED) && (point == null))
             throw IllegalArgumentException("Null point is not allowed if payment type is SAVE_POINT")
         if (type != SAVE_POINT && point != null)
             throw IllegalArgumentException("Point is not allowed if payment type is not SAVE_POINT")
     }
 
-    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.toDto())
+    fun toDto() = PaymentDto(id, user.id, price, type, card.toDto(), status, result?.toDto(), point?.toDto(), createdDate)
 }
