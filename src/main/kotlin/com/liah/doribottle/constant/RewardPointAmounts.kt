@@ -1,6 +1,6 @@
 package com.liah.doribottle.constant
 
-const val SAVE_REGISTER_REWARD_AMOUNTS: Long = 10
+const val SAVE_REGISTER_REWARD_AMOUNTS: Long = 20
 const val SAVE_REGISTER_INVITER_REWARD_AMOUNTS: Long = 10
 
 /**
