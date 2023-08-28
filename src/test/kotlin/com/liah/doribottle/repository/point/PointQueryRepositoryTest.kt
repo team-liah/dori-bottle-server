@@ -2,8 +2,7 @@ package com.liah.doribottle.repository.point
 
 import com.liah.doribottle.config.TestConfig
 import com.liah.doribottle.domain.point.Point
-import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
-import com.liah.doribottle.domain.point.PointEventType.SAVE_REGISTER_REWARD
+import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.user.Role
@@ -42,6 +41,28 @@ class PointQueryRepositoryTest {
         val userEntity = User("010-5638-3316", "Tester 1", "010-5638-3316", Role.USER)
         user = userRepository.save(userEntity)
         clear()
+    }
+
+    @DisplayName("유저 잔여 포인트 전체 조회")
+    @Test
+    fun getAllRemainByUserId() {
+        //given
+        pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 20))
+        pointRepository.save(Point(user.id, REWARD, SAVE_INVITE_REWARD, 30))
+        pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_INVITER_REWARD, 0))
+        clear()
+
+        //when
+        val result = pointQueryRepository.getAllRemainByUserId(user.id)
+
+        //then
+        assertThat(result)
+            .extracting("saveType")
+            .containsExactly(REWARD, REWARD, PAY)
+        assertThat(result)
+            .extracting("remainAmounts")
+            .containsExactly(10L, 30L, 20L)
     }
 
     @DisplayName("유저 포인트 총합 조회")
