@@ -7,7 +7,7 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
@@ -47,7 +47,7 @@ class MachineResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
@@ -62,7 +62,7 @@ class MachineResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
@@ -79,7 +79,7 @@ class MachineResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.MACHINE_ALREADY_REGISTERED.message)))
@@ -150,7 +150,7 @@ class MachineResourceTest : BaseControllerTest() {
             put("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
@@ -166,7 +166,7 @@ class MachineResourceTest : BaseControllerTest() {
             put("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
@@ -183,7 +183,7 @@ class MachineResourceTest : BaseControllerTest() {
             put("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.INVALID_INPUT_VALUE.code)))
@@ -200,7 +200,7 @@ class MachineResourceTest : BaseControllerTest() {
             put("$endPoint/${machine.id}/cup-amounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
@@ -216,7 +216,7 @@ class MachineResourceTest : BaseControllerTest() {
             put("$endPoint/${machine.id}/cup-amounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))

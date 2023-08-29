@@ -21,7 +21,7 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
@@ -102,7 +102,7 @@ class PaymentControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
 
@@ -149,7 +149,7 @@ class PaymentControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().is5xxServerError)
             .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
@@ -340,7 +340,7 @@ class PaymentControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
