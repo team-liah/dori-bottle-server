@@ -7,7 +7,7 @@ import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.group.GroupType.UNIVERSITY
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
@@ -49,7 +49,7 @@ class GroupResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
@@ -87,7 +87,7 @@ class GroupResourceTest : BaseControllerTest() {
             put("$endPoint/${group.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }

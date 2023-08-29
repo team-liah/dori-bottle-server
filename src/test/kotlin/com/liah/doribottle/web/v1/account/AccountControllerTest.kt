@@ -9,7 +9,7 @@ import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -80,7 +80,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth/send-sms")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
 
@@ -96,7 +96,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
@@ -112,7 +112,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isUnauthorized)
             .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
@@ -199,7 +199,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))

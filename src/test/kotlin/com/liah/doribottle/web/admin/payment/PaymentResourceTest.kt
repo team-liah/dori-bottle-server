@@ -3,7 +3,7 @@ package com.liah.doribottle.web.admin.payment
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterRequest
@@ -36,7 +36,7 @@ class PaymentResourceTest : BaseControllerTest() {
             post("${endPoint}/category")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
