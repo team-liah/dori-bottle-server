@@ -79,6 +79,16 @@ class RentalService(
         rental.`return`(toMachine)
     }
 
+    // TODO: Test
+    fun fail(
+        id: UUID
+    ) {
+        val rental = rentalRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+
+        rental.fail()
+    }
+
     @Transactional(readOnly = true)
     fun getAll(
         userId: UUID? = null,
