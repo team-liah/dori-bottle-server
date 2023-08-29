@@ -478,10 +478,10 @@ class PaymentControllerTest : BaseControllerTest() {
         params.add("page", "0")
         params.add("size", "3")
 
-        val expectAmountsValue = listOf(10, 20, 30)
-        val expectPriceValue = listOf(1000, 2000, 3000)
-        val expectDiscountRateValue = listOf(10, 10, 10)
-        val expectDiscountPriceValue = listOf(900, 1800, 2700)
+        val expectAmountsValue = listOf(10, 20, 40)
+        val expectPriceValue = listOf(1000, 2000, 4000)
+        val expectDiscountRateValue = listOf(10, 0, 10)
+        val expectDiscountPriceValue = listOf(900, 2000, 3600)
 
         mockMvc.perform(
             get("${endPoint}/category")
@@ -490,6 +490,7 @@ class PaymentControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
+            .andExpect(jsonPath("pageable.totalElements", `is`(5)))
             .andExpect(jsonPath("content[*].amounts", `is`(expectAmountsValue)))
             .andExpect(jsonPath("content[*].price", `is`(expectPriceValue)))
             .andExpect(jsonPath("content[*].discountRate", `is`(expectDiscountRateValue)))
@@ -497,12 +498,13 @@ class PaymentControllerTest : BaseControllerTest() {
     }
 
     private fun insertCategories() {
+        val before10Days = Instant.now().minus(10, ChronoUnit.DAYS)
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
         paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
-        paymentCategoryRepository.save(PaymentCategory(30, 3000, 10, after10Days, after10Days))
+        paymentCategoryRepository.save(PaymentCategory(30, 3000, 10, after10Days, before10Days))
         paymentCategoryRepository.save(PaymentCategory(40, 4000, 10, after10Days, after10Days))
         paymentCategoryRepository.save(PaymentCategory(60, 6000, 10, after10Days, after10Days))
-        paymentCategoryRepository.save(PaymentCategory(20, 2000, 10, after10Days, after10Days))
+        paymentCategoryRepository.save(PaymentCategory(20, 2000, 10, before10Days, after10Days))
         paymentCategoryRepository.save(PaymentCategory(50, 5000, 10, after10Days, after10Days))
     }
 }
