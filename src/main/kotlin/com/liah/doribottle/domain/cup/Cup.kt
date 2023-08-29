@@ -44,6 +44,10 @@ class Cup(
         this.status = RETURNED
     }
 
+    fun lost() {
+        this.status = LOST
+    }
+
     fun verifyOnLoan() = status == ON_LOAN
     fun verifyAvailable() = status == AVAILABLE
 }
