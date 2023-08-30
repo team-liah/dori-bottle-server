@@ -383,6 +383,45 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.RENTAL_NOT_FOUND)
     }
 
+    @DisplayName("컵 반납 실패 처리")
+    @Test
+    fun fail() {
+        //given
+        val rental = Rental(user, vendingMachine, true, 7)
+        rental.setRentalCup(cup)
+        rentalRepository.save(rental)
+        clear()
+
+        //when
+        rentalService.fail(rental.id)
+        clear()
+
+        //then
+        val findRental = rentalRepository.findByIdOrNull(rental.id)
+        val findCup = cupRepository.findByIdOrNull(cup.id)
+
+        assertThat(findRental?.status).isEqualTo(RentalStatus.FAILED)
+
+        assertThat(findCup?.status).isEqualTo(CupStatus.LOST)
+    }
+
+    @DisplayName("컵 반납 실패 처리 예외")
+    @Test
+    fun failException() {
+        //given
+        val rental = Rental(user, vendingMachine, true, 7)
+        rental.setRentalCup(cup)
+        rental.`return`(collectionMachine)
+        rentalRepository.save(rental)
+        clear()
+
+        //when, then
+        val exception = assertThrows<IllegalArgumentException> {
+            rentalService.fail(rental.id)
+        }
+        assertThat(exception.message).isEqualTo("Cup return has already been succeeded.")
+    }
+
     @DisplayName("대여 내역 조회")
     @Test
     fun getAll() {
