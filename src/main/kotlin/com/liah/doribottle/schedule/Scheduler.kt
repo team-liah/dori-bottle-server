@@ -18,7 +18,6 @@ class Scheduler(
     private val paymentService: PaymentService,
     private val tossPaymentsService: TossPaymentsService
 ) {
-    // TODO: Test
     @Scheduled(fixedDelay = 60000)
     fun payToLostCupTask() {
         val expiredRentals = rentalService.getAll(

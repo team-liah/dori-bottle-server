@@ -135,7 +135,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val billingKey = "dummyBillingKey"
-        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
 
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willThrow(BillingExecuteException())

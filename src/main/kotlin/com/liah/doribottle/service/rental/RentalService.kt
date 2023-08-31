@@ -79,7 +79,6 @@ class RentalService(
         rental.`return`(toMachine)
     }
 
-    // TODO: Test
     fun fail(
         id: UUID
     ) {
