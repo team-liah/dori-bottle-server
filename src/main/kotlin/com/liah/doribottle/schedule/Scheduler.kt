@@ -1,6 +1,5 @@
 package com.liah.doribottle.schedule
 
-import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.constant.LOST_CUP_PRICE
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.rental.RentalStatus
@@ -61,7 +60,6 @@ class Scheduler(
                 id = paymentId,
                 result = null
             )
-            throw BillingExecuteException()
         }
     }
 }

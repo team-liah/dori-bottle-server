@@ -120,7 +120,7 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.card?.number).isEqualTo("12341234")
         assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
         assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
-        assertThat(findPayment?.status).isEqualTo(PaymentStatus.SUCCEEDED)
+        assertThat(findPayment?.status).isEqualTo(SUCCEEDED)
         assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
         assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)
 
