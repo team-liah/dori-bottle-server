@@ -20,6 +20,7 @@ import com.liah.doribottle.domain.payment.card.CardProvider.KOOKMIN
 import com.liah.doribottle.domain.payment.card.CardType.CREDIT
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.cup.CupRepository
@@ -27,6 +28,7 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.rental.RentalRepository
+import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
@@ -46,6 +48,7 @@ import java.util.*
 class SchedulerTest {
     @Autowired private lateinit var scheduler: Scheduler
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var blockedCauseRepository: BlockedCauseRepository
     @Autowired private lateinit var rentalRepository: RentalRepository
     @Autowired private lateinit var paymentRepository: PaymentRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
@@ -179,6 +182,76 @@ class SchedulerTest {
         assertThat(findCup2?.status).isEqualTo(LOST)
     }
 
+    @DisplayName("대여 컵 분실 처리(결제, 상태 변경) - paymentService.getDefaultMethod 예외")
+    @Test
+    fun payToLostCupTaskPaymentMethodException() {
+        //given
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val cup1 = cupRepository.save(Cup("00 00 00 00"))
+        val cup2 = cupRepository.save(Cup("11 11 11 11"))
+
+        val user1 = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
+        val billingKey = "dummyBillingKey"
+        val paymentKey = "dummyPaymentKey"
+        val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
+        paymentMethodRepository.save(PaymentMethod(user1, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
+        val rental1 = Rental(user1, vendingMachine, true, 0)
+        rental1.setRentalCup(cup1)
+        rentalRepository.save(rental1)
+
+        val user2 = userRepository.save(User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER))
+        val rental2 = Rental(user2, vendingMachine, true, 0)
+        rental2.setRentalCup(cup2)
+        rentalRepository.save(rental2)
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user1.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
+
+        //when
+        scheduler.payToLostCupTask()
+
+        //then
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user1.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
+
+        val findUser1 = userRepository.findByIdOrNull(user1.id)
+        val findUser2 = userRepository.findByIdOrNull(user2.id)
+        val findBlockedCauses = blockedCauseRepository.findAll()
+        val findUser1BlockedCauses = findBlockedCauses.filter { it.user.id == user1.id }
+        val findUser2BlockedCauses = findBlockedCauses.filter { it.user.id == user2.id }
+        val findPayments = paymentRepository.findAll()
+        val findRental1 = rentalRepository.findByIdOrNull(rental1.id)
+        val findRental2 = rentalRepository.findByIdOrNull(rental2.id)
+        val findCup1 = cupRepository.findByIdOrNull(cup1.id)
+        val findCup2 = cupRepository.findByIdOrNull(cup2.id)
+
+        assertThat(findUser1?.blocked).isFalse()
+        assertThat(findUser1BlockedCauses).isEmpty()
+        assertThat(findUser2?.blocked).isTrue()
+        assertThat(findUser2BlockedCauses)
+            .extracting("type")
+            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
+
+        assertThat(findPayments)
+            .extracting("price")
+            .containsExactly(LOST_CUP_PRICE)
+        assertThat(findPayments)
+            .extracting("type")
+            .containsExactly(LOST_CUP)
+        assertThat(findPayments)
+            .extracting("status")
+            .containsExactly(PaymentStatus.SUCCEEDED)
+        assertThat(findPayments)
+            .extracting("card")
+            .containsExactly(card)
+
+        assertThat(findRental1?.status).isEqualTo(RentalStatus.FAILED)
+        assertThat(findRental2?.status).isEqualTo(RentalStatus.FAILED)
+
+        assertThat(findCup1?.status).isEqualTo(LOST)
+        assertThat(findCup2?.status).isEqualTo(LOST)
+    }
+
     @DisplayName("대여 컵 분실 처리(결제, 상태 변경) - tossPaymentsService.executeBilling 예외")
     @Test
     fun payToLostCupTaskBillingException() {
@@ -204,9 +277,16 @@ class SchedulerTest {
         verify(mockTossPaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
+        val findUser = userRepository.findByIdOrNull(user.id)
+        val findBlockedCauses = blockedCauseRepository.findAll().filter { it.user.id == user.id }
         val findPayment = paymentRepository.findAll().firstOrNull()
         val findRental = rentalRepository.findByIdOrNull(rental.id)
         val findCup = cupRepository.findByIdOrNull(cup.id)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findBlockedCauses)
+            .extracting("type")
+            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
 
         assertThat(findPayment?.price).isEqualTo(LOST_CUP_PRICE)
         assertThat(findPayment?.type).isEqualTo(LOST_CUP)
