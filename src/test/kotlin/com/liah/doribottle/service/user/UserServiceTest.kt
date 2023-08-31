@@ -5,6 +5,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
@@ -334,5 +335,74 @@ class UserServiceTest : BaseServiceTest() {
 
         assertThat(findInviter?.invitationCount).isEqualTo(10)
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
+    }
+
+    @DisplayName("유저 블락")
+    @Test
+    fun block() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        clear()
+
+        //when
+        userService.block(user.id, BlockedCauseType.LOST_CUP_PENALTY, null)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findUser?.blockedCauses)
+            .extracting("type")
+            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
+    }
+
+    @DisplayName("유저 블락 해제")
+    @Test
+    fun unblock() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup1 분실")
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup2 분실")
+        val blockedCauseIds = user.blockedCauses.map { it.id }
+        userRepository.save(user)
+        clear()
+
+        //when
+        userService.unblock(user.id, blockedCauseIds.toSet())
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.blocked).isFalse()
+        assertThat(findUser?.blockedCauses).isEmpty()
+    }
+
+    @DisplayName("유저 블락 해제 TC2")
+    @Test
+    fun unblockTc2() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup1 분실")
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup2 분실")
+        val blockedCauseId = user.blockedCauses.first().id
+        userRepository.save(user)
+        clear()
+
+        //when
+        userService.unblock(user.id, setOf(blockedCauseId))
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findUser?.blockedCauses)
+            .extracting("type")
+            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
+        assertThat(findUser?.blockedCauses)
+            .extracting("description")
+            .containsExactly("cup2 분실")
     }
 }
