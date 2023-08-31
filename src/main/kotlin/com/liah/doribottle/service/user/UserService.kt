@@ -6,6 +6,7 @@ import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
 import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.user.UserQueryRepository
@@ -117,5 +118,26 @@ class UserService(
                 )
             )
         }
+    }
+
+    fun block(
+        id: UUID,
+        blockedCauseType: BlockedCauseType,
+        blockedCauseDescription: String?
+    ) {
+        val user = userRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.block(blockedCauseType, blockedCauseDescription)
+    }
+
+    fun unblock(
+        id: UUID,
+        blockedCauseIds: Set<UUID>
+    ) {
+        val user = userRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.unblock(blockedCauseIds)
     }
 }
