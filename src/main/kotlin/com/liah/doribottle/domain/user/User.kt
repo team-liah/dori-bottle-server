@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
 import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
@@ -156,13 +157,6 @@ class User(
         }
     }
 
-    fun imposePenalty(
-        penaltyType: PenaltyType,
-        penaltyCause: String?
-    ) {
-        this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
-    }
-
     fun updateGroup(
         group: Group?
     ) {
@@ -183,6 +177,17 @@ class User(
 
     fun use() {
         this.use = true
+    }
+
+    fun imposePenalty(
+        penaltyType: PenaltyType,
+        penaltyCause: String?
+    ) {
+        this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
+
+        if (penalties.size >= 5) {
+            block(FIVE_PENALTIES, null)
+        }
     }
 
     fun block(
