@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender
+import com.liah.doribottle.domain.user.PenaltyType
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -118,6 +119,17 @@ class UserService(
                 )
             )
         }
+    }
+
+    fun imposePenalty(
+        id: UUID,
+        penaltyType: PenaltyType,
+        penaltyCause: String?
+    ) {
+        val user = userRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.imposePenalty(penaltyType, penaltyCause)
     }
 
     fun block(
