@@ -2,6 +2,8 @@ package com.liah.doribottle.service.rental
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.ForbiddenException
+import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupStatus
@@ -9,6 +11,13 @@ import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
+import com.liah.doribottle.domain.payment.PaymentMethod
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentMethodType
+import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType
+import com.liah.doribottle.domain.payment.card.CardProvider
+import com.liah.doribottle.domain.payment.card.CardType
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointHistory
@@ -17,10 +26,12 @@ import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
@@ -47,6 +58,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var machineRepository: MachineRepository
+    @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
 
     @Autowired private lateinit var cacheManager: CacheManager
 
@@ -59,6 +71,9 @@ class RentalServiceTest : BaseServiceTest() {
     internal fun init() {
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         user = userRepository.save(userEntity)
+
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
 
         cup = cupRepository.save(Cup(CUP_RFID))
 
@@ -316,6 +331,20 @@ class RentalServiceTest : BaseServiceTest() {
             rentalService.rent(user.id, vendingMachine.no, true)
         }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
+
+        val exception2 = assertThrows<ForbiddenException> {
+            val user = User("010-1234-1234", "Tester 2", "010-1234-1234", Role.USER)
+            user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+            userRepository.save(user)
+            rentalService.rent(user.id, vendingMachine.no, true)
+        }
+        assertThat(exception2.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+
+        val exception3 = assertThrows<NotFoundException> {
+            val user = userRepository.save(User("010-1234-1234", "Tester 2", "010-1234-1234", Role.USER))
+            rentalService.rent(user.id, vendingMachine.no, true)
+        }
+        assertThat(exception3.errorCode).isEqualTo(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
 
     @DisplayName("대여 컵 업데이트")
