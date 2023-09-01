@@ -5,9 +5,10 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
-import com.liah.doribottle.domain.user.BlockedCauseType
+import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
+import com.liah.doribottle.domain.user.BlockedCauseType.LOST_CUP_PENALTY
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
+import com.liah.doribottle.domain.user.PenaltyType.*
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.group.GroupRepository
@@ -337,6 +338,54 @@ class UserServiceTest : BaseServiceTest() {
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
+    @DisplayName("유저 페널티 부과")
+    @Test
+    fun imposePenalty() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        clear()
+
+        //when
+        userService.imposePenalty(user.id, DAMAGED_CUP, null)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.penalties)
+            .extracting("type")
+            .containsExactly(DAMAGED_CUP)
+    }
+
+    @DisplayName("유저 페널티 부과 TC2")
+    @Test
+    fun imposePenaltyTc2() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        userRepository.save(user)
+        clear()
+
+        //when
+        userService.imposePenalty(user.id, DAMAGED_CUP, null)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.penalties)
+            .extracting("type")
+            .containsExactly(DAMAGED_CUP, NON_MANNER, ETC, DAMAGED_CUP, DAMAGED_CUP)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findUser?.blockedCauses)
+            .extracting("type")
+            .containsExactly(FIVE_PENALTIES)
+    }
+
     @DisplayName("유저 블락")
     @Test
     fun block() {
@@ -345,7 +394,7 @@ class UserServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        userService.block(user.id, BlockedCauseType.LOST_CUP_PENALTY, null)
+        userService.block(user.id, LOST_CUP_PENALTY, null)
         clear()
 
         //then
@@ -354,7 +403,7 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.blocked).isTrue()
         assertThat(findUser?.blockedCauses)
             .extracting("type")
-            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
+            .containsExactly(LOST_CUP_PENALTY)
     }
 
     @DisplayName("유저 블락 해제")
@@ -362,8 +411,8 @@ class UserServiceTest : BaseServiceTest() {
     fun unblock() {
         //given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
-        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup1 분실")
-        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup2 분실")
+        user.block(LOST_CUP_PENALTY, "cup1 분실")
+        user.block(LOST_CUP_PENALTY, "cup2 분실")
         val blockedCauseIds = user.blockedCauses.map { it.id }
         userRepository.save(user)
         clear()
@@ -384,8 +433,8 @@ class UserServiceTest : BaseServiceTest() {
     fun unblockTc2() {
         //given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
-        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup1 분실")
-        user.block(BlockedCauseType.LOST_CUP_PENALTY, "cup2 분실")
+        user.block(LOST_CUP_PENALTY, "cup1 분실")
+        user.block(LOST_CUP_PENALTY, "cup2 분실")
         val blockedCauseId = user.blockedCauses.first().id
         userRepository.save(user)
         clear()
@@ -400,7 +449,7 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.blocked).isTrue()
         assertThat(findUser?.blockedCauses)
             .extracting("type")
-            .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
+            .containsExactly(LOST_CUP_PENALTY)
         assertThat(findUser?.blockedCauses)
             .extracting("description")
             .containsExactly("cup2 분실")
