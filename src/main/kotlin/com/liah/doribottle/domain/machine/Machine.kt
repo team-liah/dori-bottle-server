@@ -5,9 +5,9 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
-import com.liah.doribottle.domain.machine.MachineType.*
 import com.liah.doribottle.service.machine.dto.MachineDto
 import jakarta.persistence.*
+import org.slf4j.LoggerFactory
 
 @Entity
 @Table(
@@ -63,14 +63,19 @@ class Machine(
     }
 
     fun updateCupAmounts(amounts: Int) {
-        if (amounts > capacity) throw BusinessException(ErrorCode.FULL_OF_CUP)
-        try {
-            if (amounts < 0) throw BusinessException(ErrorCode.LACK_OF_CUP)
-
-            cupAmounts = amounts
-        } catch (e: BusinessException) {
-            // TODO: Publish event
-            e.printStackTrace()
+        runCatching {
+            if (amounts > capacity) {
+                cupAmounts = capacity
+                throw BusinessException(ErrorCode.FULL_OF_CUP)
+            } else if (amounts < 0) {
+                cupAmounts = 0
+                throw BusinessException(ErrorCode.LACK_OF_CUP)
+            } else {
+                cupAmounts = amounts
+            }
+        }.onFailure {
+            val log = LoggerFactory.getLogger(javaClass)
+            log.error(it.message)
         }
     }
 

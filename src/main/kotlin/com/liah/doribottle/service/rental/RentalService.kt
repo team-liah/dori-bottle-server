@@ -5,7 +5,6 @@ import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
-import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.user.FirstRentalUsedEvent
 import com.liah.doribottle.repository.cup.CupRepository
@@ -86,7 +85,7 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
         val cup = cupRepository.findByRfid(cupRfid)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        val rental = rentalRepository.findFirstByCupIdAndStatus(cup.id, PROCEEDING)
+        val rental = rentalQueryRepository.findLastByCupId(cup.id)
             ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.`return`(toMachine)

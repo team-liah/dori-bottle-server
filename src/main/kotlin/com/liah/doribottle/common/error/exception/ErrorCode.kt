@@ -20,7 +20,6 @@ enum class ErrorCode(
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
     CUP_NOT_FOUND(404, "B002", "Cup entity not found."),
-    CUP_RETURN_NOT_ALLOWED(400, "B003", "Cup in non-returnable state."),
     CUP_LOAN_NOT_ALLOWED(400, "B004", "Cup in non-loanable state."),
     CUP_ALREADY_REGISTERED(400, "B005", "Cup is already registered."),
 
