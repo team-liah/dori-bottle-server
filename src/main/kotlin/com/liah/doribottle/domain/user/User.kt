@@ -108,6 +108,10 @@ class User(
     protected val mutablePenalties: MutableList<Penalty> = mutableListOf()
     val penalties: List<Penalty> get() = mutablePenalties
 
+    @OneToMany(mappedBy = "user", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
+    protected val mutableBlockedCauses: MutableList<BlockedCause> = mutableListOf()
+    val blockedCauses: List<BlockedCause> get() =  mutableBlockedCauses
+
     fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
@@ -154,9 +158,9 @@ class User(
 
     fun imposePenalty(
         penaltyType: PenaltyType,
-        cause: String?
+        penaltyCause: String?
     ) {
-        this.mutablePenalties.add(Penalty(this, penaltyType, cause))
+        this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
     }
 
     fun updateGroup(
@@ -179,6 +183,24 @@ class User(
 
     fun use() {
         this.use = true
+    }
+
+    fun block(
+        blockedCauseType: BlockedCauseType,
+        blockedCauseDescription: String?
+    ) {
+        this.blocked = true
+        this.mutableBlockedCauses.add(BlockedCause(this, blockedCauseType, blockedCauseDescription))
+    }
+
+    fun unblock(
+        blockedCauseIds: Set<UUID>
+    ) {
+        this.mutableBlockedCauses.removeAll { blockedCauseIds.contains(it.id) }
+
+        if (this.mutableBlockedCauses.isEmpty()) {
+            this.blocked = false
+        }
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())

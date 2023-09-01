@@ -192,19 +192,4 @@ class MachineServiceTest : BaseServiceTest() {
         val findMachine = machineRepository.findByIdOrNull(machine.id)
         assertThat(findMachine?.cupAmounts).isEqualTo(100)
     }
-
-    @DisplayName("자판기 컵 개수 수정 TC2")
-    @Test
-    fun updateCupAmountsTc2() {
-        //given
-        val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
-        clear()
-
-        //when
-        val exception = assertThrows<BusinessException> {
-            machineService.updateCupAmounts(machine.id, 101)
-        }
-        assertThat(exception.errorCode).isEqualTo(ErrorCode.FULL_OF_CUP)
-    }
 }

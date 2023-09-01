@@ -6,10 +6,19 @@ import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.domain.payment.PaymentMethod
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentMethodType
+import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType
+import com.liah.doribottle.domain.payment.card.CardProvider
+import com.liah.doribottle.domain.payment.card.CardType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -34,6 +43,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.time.Instant
 import java.util.*
 
 class AccountControllerTest : BaseControllerTest() {
@@ -41,6 +51,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
 
     @MockBean
     private lateinit var mockSmsService: SmsService
@@ -66,6 +77,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @AfterEach
     internal fun destroy() {
+        paymentMethodRepository.deleteAll()
         refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
     }
@@ -156,8 +168,12 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("Dori User Pre Auth Token")
     @Test
     fun getPreAuthToken() {
+        //given
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
+        //when, then
         mockMvc.perform(
             MockMvcRequestBuilders.get("$endPoint/pre-auth")
                 .cookie(cookie)
@@ -166,6 +182,42 @@ class AccountControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("accessToken", notNullValue()))
+    }
+
+    @DisplayName("Dori User Pre Auth Token Exception")
+    @Test
+    fun getPreAuthTokenException() {
+        val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.message)))
+    }
+
+    @DisplayName("Dori User Pre Auth Token Exception TC2")
+    @Test
+    fun getPreAuthTokenExceptionTc2() {
+        userRepository.save(User("010-1234-1234", "Tester", "010-1234-1234", Role.USER))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.message)))
     }
 
     @DisplayName("로그아웃")
