@@ -31,6 +31,7 @@ enum class ErrorCode(
     INVITER_NOT_ALLOWED(400, "C004", "Invalid inviter."),
     INVITER_REGISTRATION_OVERDUE(400, "C005", "Inviter registration is overdue."),
     INVITER_NOT_FOUND(404, "C006", "Inviter entity not found."),
+    BLOCKED_USER_ACCESS_DENIED(403, "C007", "BlockedUser is denied access."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),

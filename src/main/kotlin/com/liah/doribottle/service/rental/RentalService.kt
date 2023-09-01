@@ -1,13 +1,16 @@
 package com.liah.doribottle.service.rental
 
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.user.FirstRentalUsedEvent
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -29,6 +32,7 @@ class RentalService(
     private val userRepository: UserRepository,
     private val cupRepository: CupRepository,
     private val machineRepository: MachineRepository,
+    private val paymentMethodRepository: PaymentMethodRepository,
     private val pointService: PointService,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
@@ -42,6 +46,8 @@ class RentalService(
         val fromMachine = machineRepository.findByNo(fromMachineNo)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
+        verifyCanRent(user)
+
         val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 14))
         pointService.use(user.id, rental.cost)
 
@@ -51,6 +57,13 @@ class RentalService(
         }
 
         return rental.id
+    }
+
+    private fun verifyCanRent(user: User) {
+        if (user.blocked)
+            throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+        paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(user.id)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
 
     fun updateRentalCup(
