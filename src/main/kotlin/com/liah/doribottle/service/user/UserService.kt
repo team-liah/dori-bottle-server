@@ -132,6 +132,16 @@ class UserService(
         user.imposePenalty(penaltyType, penaltyCause)
     }
 
+    fun removePenalty(
+        id: UUID,
+        penaltyId: UUID
+    ) {
+        val user = userRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.removePenalty(penaltyId)
+    }
+
     fun block(
         id: UUID,
         blockedCauseType: BlockedCauseType,
