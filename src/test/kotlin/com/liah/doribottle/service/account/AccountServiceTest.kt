@@ -1,12 +1,23 @@
 package com.liah.doribottle.service.account
 
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.payment.PaymentMethod
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentMethodType
+import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType
+import com.liah.doribottle.domain.payment.card.CardProvider
+import com.liah.doribottle.domain.payment.card.CardType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -25,11 +36,11 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Instant
-import java.util.*
 
 class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
@@ -147,15 +158,34 @@ class AccountServiceTest : BaseServiceTest() {
     @Test
     fun preAuth() {
         //given
-        val id = UUID.randomUUID()
-        val doriUser = DoriUser(id, loginId, "Tester", Role.USER)
+        val user = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        val doriUser = DoriUser(user.id, user.loginId, user.name, user.role)
 
         //when
         val accessToken = accountService.preAuth(doriUser)
 
         //then
         assertThat(tokenProvider.validateAccessToken(accessToken)).isTrue
-        assertThat(tokenProvider.extractUserIdFromAccessToken(accessToken)).isEqualTo(id)
+        assertThat(tokenProvider.extractUserIdFromAccessToken(accessToken)).isEqualTo(user.id)
         assertThat(tokenProvider.extractUserRoleFromAccessToken(accessToken)).isEqualTo("ROLE_USER")
+    }
+
+    @DisplayName("인증 토큰 예외")
+    @Test
+    fun preAuthException() {
+        //when, then
+        val exception = assertThrows<ForbiddenException> {
+            //given
+            val user = User("010-0001-0001", "Tester 1", "010-0001-0001", Role.USER)
+            user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+            userRepository.save(user)
+            clear()
+
+            val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER)
+            accountService.preAuth(doriUser)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
     }
 }

@@ -28,7 +28,6 @@ class RentalQueryRepository(
             .selectFrom(rental)
             .innerJoin(rental.fromMachine).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
-            .where(rental.cup.isNotNull)
             .where(
                 userEq(userId),
                 cupEq(cupId),
@@ -37,7 +36,21 @@ class RentalQueryRepository(
                 statusEq(status),
                 expired(expired)
             )
+            .where(rental.cup.isNotNull)
             .toPage(pageable)
+    }
+
+    fun findLastByCupId(
+        cupId: UUID
+    ): Rental? {
+        return queryFactory
+            .selectFrom(rental)
+            .where(
+                cupEq(cupId)
+            )
+            .where(rental.cup.isNotNull)
+            .orderBy(rental.createdDate.desc())
+            .fetchFirst()
     }
 
     private fun userEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }

@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
 import org.springframework.validation.BindException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -84,20 +83,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler(DisabledException::class)
     protected fun handleDisabledException(httpRequest: HttpServletRequest, e: DisabledException): ResponseEntity<ErrorResponse> {
         log.error("DisabledException", e)
-        val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
-        return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
-            .body(response)
-    }
-
-    @ExceptionHandler(LockedException::class)
-    protected fun handleLockedException(httpRequest: HttpServletRequest, e: LockedException): ResponseEntity<ErrorResponse> {
-        log.error("LockedException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
         val expiredAccessTokenCookie = expireCookie(
             url = httpRequest.requestURL.toString(),

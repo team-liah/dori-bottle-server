@@ -45,3 +45,5 @@ app:
   aws:
     sqs:
       queueName: point-save-queue.fifo
+  schedule:
+    enabled: true
