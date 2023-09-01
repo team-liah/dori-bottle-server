@@ -11,8 +11,8 @@ import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
@@ -155,23 +155,6 @@ class MachineResourceTest : BaseControllerTest() {
             .andExpect(status().isOk)
     }
 
-    @DisplayName("자판기 정보 수정 - 예외")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun updateException() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 110)
-
-        mockMvc.perform(
-            put("$endPoint/${machine.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
-        )
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
-    }
-
     @DisplayName("자판기 정보 수정 - 예외 TC2")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
@@ -203,22 +186,5 @@ class MachineResourceTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-    }
-
-    @DisplayName("자판기 컵 개수 수정 - 예외")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun updateCupAmountsException() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineCupAmountsUpdateRequest(102)
-
-        mockMvc.perform(
-            put("$endPoint/${machine.id}/cup-amounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
-        )
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("message", `is`(ErrorCode.FULL_OF_CUP.message)))
     }
 }

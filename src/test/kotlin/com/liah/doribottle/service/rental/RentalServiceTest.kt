@@ -380,15 +380,15 @@ class RentalServiceTest : BaseServiceTest() {
         //then
         val findRental = rentalRepository.findByIdOrNull(rental.id)
         val findCup = cupRepository.findByIdOrNull(cup.id)
-        val fromMachine = machineRepository.findByIdOrNull(collectionMachine.id)
+        val findToMachine = machineRepository.findByIdOrNull(collectionMachine.id)
 
-        assertThat(findRental?.toMachine).isEqualTo(fromMachine)
+        assertThat(findRental?.toMachine).isEqualTo(findToMachine)
         assertThat(findRental?.status).isEqualTo(RentalStatus.SUCCEEDED)
         assertThat(findRental?.succeededDate).isNotNull
 
         assertThat(findCup?.status).isEqualTo(CupStatus.RETURNED)
 
-        assertThat(fromMachine?.cupAmounts).isEqualTo(1)
+        assertThat(findToMachine?.cupAmounts).isEqualTo(1)
     }
 
     @DisplayName("컵 반납 예외")

@@ -81,13 +81,20 @@ class Rental(
     ) {
         if (toMachine.type != MachineType.COLLECTION)
             throw IllegalArgumentException("Non collectionMachine is not allowed.")
+        this.toMachine?.increaseCupAmounts(-1)
         toMachine.increaseCupAmounts(1)
-
         this.toMachine = toMachine
-        this.status = SUCCEEDED
-        this.succeededDate = Instant.now()
+
+        if (this.status == PROCEEDING) {
+            succeed()
+        }
 
         cup?.`return`()
+    }
+
+    private fun succeed() {
+        this.status = SUCCEEDED
+        this.succeededDate = Instant.now()
     }
 
     fun fail() {

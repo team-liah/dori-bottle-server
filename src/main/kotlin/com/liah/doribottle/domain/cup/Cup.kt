@@ -40,7 +40,6 @@ class Cup(
     }
 
     fun `return`() {
-        if (!verifyOnLoan()) throw BusinessException(ErrorCode.CUP_RETURN_NOT_ALLOWED)
         this.status = RETURNED
     }
 
