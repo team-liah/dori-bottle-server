@@ -190,6 +190,12 @@ class User(
         }
     }
 
+    fun removePenalty(
+        penaltyId: UUID
+    ) {
+        this.mutablePenalties.removeIf { it.id == penaltyId }
+    }
+
     fun block(
         blockedCauseType: BlockedCauseType,
         blockedCauseDescription: String?
