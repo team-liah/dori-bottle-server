@@ -386,6 +386,26 @@ class UserServiceTest : BaseServiceTest() {
             .containsExactly(FIVE_PENALTIES)
     }
 
+    @DisplayName("유저 페널티 제거")
+    @Test
+    fun removePenalty() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        userRepository.save(user)
+        val penaltyId = user.penalties.first().id
+        clear()
+
+        //when
+        userService.removePenalty(user.id, penaltyId)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.penalties).isEmpty()
+    }
+
     @DisplayName("유저 블락")
     @Test
     fun block() {
