@@ -128,8 +128,8 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
-            .andExpect(jsonPath("penaltyCount", `is`(1)))
             .andExpect(jsonPath("group.name", `is`(user.group?.name)))
+            .andExpect(jsonPath("penaltyCount", `is`(1)))
     }
 
     @DisplayName("프로필 업데이트")

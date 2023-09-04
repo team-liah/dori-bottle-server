@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.user.vm
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
+import com.liah.doribottle.service.user.dto.BlockedCauseDto
 import com.liah.doribottle.service.user.dto.PenaltyDto
 import java.time.Instant
 import java.util.*
@@ -19,6 +20,8 @@ data class UserDetailResponse(
     val gender: Gender?,
     val role: Role,
     val registeredDate: Instant?,
+    val group: GroupDto?,
     val penalties: List<PenaltyDto>,
-    val group: GroupDto?
+    val blocked: Boolean,
+    val blockedCauseDto: List<BlockedCauseDto>
 )
