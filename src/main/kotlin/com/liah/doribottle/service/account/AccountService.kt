@@ -166,6 +166,16 @@ class AccountService(
             throw DisabledException("Account is disabled.")
     }
 
+    @Transactional
+    fun deactivate(
+        id: UUID
+    ) {
+       val user = userRepository.findByIdOrNull(id)
+           ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+       user.deactivate()
+    }
+
     // TODO: Remove
     @Transactional
     fun createDummyUser(

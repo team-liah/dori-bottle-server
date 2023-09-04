@@ -214,6 +214,10 @@ class User(
         }
     }
 
+    fun deactivate() {
+        this.active = false
+    }
+
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())
     fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() })
 }
