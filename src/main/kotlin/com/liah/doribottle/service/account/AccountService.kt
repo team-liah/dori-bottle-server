@@ -146,7 +146,7 @@ class AccountService(
     private fun verifyCanRent(user: User) {
         if (user.blocked)
             throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
-        paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(user.id)
+        paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
 
