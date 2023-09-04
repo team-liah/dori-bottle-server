@@ -4,6 +4,9 @@ import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.config.security.WithMockDoriUser
+import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
@@ -18,16 +21,21 @@ import com.liah.doribottle.domain.payment.card.CardType.CREDIT
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.repository.cup.CupRepository
+import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
@@ -69,12 +77,21 @@ class PaymentControllerTest : BaseControllerTest() {
     private lateinit var pointRepository: PointRepository
     @Autowired
     private lateinit var blockedCauseRepository: BlockedCauseRepository
+    @Autowired
+    private lateinit var rentalRepository: RentalRepository
+    @Autowired
+    private lateinit var machineRepository: MachineRepository
+    @Autowired
+    private lateinit var cupRepository: CupRepository
 
     @MockBean
     private lateinit var mockTossPaymentsService: TossPaymentsService
 
     @AfterEach
     internal fun destroy() {
+        rentalRepository.deleteAll()
+        machineRepository.deleteAll()
+        cupRepository.deleteAll()
         paymentRepository.deleteAll()
         pointRepository.deleteAll()
         paymentMethodRepository.deleteAll()
@@ -539,17 +556,47 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findMethod).isNull()
     }
 
+    @DisplayName("결제 수단 제거 TC2")
+    @Test
+    fun removeMethodTc2() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val anotherMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            delete("$endPoint/method/${defaultMethod.id}")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        val findDefaultMethod = paymentMethodRepository.findByIdOrNull(defaultMethod.id)
+        val findAnotherMethod = paymentMethodRepository.findByIdOrNull(anotherMethod.id)
+        assertThat(findDefaultMethod).isNull()
+        assertThat(findAnotherMethod?.default).isTrue()
+    }
+
     @DisplayName("결제 수단 제거 예외")
     @Test
     fun removeMethodException() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val vendingMachine = machineRepository.save(Machine(BaseServiceTest.MACHINE_NO, "Test machine", MachineType.VENDING, null, 100))
+        val cup = cupRepository.save(Cup(BaseServiceTest.CUP_RFID))
+        val rental = Rental(user, vendingMachine, true, 10)
+        rental.setRentalCup(cup)
+        rentalRepository.save(rental)
+
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         //when, then
         mockMvc.perform(
-            delete("$endPoint/method/${method.id}")
+            delete("$endPoint/method/${defaultMethod.id}")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)

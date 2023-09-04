@@ -2,6 +2,9 @@ package com.liah.doribottle.service.payment
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.Payment
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
@@ -19,12 +22,16 @@ import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
 import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointSaveType.PAY
+import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.cup.CupRepository
+import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.payment.dto.BillingInfo
@@ -54,6 +61,12 @@ class PaymentServiceTest : BaseServiceTest() {
     private lateinit var userRepository: UserRepository
     @Autowired
     private lateinit var pointRepository: PointRepository
+    @Autowired
+    private lateinit var rentalRepository: RentalRepository
+    @Autowired
+    private lateinit var machineRepository: MachineRepository
+    @Autowired
+    private lateinit var cupRepository: CupRepository
 
     @Autowired private lateinit var cacheManager: CacheManager
 
@@ -472,7 +485,7 @@ class PaymentServiceTest : BaseServiceTest() {
     fun removeMethod() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()))
+        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
         clear()
 
         //when
@@ -484,12 +497,37 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(findMethod).isNull()
     }
 
+    @DisplayName("결제 수단 제거 - TC2")
+    @Test
+    fun removeMethodTc2() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val anotherMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        clear()
+
+        //when
+        paymentService.removeMethod(defaultMethod.id)
+        clear()
+
+        //then
+        val findDefaultMethod = paymentMethodRepository.findByIdOrNull(defaultMethod.id)
+        val findAnotherMethod = paymentMethodRepository.findByIdOrNull(anotherMethod.id)
+        assertThat(findDefaultMethod).isNull()
+        assertThat(findAnotherMethod?.default).isTrue()
+    }
+
     @DisplayName("결제 수단 제거 예외")
     @Test
     fun removeMethodException() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val vendingMachine = machineRepository.save(Machine(MACHINE_NO, "Test machine", MachineType.VENDING, null, 100))
+        val cup = cupRepository.save(Cup(CUP_RFID))
+        val rental = Rental(user, vendingMachine, true, 10)
+        rental.setRentalCup(cup)
+        rentalRepository.save(rental)
         clear()
 
         //when, then
