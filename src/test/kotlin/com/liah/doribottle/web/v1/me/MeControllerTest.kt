@@ -5,6 +5,7 @@ import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.notification.Alert
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
@@ -20,6 +21,7 @@ import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -128,8 +130,41 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("birthDate", `is`(user.birthDate)))
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
-            .andExpect(jsonPath("penaltyCount", `is`(1)))
             .andExpect(jsonPath("group.name", `is`(user.group?.name)))
+            .andExpect(jsonPath("penaltyCount", `is`(1)))
+    }
+
+    @DisplayName("프로필 조회 - TC2")
+    @Test
+    fun getProfileTC2() {
+        val user = User("010-0001-0001", "Blocked User", "010-0001-0001", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get("${endPoint}/profile")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("name", `is`(user.name)))
+            .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
+            .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
+            .andExpect(jsonPath("invitationCount", `is`(user.invitationCount)))
+            .andExpect(jsonPath("inviterId", nullValue()))
+            .andExpect(jsonPath("birthDate", nullValue()))
+            .andExpect(jsonPath("gender", `is`(user.gender)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
+            .andExpect(jsonPath("group", nullValue()))
+            .andExpect(jsonPath("penaltyCount", `is`(0)))
+            .andExpect(jsonPath("blocked", `is`(true)))
+            .andExpect(jsonPath("blockedCauses[*].clearPrice", `is`(listOf(5000, 5000))))
+            .andExpect(jsonPath("blockedCauses[*].type", `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name))))
     }
 
     @DisplayName("프로필 업데이트")

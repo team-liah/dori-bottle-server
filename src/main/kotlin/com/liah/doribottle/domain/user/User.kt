@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
 import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
@@ -156,13 +157,6 @@ class User(
         }
     }
 
-    fun imposePenalty(
-        penaltyType: PenaltyType,
-        penaltyCause: String?
-    ) {
-        this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
-    }
-
     fun updateGroup(
         group: Group?
     ) {
@@ -185,6 +179,23 @@ class User(
         this.use = true
     }
 
+    fun imposePenalty(
+        penaltyType: PenaltyType,
+        penaltyCause: String?
+    ) {
+        this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
+
+        if (penalties.size >= 5) {
+            block(FIVE_PENALTIES, null)
+        }
+    }
+
+    fun removePenalty(
+        penaltyId: UUID
+    ) {
+        this.mutablePenalties.removeIf { it.id == penaltyId }
+    }
+
     fun block(
         blockedCauseType: BlockedCauseType,
         blockedCauseDescription: String?
@@ -204,5 +215,5 @@ class User(
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties.map { it.toDto() }, group?.toDto())
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() })
 }
