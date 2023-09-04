@@ -9,8 +9,7 @@ import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENT
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
 import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
-import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
-import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
+import com.liah.doribottle.domain.payment.PaymentType.*
 import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType.CORPORATE
 import com.liah.doribottle.domain.payment.card.CardOwnerType.PERSONAL
@@ -19,6 +18,7 @@ import com.liah.doribottle.domain.payment.card.CardType.CREDIT
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
@@ -26,6 +26,7 @@ import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.BillingInfo
@@ -66,6 +67,8 @@ class PaymentControllerTest : BaseControllerTest() {
     private lateinit var userRepository: UserRepository
     @Autowired
     private lateinit var pointRepository: PointRepository
+    @Autowired
+    private lateinit var blockedCauseRepository: BlockedCauseRepository
 
     @MockBean
     private lateinit var mockTossPaymentsService: TossPaymentsService
@@ -174,6 +177,113 @@ class PaymentControllerTest : BaseControllerTest() {
         assertThat(findPayment?.point).isNull()
 
         assertThat(findPoint).isNull()
+    }
+
+    @DisplayName("계정 블락 해제 결제")
+    @Test
+    fun payToUnblockAccount() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        user.block(BlockedCauseType.FIVE_PENALTIES, null)
+        userRepository.save(user)
+
+        val billingKey = "dummyBillingKey"
+        val paymentKey = "dummyPaymentKey"
+        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/unblock-account")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findUser = userRepository.findByIdOrNull(user.id)
+        val findBlockedCauses = blockedCauseRepository.findAll()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(40000)
+        assertThat(findPayment?.type).isEqualTo(UNBLOCK_ACCOUNT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.number).isEqualTo("12341234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(SUCCEEDED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
+
+        assertThat(findUser?.blocked).isFalse()
+        assertThat(findBlockedCauses).isEmpty()
+    }
+
+    @DisplayName("계정 블락 해제 결제 예외")
+    @Test
+    fun payToUnblockAccountException() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        user.block(BlockedCauseType.FIVE_PENALTIES, null)
+        userRepository.save(user)
+
+        val billingKey = "dummyBillingKey"
+        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+            .willThrow(BillingExecuteException())
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/unblock-account")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().is5xxServerError)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
+
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findUser = userRepository.findByIdOrNull(user.id)
+        val findBlockedCauses = blockedCauseRepository.findAll()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(40000)
+        assertThat(findPayment?.type).isEqualTo(UNBLOCK_ACCOUNT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.number).isEqualTo("12341234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PaymentStatus.FAILED)
+        assertThat(findPayment?.result).isNull()
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findBlockedCauses)
+            .extracting("type")
+            .containsExactly(
+                BlockedCauseType.LOST_CUP_PENALTY,
+                BlockedCauseType.LOST_CUP_PENALTY,
+                BlockedCauseType.FIVE_PENALTIES
+            )
     }
 
     @DisplayName("결제 내역 조회")
