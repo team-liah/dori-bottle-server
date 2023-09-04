@@ -3,6 +3,7 @@ package com.liah.doribottle.service.user
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.constant.LOST_CUP_PRICE
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
@@ -85,6 +86,46 @@ class UserServiceTest : BaseServiceTest() {
             .extracting("cause")
             .containsExactly("의도적인 컵 파손")
         assertThat(result.group?.name).isEqualTo("리아")
+    }
+
+    @DisplayName("유저 조회 - TC3")
+    @Test
+    fun getTc3() {
+        //given
+        val group = groupRepository.save(Group("리아", COMPANY))
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
+        user.block(LOST_CUP_PENALTY, null)
+        user.updateGroup(group)
+        clear()
+
+        //when
+        val result = userService.get(user.id)
+
+        //then
+        assertThat(result.loginId).isEqualTo(USER_LOGIN_ID)
+        assertThat(result.name).isEqualTo("Tester 1")
+        assertThat(result.phoneNumber).isEqualTo(USER_LOGIN_ID)
+        assertThat(result.role).isEqualTo(Role.USER)
+        assertThat(result.group?.name).isEqualTo("리아")
+        assertThat(result.penalties)
+            .extracting("userId")
+            .containsExactly(user.id)
+        assertThat(result.penalties)
+            .extracting("type")
+            .containsExactly(DAMAGED_CUP)
+        assertThat(result.penalties)
+            .extracting("cause")
+            .containsExactly("의도적인 컵 파손")
+        assertThat(result.blockedCauses)
+            .extracting("userId")
+            .containsExactly(user.id)
+        assertThat(result.blockedCauses)
+            .extracting("type")
+            .containsExactly(LOST_CUP_PENALTY)
+        assertThat(result.blockedCauses)
+            .extracting("clearPrice")
+            .containsExactly(LOST_CUP_PRICE)
     }
 
     @DisplayName("유저 조회 예외")
