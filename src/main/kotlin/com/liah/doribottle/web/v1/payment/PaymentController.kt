@@ -11,6 +11,7 @@ import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.point.PointService
+import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.v1.payment.vm.*
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -25,7 +26,8 @@ import java.util.*
 class PaymentController(
     private val paymentService: PaymentService,
     private val tossPaymentsService: TossPaymentsService,
-    private val pointService: PointService
+    private val pointService: PointService,
+    private val userService: UserService
 ) {
     @PostMapping("/save-point")
     fun payToSavePoint(
@@ -61,6 +63,50 @@ class PaymentController(
                 id = id,
                 result = result,
                 pointId = pointId
+            )
+        }.onFailure {
+            paymentService.updateResult(
+                id = id,
+                result = null
+            )
+            throw BillingExecuteException()
+        }
+
+        return id
+    }
+
+    @PostMapping("/unblock-account")
+    fun payToUnblockAccount(): UUID {
+        val currentUserId = currentUserId()!!
+        val blockedCauses = userService.get(currentUserId).blockedCauses
+        val price = blockedCauses.sumOf { it.clearPrice }
+
+        if (blockedCauses.isEmpty()) throw BusinessException(ErrorCode.ALREADY_UNBLOCKED_USER)
+
+        val method = paymentService.getDefaultMethod(currentUserId)
+        val id = paymentService.create(
+            userId = currentUserId,
+            price = price,
+            type = PaymentType.UNBLOCK_ACCOUNT,
+            card = method.card
+        )
+
+        runCatching {
+            tossPaymentsService.executeBilling(
+                billingKey = method.billingKey,
+                userId = currentUserId,
+                price = price,
+                paymentId = id,
+                paymentType = PaymentType.UNBLOCK_ACCOUNT
+            )
+        }.onSuccess { result ->
+            userService.unblock(
+                id = currentUserId,
+                blockedCauseIds = blockedCauses.map { it.id }.toSet()
+            )
+            paymentService.updateResult(
+                id = id,
+                result = result
             )
         }.onFailure {
             paymentService.updateResult(
