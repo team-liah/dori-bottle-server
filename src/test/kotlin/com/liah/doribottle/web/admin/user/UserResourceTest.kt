@@ -6,9 +6,11 @@ import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -16,7 +18,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -40,6 +42,7 @@ class UserResourceTest : BaseControllerTest() {
     @AfterEach
     internal fun destroy() {
         userRepository.deleteAll()
+        groupRepository.deleteAll()
     }
 
     @DisplayName("유저 조회")
@@ -116,5 +119,41 @@ class UserResourceTest : BaseControllerTest() {
         userRepository.save(User("010-0000-0004", "Tester 4", "010-0000-0004", Role.USER))
         userRepository.save(User("010-0000-0005", "Tester 5", "010-0000-0005", Role.USER))
         userRepository.save(User("010-0000-0006", "Tester 6", "010-0000-0006", Role.USER))
+    }
+
+    @DisplayName("유저 페널티 부여")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun imposePenalty() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+
+        val body = UserPenaltyImposeRequest(DAMAGED_CUP, null)
+
+        mockMvc.perform(
+            post("${endPoint}/${user.id}/penalty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("유저 페널티 제거")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun removePenalty() {
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
+        val penaltyId = user.penalties.first().id
+        userRepository.save(user)
+        val body = UserPenaltyImposeRequest(DAMAGED_CUP, null)
+
+        mockMvc.perform(
+            delete("${endPoint}/${user.id}/penalty/${penaltyId}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
     }
 }

@@ -4,7 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
@@ -42,7 +42,7 @@ class CupResourceTest : BaseControllerTest() {
             MockMvcRequestBuilders.post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
@@ -57,7 +57,7 @@ class CupResourceTest : BaseControllerTest() {
             MockMvcRequestBuilders.post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
@@ -74,7 +74,7 @@ class CupResourceTest : BaseControllerTest() {
             MockMvcRequestBuilders.post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.CUP_ALREADY_REGISTERED.message)))

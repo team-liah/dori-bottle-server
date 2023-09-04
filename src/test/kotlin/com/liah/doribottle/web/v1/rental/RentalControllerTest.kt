@@ -6,16 +6,25 @@ import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
+import com.liah.doribottle.domain.payment.PaymentMethod
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType
+import com.liah.doribottle.domain.payment.PaymentMethodType
+import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType
+import com.liah.doribottle.domain.payment.card.CardProvider
+import com.liah.doribottle.domain.payment.card.CardType
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -34,6 +43,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import java.time.Instant
 
 class RentalControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/rental"
@@ -43,6 +53,7 @@ class RentalControllerTest : BaseControllerTest() {
     @Autowired private lateinit var machineRepository: MachineRepository
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var pointRepository: PointRepository
+    @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
 
     private lateinit var user: User
     private lateinit var guest: User
@@ -55,6 +66,9 @@ class RentalControllerTest : BaseControllerTest() {
         user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
 
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+
         val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), 100)
         machineEntity.updateCupAmounts(100)
         vendingMachine = machineRepository.save(machineEntity)
@@ -65,6 +79,7 @@ class RentalControllerTest : BaseControllerTest() {
 
     @AfterEach
     internal fun destroy() {
+        paymentMethodRepository.deleteAll()
         rentalRepository.deleteAll()
         pointRepository.deleteAll()
         userRepository.deleteAll()
@@ -85,12 +100,12 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
     }
 
-    @DisplayName("컵 대여 - 포인트 부족")
+    @DisplayName("컵 대여 예외 - 포인트 부족")
     @Test
     fun rentExceptionLackOfPoint() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
@@ -103,10 +118,53 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.LACK_OF_POINT.message)))
+    }
+
+    @DisplayName("컵 대여 예외 - 블락 유저")
+    @Test
+    fun rentExceptionBlockedUser() {
+        val user = User("010-0001-0001", "Tester 1", "010-0001-0001", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = RentRequest(vendingMachine.no, true)
+
+        mockMvc.perform(
+            post(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isForbidden)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.message)))
+    }
+
+    @DisplayName("컵 대여 예외 - 결제수단 미등록")
+    @Test
+    fun rentExceptionPaymentMethodNotFound() {
+        val user = userRepository.save(User("010-0001-0001", "Tester 2", "010-0001-0001", Role.USER))
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = RentRequest(vendingMachine.no, true)
+
+        mockMvc.perform(
+            post(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.message)))
     }
 
     @DisplayName("얼읍컵 대여 - Unauthorized")
@@ -120,7 +178,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))

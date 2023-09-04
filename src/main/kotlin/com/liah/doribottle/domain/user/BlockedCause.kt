@@ -1,26 +1,26 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
-import com.liah.doribottle.service.user.dto.PenaltyDto
+import com.liah.doribottle.service.user.dto.BlockedCauseDto
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
 
 @Entity
 @Table(
-    name = "penalty",
-    indexes = [Index(name = "IDX_PENALTY_USER_ID", columnList = "user_id")]
+    name = "blocked_cause",
+    indexes = [Index(name = "INDEX_BLOCKED_CAUSE_USER_ID", columnList = "user_id")]
 )
-class Penalty(
+class BlockedCause(
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PenaltyType,
+    val type: BlockedCauseType,
 
     @Column
-    val cause: String?
+    val description: String? = null
 ) : PrimaryKeyEntity() {
-    fun toDto() = PenaltyDto(id, user.id, type, cause)
+    fun toDto() = BlockedCauseDto(id, user.id, type, description)
 }

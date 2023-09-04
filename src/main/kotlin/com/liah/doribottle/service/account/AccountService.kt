@@ -1,9 +1,6 @@
 package com.liah.doribottle.service.account
 
-import com.liah.doribottle.common.error.exception.BadRequestException
-import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.common.error.exception.UnauthorizedException
+import com.liah.doribottle.common.error.exception.*
 import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
@@ -12,6 +9,7 @@ import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -19,7 +17,6 @@ import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +26,7 @@ import java.util.*
 @Service
 class AccountService(
     private val userRepository: UserRepository,
+    private val paymentMethodRepository: PaymentMethodRepository,
     private val awsSqsSender: AwsSqsSender,
     private val tokenProvider: TokenProvider,
     private val passwordEncoder: PasswordEncoder
@@ -135,7 +133,22 @@ class AccountService(
         return tokenProvider.generateRefreshToken(userId.toString())
     }
 
-    fun preAuth(doriUser: DoriUser) = tokenProvider.preAuthAccessToken(doriUser)
+    @Transactional(readOnly = true)
+    fun preAuth(doriUser: DoriUser): String {
+        val user = userRepository.findByIdOrNull(doriUser.id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        verifyCanRent(user)
+
+        return tokenProvider.preAuthAccessToken(doriUser)
+    }
+
+    private fun verifyCanRent(user: User) {
+        if (user.blocked)
+            throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+        paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+    }
 
     private fun verifyLoginPassword(
         user: User,
@@ -151,8 +164,6 @@ class AccountService(
     private fun verifyAccount(user: User) {
         if (!user.active)
             throw DisabledException("Account is disabled.")
-        if (user.blocked)
-            throw LockedException("Account is locked.")
     }
 
     // TODO: Remove

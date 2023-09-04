@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.repository.payment.*
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.payment.dto.*
 import com.liah.doribottle.service.point.PointService
@@ -30,7 +31,8 @@ class PaymentService(
     private val paymentCategoryQueryRepository: PaymentCategoryQueryRepository,
     private val userRepository: UserRepository,
     private val pointRepository: PointRepository,
-    private val pointService: PointService
+    private val pointService: PointService,
+    private val rentalQueryRepository: RentalQueryRepository
 ) {
     fun create(
         userId: UUID,
@@ -93,7 +95,7 @@ class PaymentService(
     ): UUID {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val defaultMethod = paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(userId)
+        val defaultMethod = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
 
         val method = paymentMethodRepository.save(
             PaymentMethod(
@@ -124,7 +126,7 @@ class PaymentService(
     fun getDefaultMethod(
         userId: UUID
     ): PaymentMethodDto {
-        val method = paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(userId)
+        val method = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         return method.toDto()
@@ -145,7 +147,7 @@ class PaymentService(
         id: UUID,
         userId: UUID
     ) {
-        val originDefaultMethod = paymentMethodRepository.findFirstByUserIdAndDefaultIsTrue(userId)
+        val originDefaultMethod = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
         val newDefaultMethod = paymentMethodRepository.findByIdAndUserId(id, userId)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
@@ -158,7 +160,18 @@ class PaymentService(
     ) {
         val method = paymentMethodRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
-        if (method.default) throw BusinessException(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
+
+        if (method.default) {
+            val anotherMethod = paymentMethodRepository.findFirstByUserIdAndDefault(method.user.id, false)
+
+            if (anotherMethod == null) {
+                val existProceedingRental = rentalQueryRepository.existProceedingByUserId(method.user.id)
+                if (existProceedingRental)
+                    throw BusinessException(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
+            } else {
+                changeDefaultMethod(anotherMethod.id, method.user.id)
+            }
+        }
 
         paymentMethodRepository.delete(method)
     }

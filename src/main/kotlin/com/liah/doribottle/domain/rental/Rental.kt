@@ -4,8 +4,7 @@ import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
-import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
-import com.liah.doribottle.domain.rental.RentalStatus.SUCCEEDED
+import com.liah.doribottle.domain.rental.RentalStatus.*
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.randomString
 import com.liah.doribottle.service.rental.dto.RentalDto
@@ -81,14 +80,28 @@ class Rental(
         toMachine: Machine
     ) {
         if (toMachine.type != MachineType.COLLECTION)
-            throw IllegalArgumentException("Non CollectionMachine is not allowed.")
+            throw IllegalArgumentException("Non collectionMachine is not allowed.")
+        this.toMachine?.increaseCupAmounts(-1)
         toMachine.increaseCupAmounts(1)
-
         this.toMachine = toMachine
-        this.status = SUCCEEDED
-        this.succeededDate = Instant.now()
+
+        if (this.status == PROCEEDING) {
+            succeed()
+        }
 
         cup?.`return`()
+    }
+
+    private fun succeed() {
+        this.status = SUCCEEDED
+        this.succeededDate = Instant.now()
+    }
+
+    fun fail() {
+        if (this.status == SUCCEEDED) throw IllegalArgumentException("Cup return has already been succeeded.")
+
+        this.status = FAILED
+        cup?.lost()
     }
 
     fun toDto() = RentalDto(id, no, user.id, cup?.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)

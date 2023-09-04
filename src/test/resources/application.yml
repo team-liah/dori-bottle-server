@@ -46,3 +46,5 @@ app:
   aws:
     sqs:
       queueName: dummyQueue
+  schedule:
+    enabled: false

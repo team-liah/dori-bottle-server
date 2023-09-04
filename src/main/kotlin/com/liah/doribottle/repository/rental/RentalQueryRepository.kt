@@ -3,6 +3,7 @@ package com.liah.doribottle.repository.rental
 import com.liah.doribottle.domain.rental.QRental.Companion.rental
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.extension.toPage
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
@@ -28,7 +29,6 @@ class RentalQueryRepository(
             .selectFrom(rental)
             .innerJoin(rental.fromMachine).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
-            .where(rental.cup.isNotNull)
             .where(
                 userEq(userId),
                 cupEq(cupId),
@@ -37,7 +37,34 @@ class RentalQueryRepository(
                 statusEq(status),
                 expired(expired)
             )
+            .where(rental.cup.isNotNull)
             .toPage(pageable)
+    }
+
+    fun findLastByCupId(
+        cupId: UUID
+    ): Rental? {
+        return queryFactory
+            .selectFrom(rental)
+            .where(
+                cupEq(cupId)
+            )
+            .where(rental.cup.isNotNull)
+            .orderBy(rental.createdDate.desc())
+            .fetchFirst()
+    }
+
+    fun existProceedingByUserId(
+        userId: UUID
+    ): Boolean {
+        return queryFactory
+            .selectFrom(rental)
+            .where(
+                userEq(userId),
+                statusEq(PROCEEDING)
+            )
+            .where(rental.cup.isNotNull)
+            .fetchFirst() != null
     }
 
     private fun userEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }

@@ -20,7 +20,6 @@ enum class ErrorCode(
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
     CUP_NOT_FOUND(404, "B002", "Cup entity not found."),
-    CUP_RETURN_NOT_ALLOWED(400, "B003", "Cup in non-returnable state."),
     CUP_LOAN_NOT_ALLOWED(400, "B004", "Cup in non-loanable state."),
     CUP_ALREADY_REGISTERED(400, "B005", "Cup is already registered."),
 
@@ -31,6 +30,8 @@ enum class ErrorCode(
     INVITER_NOT_ALLOWED(400, "C004", "Invalid inviter."),
     INVITER_REGISTRATION_OVERDUE(400, "C005", "Inviter registration is overdue."),
     INVITER_NOT_FOUND(404, "C006", "Inviter entity not found."),
+    BLOCKED_USER_ACCESS_DENIED(403, "C007", "BlockedUser is denied access."),
+    ALREADY_UNBLOCKED_USER(400, "C008", "Already unblocked user."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),

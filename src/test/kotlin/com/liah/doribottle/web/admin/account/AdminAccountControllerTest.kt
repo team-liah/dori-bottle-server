@@ -8,7 +8,7 @@ import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.extension.convertJsonToString
+import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.account.vm.AuthRequest
@@ -55,7 +55,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
@@ -71,7 +71,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertJsonToString())
+                .content(body.convertAnyToString())
         )
             .andExpect(status().isUnauthorized)
             .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
