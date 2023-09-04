@@ -22,5 +22,5 @@ data class ProfileResponse(
     val group: GroupDto?,
     val penaltyCount: Int,
     val blocked: Boolean,
-    val blockedCauseDto: List<BlockedCauseDto>
+    val blockedCauses: List<BlockedCauseDto>
 )
