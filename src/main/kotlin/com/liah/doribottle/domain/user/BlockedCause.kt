@@ -1,6 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.service.user.dto.BlockedCauseDto
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
 
@@ -20,4 +21,6 @@ class BlockedCause(
 
     @Column
     val description: String? = null
-) : PrimaryKeyEntity()
+) : PrimaryKeyEntity() {
+    fun toDto() = BlockedCauseDto(id, user.id, type, description)
+}

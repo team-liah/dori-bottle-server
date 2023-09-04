@@ -11,22 +11,16 @@ import jakarta.persistence.FetchType.LAZY
     indexes = [Index(name = "IDX_PENALTY_USER_ID", columnList = "user_id")]
 )
 class Penalty(
-    user: User,
-    type: PenaltyType,
-    cause: String?,
-) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User = user
+    val user: User,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var type: PenaltyType = type
-        protected set
+    val type: PenaltyType,
 
     @Column
-    var cause: String? = cause
-        protected set
-
+    val cause: String?
+) : PrimaryKeyEntity() {
     fun toDto() = PenaltyDto(id, user.id, type, cause)
 }

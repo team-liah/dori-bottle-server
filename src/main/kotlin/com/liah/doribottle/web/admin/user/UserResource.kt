@@ -2,16 +2,15 @@ package com.liah.doribottle.web.admin.user
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.user.UserService
+import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchResponse
+import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -39,5 +38,28 @@ class UserResource(
         ).map { it.toSearchResponse() }
 
         return CustomPage.of(result)
+    }
+
+    @PostMapping("/{id}/penalty")
+    fun imposePenalty(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: UserPenaltyImposeRequest
+    ) {
+        userService.imposePenalty(
+            id = id,
+            penaltyType = request.penaltyType!!,
+            penaltyCause = request.penaltyCause
+        )
+    }
+
+    @DeleteMapping("/{id}/penalty/{penaltyId}")
+    fun removePenalty(
+        @PathVariable id: UUID,
+        @PathVariable penaltyId: UUID
+    ) {
+        userService.removePenalty(
+            id = id,
+            penaltyId = penaltyId
+        )
     }
 }

@@ -18,6 +18,7 @@ import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
@@ -104,7 +105,7 @@ class RentalControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
     }
 
-    @DisplayName("컵 대여 - 포인트 부족")
+    @DisplayName("컵 대여 예외 - 포인트 부족")
     @Test
     fun rentExceptionLackOfPoint() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
@@ -123,7 +124,29 @@ class RentalControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("message", `is`(ErrorCode.LACK_OF_POINT.message)))
     }
 
-    @DisplayName("컵 대여 - 결제수단 미등록")
+    @DisplayName("컵 대여 예외 - 블락 유저")
+    @Test
+    fun rentExceptionBlockedUser() {
+        val user = User("010-0001-0001", "Tester 1", "010-0001-0001", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = RentRequest(vendingMachine.no, true)
+
+        mockMvc.perform(
+            post(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isForbidden)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.message)))
+    }
+
+    @DisplayName("컵 대여 예외 - 결제수단 미등록")
     @Test
     fun rentExceptionPaymentMethodNotFound() {
         val user = userRepository.save(User("010-0001-0001", "Tester 2", "010-0001-0001", Role.USER))

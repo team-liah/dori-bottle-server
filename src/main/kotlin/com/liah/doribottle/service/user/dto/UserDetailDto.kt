@@ -20,9 +20,11 @@ data class UserDetailDto(
     val gender: Gender?,
     val role: Role,
     val registeredDate: Instant?,
+    val group: GroupDto?,
     val penalties: List<PenaltyDto>,
-    val group: GroupDto?
+    val blocked: Boolean,
+    val blockedCauses: List<BlockedCauseDto>
 ) {
-    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties.size, group)
-    fun toResponse() = UserDetailResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, penalties, group)
+    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group, penalties.size, blocked, blockedCauses)
+    fun toResponse() = UserDetailResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group, penalties, blocked, blockedCauses)
 }
