@@ -3,6 +3,7 @@ package com.liah.doribottle.repository.rental
 import com.liah.doribottle.domain.rental.QRental.Companion.rental
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.extension.toPage
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
@@ -51,6 +52,19 @@ class RentalQueryRepository(
             .where(rental.cup.isNotNull)
             .orderBy(rental.createdDate.desc())
             .fetchFirst()
+    }
+
+    fun existProceedingByUserId(
+        userId: UUID
+    ): Boolean {
+        return queryFactory
+            .selectFrom(rental)
+            .where(
+                userEq(userId),
+                statusEq(PROCEEDING)
+            )
+            .where(rental.cup.isNotNull)
+            .fetchFirst() != null
     }
 
     private fun userEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
