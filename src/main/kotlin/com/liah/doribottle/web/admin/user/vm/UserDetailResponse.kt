@@ -23,5 +23,5 @@ data class UserDetailResponse(
     val group: GroupDto?,
     val penalties: List<PenaltyDto>,
     val blocked: Boolean,
-    val blockedCauseDto: List<BlockedCauseDto>
+    val blockedCauses: List<BlockedCauseDto>
 )
