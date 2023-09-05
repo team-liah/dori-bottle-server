@@ -5,6 +5,7 @@ import com.liah.doribottle.service.cup.CupService
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
 import com.liah.doribottle.web.admin.cup.vm.CupSearchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupSearchResponse
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -22,6 +23,7 @@ import java.util.UUID
 class CupResource(
     private val cupService: CupService
 ) {
+    @Operation(summary = "컵 등록")
     @PostMapping
     fun register(
         @Valid @RequestBody request: CupRegisterRequest
@@ -31,6 +33,7 @@ class CupResource(
         )
     }
 
+    @Operation(summary = "컵 목록 조회")
     @GetMapping
     fun getAll(
         @ParameterObject request: CupSearchRequest,

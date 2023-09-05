@@ -7,6 +7,7 @@ import com.liah.doribottle.extension.expireCookie
 import com.liah.doribottle.service.account.AdminAccountService
 import com.liah.doribottle.web.admin.account.vm.AuthRequest
 import com.liah.doribottle.web.admin.account.vm.AuthResponse
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
@@ -21,6 +22,7 @@ class AdminAccountController(
     @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long
 ) {
+    @Operation(summary = "인증")
     @PostMapping("/auth")
     fun auth(
         httpRequest: HttpServletRequest,
@@ -47,6 +49,7 @@ class AdminAccountController(
             .body(result.toAdminResponse())
     }
 
+    @Operation(summary = "인증 Refrest")
     @PostMapping("/refresh-auth")
     fun refreshAuth(
         httpRequest: HttpServletRequest,
@@ -72,6 +75,7 @@ class AdminAccountController(
             .body(result.toAdminResponse())
     }
 
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     fun logout(
         httpRequest: HttpServletRequest

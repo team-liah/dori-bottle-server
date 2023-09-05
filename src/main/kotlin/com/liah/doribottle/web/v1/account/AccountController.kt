@@ -12,6 +12,7 @@ import com.liah.doribottle.service.inquiry.InquiryService
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.v1.account.vm.*
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
@@ -34,6 +35,7 @@ class AccountController(
     // TODO: Remove
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
+    @Operation(summary = "인증 SMS 발송 요청")
     @PostMapping("/auth/send-sms")
     fun sendSms(
         @Valid @RequestBody request: SendSmsRequest
@@ -44,6 +46,7 @@ class AccountController(
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
 
+    @Operation(summary = "인증")
     @PostMapping("/auth")
     fun auth(
         httpRequest: HttpServletRequest,
@@ -72,6 +75,7 @@ class AccountController(
             .body(result.toResponse())
     }
 
+    @Operation(summary = "인증 Refresh")
     @PostMapping("/refresh-auth")
     fun refreshAuth(
         httpRequest: HttpServletRequest,
@@ -97,9 +101,11 @@ class AccountController(
             .body(result.toResponse())
     }
 
+    @Operation(summary = "자판기 전용 인증 토큰 발급")
     @GetMapping("/pre-auth")
     fun preAuth() = PreAuthResponse(accountService.preAuth(currentUser()!!))
 
+    @Operation(summary = "회원 등록")
     @PostMapping("/register")
     fun register(
         httpRequest: HttpServletRequest,
@@ -154,6 +160,7 @@ class AccountController(
     }
 
     // TODO: Test
+    @Operation(summary = "회원 탈퇴")
     @DeleteMapping
     fun deactivate(
         httpRequest: HttpServletRequest,
@@ -198,6 +205,7 @@ class AccountController(
             .build()
     }
 
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     fun logout(
         httpRequest: HttpServletRequest
