@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.rental
 import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.web.admin.rental.vm.RentalCupUpdateRequest
 import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -12,6 +13,7 @@ import java.util.*
 class RentalResource(
     private val rentalService: RentalService
 ) {
+    @Operation(summary = "대여 정보 - 컵 매핑")
     @PutMapping("/{id}/cup")
     fun updateRentalCup(
         @PathVariable id: UUID,
@@ -23,6 +25,7 @@ class RentalResource(
         )
     }
 
+    @Operation(summary = "반납 처리")
     @PostMapping("/return")
     fun `return`(
         @Valid @RequestBody request: ReturnRequest

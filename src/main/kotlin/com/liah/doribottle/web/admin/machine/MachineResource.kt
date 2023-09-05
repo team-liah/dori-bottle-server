@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.machine
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.web.admin.machine.vm.*
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -16,6 +17,7 @@ import java.util.*
 class MachineResource(
     private val machineService: MachineService
 ) {
+    @Operation(summary = "기기 등록")
     @PostMapping
     fun register(
         @Valid @RequestBody request: MachineRegisterRequest
@@ -29,6 +31,7 @@ class MachineResource(
         )
     }
 
+    @Operation(summary = "기기 조회")
     @GetMapping("/{id}")
     fun get(
         @PathVariable id: UUID
@@ -36,6 +39,7 @@ class MachineResource(
         return machineService.get(id).toResponse()
     }
 
+    @Operation(summary = "기기 목록 조회")
     @GetMapping
     fun getAll(
         @ParameterObject request: MachineSearchRequest,
@@ -53,6 +57,7 @@ class MachineResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "기기 수정")
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
@@ -67,6 +72,7 @@ class MachineResource(
         )
     }
 
+    @Operation(summary = "기기 컵 개수 수정")
     @PutMapping("/{id}/cup-amounts")
     fun updateCupAmounts(
         @PathVariable id: UUID,
