@@ -3,12 +3,13 @@ package com.liah.doribottle.web.v1.account
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.domain.inquiry.InquiryType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.event.dummy.DummyInitEvent
-import com.liah.doribottle.extension.createCookie
-import com.liah.doribottle.extension.currentUser
-import com.liah.doribottle.extension.currentUserLoginId
-import com.liah.doribottle.extension.expireCookie
+import com.liah.doribottle.extension.*
 import com.liah.doribottle.service.account.AccountService
+import com.liah.doribottle.service.inquiry.InquiryService
+import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.v1.account.vm.*
 import io.swagger.v3.oas.annotations.Operation
@@ -26,6 +27,8 @@ import java.util.concurrent.ThreadLocalRandom
 class AccountController(
     private val accountService: AccountService,
     private val smsService: SmsService,
+    private val pointService: PointService,
+    private val inquiryService: InquiryService,
     @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
     @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
 
@@ -154,6 +157,52 @@ class AccountController(
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
                 .body(result.toResponse())
         }
+    }
+
+    // TODO: Test
+    @Operation(summary = "회원 탈퇴")
+    @DeleteMapping
+    fun deactivate(
+        httpRequest: HttpServletRequest,
+        @Valid @RequestBody request: DeactivateRequest
+    ): ResponseEntity<Void> {
+        val currentUserId = currentUserId()!!
+        accountService.deactivate(currentUserId)
+
+        if (request.bankAccount != null) {
+            val remainPayPoints = pointService.getAllRemainByUserId(currentUserId)
+                .filter { it.saveType == PointSaveType.PAY }
+            var remainPayAmounts = 0L
+            if (remainPayPoints.isNotEmpty()) {
+                remainPayPoints.forEach { point ->
+                    remainPayAmounts += point.remainAmounts
+                    pointService.expire(
+                        id = point.id,
+                        userId = currentUserId
+                    )
+                }
+            }
+
+            inquiryService.register(
+                userId = currentUserId,
+                type = InquiryType.REFUND,
+                bankAccount = request.bankAccount,
+                content = "버블 ${remainPayAmounts}개 환불"
+            )
+        }
+
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+        val expiredRefreshTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = REFRESH_TOKEN
+        )
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
+            .build()
     }
 
     @Operation(summary = "로그아웃")

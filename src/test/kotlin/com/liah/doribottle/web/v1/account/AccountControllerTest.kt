@@ -6,6 +6,7 @@ import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.domain.inquiry.InquiryStatus
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentMethodType
@@ -13,21 +14,29 @@ import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType
 import com.liah.doribottle.domain.payment.card.CardProvider
 import com.liah.doribottle.domain.payment.card.CardType
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.inquiry.dto.BankAccountDto
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.service.sqs.AwsSqsSender
 import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.account.vm.AuthRequest
+import com.liah.doribottle.web.v1.account.vm.DeactivateRequest
 import com.liah.doribottle.web.v1.account.vm.RegisterRequest
 import com.liah.doribottle.web.v1.account.vm.SendSmsRequest
 import jakarta.servlet.http.Cookie
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -39,9 +48,9 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.Instant
 import java.util.*
@@ -52,6 +61,8 @@ class AccountControllerTest : BaseControllerTest() {
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+    @Autowired private lateinit var pointRepository: PointRepository
+    @Autowired private lateinit var inquiryRepository: InquiryRepository
 
     @MockBean
     private lateinit var mockSmsService: SmsService
@@ -77,6 +88,8 @@ class AccountControllerTest : BaseControllerTest() {
 
     @AfterEach
     internal fun destroy() {
+        inquiryRepository.deleteAll()
+        pointRepository.deleteAll()
         paymentMethodRepository.deleteAll()
         refreshTokenRepository.deleteAll()
         userRepository.deleteAll()
@@ -175,7 +188,7 @@ class AccountControllerTest : BaseControllerTest() {
 
         //when, then
         mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+            get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -193,7 +206,7 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+            get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -210,7 +223,7 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("$endPoint/pre-auth")
+            get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -245,8 +258,7 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.refreshToken)
         val body = RegisterRequest("Tester 2", MALE, "19970101", true, true, false)
 
-        mockMvc
-            .perform(
+        mockMvc.perform(
             post("$endPoint/register")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -258,5 +270,132 @@ class AccountControllerTest : BaseControllerTest() {
             .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
 
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
+    }
+
+    @DisplayName("회원 탈퇴")
+    @Test
+    fun deactivate() {
+        //given
+        val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val point1 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+        val point2 = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
+        val point3 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
+
+        //when, then
+        mockMvc.perform(
+            delete(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        val findPoint1 = pointRepository.findByIdOrNull(point1.id)
+        val findPoint2 = pointRepository.findByIdOrNull(point2.id)
+        val findPoint3 = pointRepository.findByIdOrNull(point3.id)
+
+        val findInquiry = inquiryRepository.findAll().firstOrNull()
+
+        assertThat(findUser?.active).isFalse()
+
+        assertThat(findPoint1?.remainAmounts).isEqualTo(0)
+        assertThat(findPoint2?.remainAmounts).isEqualTo(10)
+        assertThat(findPoint3?.remainAmounts).isEqualTo(0)
+
+        assertThat(findInquiry?.user?.id).isEqualTo(user.id)
+        assertThat(findInquiry?.status).isEqualTo(InquiryStatus.PROCEEDING)
+        assertThat(findInquiry?.content).isEqualTo("버블 20개 환불")
+        assertThat(findInquiry?.bankAccount?.bank).isEqualTo("국민")
+        assertThat(findInquiry?.bankAccount?.accountNumber).isEqualTo("94320200120364")
+        assertThat(findInquiry?.bankAccount?.accountHolder).isEqualTo("김동준")
+    }
+
+    @DisplayName("회원 탈퇴 TC2")
+    @Test
+    fun deactivateTc2() {
+        //given
+        val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
+
+        //when, then
+        mockMvc.perform(
+            delete(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        val findPoint = pointRepository.findByIdOrNull(point.id)
+
+        val findInquiry = inquiryRepository.findAll().firstOrNull()
+
+        assertThat(findUser?.active).isFalse()
+
+        assertThat(findPoint?.remainAmounts).isEqualTo(10)
+
+        assertThat(findInquiry?.user?.id).isEqualTo(user.id)
+        assertThat(findInquiry?.status).isEqualTo(InquiryStatus.PROCEEDING)
+        assertThat(findInquiry?.content).isEqualTo("버블 0개 환불")
+        assertThat(findInquiry?.bankAccount?.bank).isEqualTo("국민")
+        assertThat(findInquiry?.bankAccount?.accountNumber).isEqualTo("94320200120364")
+        assertThat(findInquiry?.bankAccount?.accountHolder).isEqualTo("김동준")
+    }
+
+    @DisplayName("회원 탈퇴 TC3")
+    @Test
+    fun deactivateTc3() {
+        //given
+        val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = DeactivateRequest(null)
+
+        //when, then
+        mockMvc.perform(
+            delete(endPoint)
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        val findPoint = pointRepository.findByIdOrNull(point.id)
+
+        val findInquiries = inquiryRepository.findAll()
+
+        assertThat(findUser?.active).isFalse()
+
+        assertThat(findPoint?.remainAmounts).isEqualTo(10)
+
+        assertThat(findInquiries).isEmpty()
     }
 }
