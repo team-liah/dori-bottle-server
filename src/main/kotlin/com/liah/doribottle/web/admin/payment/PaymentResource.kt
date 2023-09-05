@@ -5,6 +5,7 @@ import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -18,6 +19,7 @@ import java.util.*
 class PaymentResource(
     private val paymentService: PaymentService
 ) {
+    @Operation(summary = "결제 카테고리 등록")
     @PostMapping("/category")
     fun registerCategory(
         @Valid @RequestBody request: PaymentCategoryRegisterRequest
@@ -31,6 +33,7 @@ class PaymentResource(
         )
     }
 
+    @Operation(summary = "결제 카테고리 목록 조회")
     @GetMapping("/category")
     fun getCategories(
         @ParameterObject request: PaymentCategorySearchRequest,
@@ -45,6 +48,7 @@ class PaymentResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "결제 카테고리 제거")
     @DeleteMapping("/category/{categoryId}")
     fun removeCategory(
         @PathVariable categoryId: UUID
