@@ -13,6 +13,7 @@ import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.v1.payment.vm.*
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -29,6 +30,7 @@ class PaymentController(
     private val pointService: PointService,
     private val userService: UserService
 ) {
+    @Operation(summary = "결제 - 포인트 충전")
     @PostMapping("/save-point")
     fun payToSavePoint(
         @Valid @RequestBody request: PayToSavePointRequest
@@ -75,13 +77,14 @@ class PaymentController(
         return id
     }
 
+    @Operation(summary = "결제 - 계정 블락 해제")
     @PostMapping("/unblock-account")
     fun payToUnblockAccount(): UUID {
         val currentUserId = currentUserId()!!
         val blockedCauses = userService.get(currentUserId).blockedCauses
         val price = blockedCauses.sumOf { it.clearPrice }
 
-        if (blockedCauses.isEmpty()) throw BusinessException(ErrorCode.ALREADY_UNBLOCKED_USER)
+        if (blockedCauses.isEmpty()) throw BusinessException(ErrorCode.UNBLOCKED_USER)
 
         val method = paymentService.getDefaultMethod(currentUserId)
         val id = paymentService.create(
@@ -119,6 +122,7 @@ class PaymentController(
         return id
     }
 
+    @Operation(summary = "결제내역 조회")
     @GetMapping
     fun getAll(
         @RequestParam(value = "type", required = false) type: PaymentType?,
@@ -134,6 +138,7 @@ class PaymentController(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "결제 취소")
     @PostMapping("/{id}/cancel")
     fun cancelPayment(
         @PathVariable id: UUID
@@ -161,6 +166,7 @@ class PaymentController(
         }
     }
 
+    @Operation(summary = "결제수단 등록")
     @PostMapping("/method")
     fun registerMethod(
         @Valid @RequestBody request: PaymentMethodRegisterRequest
@@ -180,6 +186,7 @@ class PaymentController(
         )
     }
 
+    @Operation(summary = "결제수단 목록 조회")
     @GetMapping("/method")
     fun getAllMethods(
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
@@ -192,6 +199,7 @@ class PaymentController(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "기본 결제수단 변경")
     @PostMapping("/method/{id}/default")
     fun changeDefaultMethod(
         @PathVariable id: UUID
@@ -202,6 +210,7 @@ class PaymentController(
         )
     }
 
+    @Operation(summary = "결제수단 제거")
     @DeleteMapping("/method/{id}")
     fun removeMethod(
         @PathVariable id: UUID
@@ -212,6 +221,7 @@ class PaymentController(
         paymentService.removeMethod(id)
     }
 
+    @Operation(summary = "결제 카테고리 목록 조회")
     @GetMapping("/category")
     fun getAllCategories(
         @ParameterObject @PageableDefault(sort = ["amounts"], direction = Sort.Direction.ASC) pageable: Pageable

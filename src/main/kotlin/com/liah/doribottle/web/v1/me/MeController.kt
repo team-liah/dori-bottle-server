@@ -7,6 +7,7 @@ import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.MeResponse
 import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
@@ -16,15 +17,18 @@ class MeController(
     private val userService: UserService,
     private val notificationService: NotificationService
 ) {
+    @Operation(summary = "로그인 유저 정보 조회")
     @GetMapping
     fun get(): MeResponse {
         val doriUser = currentUser()!!
         return MeResponse.of(doriUser, notificationService.getAlertCount(doriUser.id))
     }
 
+    @Operation(summary = "로그인 유저 프로필 조회")
     @GetMapping("/profile")
     fun getProfile() = userService.get(currentUserId()!!).toProfileResponse()
 
+    @Operation(summary = "로그인 유저 프로필 업데이트")
     @PutMapping("/profile")
     fun updateProfile(
         @Valid @RequestBody request: ProfileUpdateRequest
@@ -37,6 +41,7 @@ class MeController(
         )
     }
 
+    @Operation(summary = "초대코드 등록")
     @PostMapping("/invitation-code")
     fun registerInvitationCode(
         @Valid @RequestBody request: InvitationCodeRegisterRequest
