@@ -14,6 +14,7 @@ import com.liah.doribottle.repository.point.PointHistoryQueryRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointQueryRepository
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.service.point.dto.PointDto
 import com.liah.doribottle.service.point.dto.PointHistoryDto
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -64,16 +65,16 @@ class PointService(
     ) {
         val point = pointRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.POINT_NOT_FOUNT)
+        val pointHistory = pointHistoryRepository.save(PointHistory(userId, CANCEL_SAVE, -point.remainAmounts))
 
         point.expire()
-        val pointHistory = pointHistoryRepository.save(PointHistory(userId, CANCEL_SAVE, -point.saveAmounts))
 
         applicationEventPublisher.publishEvent(
             NotificationSaveEvent(
                 userId = userId,
                 type = NotificationType.POINT,
                 title = CANCEL_SAVE.title,
-                content = "버블 ${point.saveAmounts}개 환불 요청이 처리되었습니다.",
+                content = "버블 ${point.remainAmounts}개 환불 요청이 처리되었습니다.",
                 targetId = pointHistory.id
             )
         )
@@ -100,6 +101,15 @@ class PointService(
     @Cacheable(value = ["pointSum"], key = "#userId")
     @Transactional(readOnly = true)
     fun getSum(userId: UUID) = pointQueryRepository.getSumByUserId(userId)
+
+    @Transactional(readOnly = true)
+    fun getAllRemainByUserId(
+        userId: UUID
+    ): List<PointDto> {
+        return pointQueryRepository.getAllRemainByUserId(
+            userId = userId
+        ).map { it.toDto() }
+    }
 
     @Transactional(readOnly = true)
     fun getAllHistories(

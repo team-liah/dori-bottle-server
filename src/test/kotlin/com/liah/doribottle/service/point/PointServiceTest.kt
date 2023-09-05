@@ -125,13 +125,18 @@ class PointServiceTest : BaseServiceTest() {
     @DisplayName("포인트 사용")
     @Test
     fun use() {
+        //given
         val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
         given(mockPointQueryRepository.getAllRemainByUserId(user.id))
             .willReturn(listOf(rewardPoint, payPoint))
 
+        //when
         pointService.use(user.id, 15)
         clear()
+
+        //then
+        verify(mockPointQueryRepository, times(1)).getAllRemainByUserId(user.id)
 
         val findRewardPoint = pointRepository.findByIdOrNull(rewardPoint.id)
         val findPayPoint = pointRepository.findByIdOrNull(payPoint.id)
@@ -216,6 +221,35 @@ class PointServiceTest : BaseServiceTest() {
 
         verify(mockPointQueryRepository, times(1)).getSumByUserId(user.id)
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)?.get()).isEqualTo(pointSumDto)
+    }
+
+    @DisplayName("유저 잔여 포인트 목록 조회")
+    @Test
+    fun getAllRemainByUserId() {
+        //given
+        val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
+        val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        given(mockPointQueryRepository.getAllRemainByUserId(user.id))
+            .willReturn(listOf(rewardPoint, payPoint))
+        clear()
+
+        //when
+        val result = pointService.getAllRemainByUserId(user.id)
+
+        //then
+        verify(mockPointQueryRepository, times(1)).getAllRemainByUserId(user.id)
+        assertThat(result)
+            .extracting("userId")
+            .containsExactly(user.id, user.id)
+        assertThat(result)
+            .extracting("saveType")
+            .containsExactly(REWARD, PAY)
+        assertThat(result)
+            .extracting("saveAmounts")
+            .containsExactly(10L, 10L)
+        assertThat(result)
+            .extracting("remainAmounts")
+            .containsExactly(10L, 10L)
     }
 
     @DisplayName("포인트 내역 조회")

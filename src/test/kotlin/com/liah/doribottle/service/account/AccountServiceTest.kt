@@ -188,4 +188,21 @@ class AccountServiceTest : BaseServiceTest() {
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
     }
+
+    @DisplayName("유저 비활성화")
+    @Test
+    fun deactivate() {
+        //given
+        val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
+        clear()
+
+        //when
+        accountService.deactivate(user.id)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.active).isFalse()
+    }
 }
