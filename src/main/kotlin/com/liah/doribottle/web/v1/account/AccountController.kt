@@ -159,7 +159,6 @@ class AccountController(
         }
     }
 
-    // TODO: Test
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping
     fun deactivate(
