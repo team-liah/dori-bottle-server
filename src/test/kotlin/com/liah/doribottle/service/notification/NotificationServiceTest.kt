@@ -38,7 +38,8 @@ class NotificationServiceTest : BaseServiceTest() {
             NotificationIndividual(userId1, POINT, null, PointEventType.SAVE_REGISTER_REWARD.title, "10"),
             NotificationIndividual(userId2, REFUND, null, "20"),
             NotificationIndividual(userId3, LOST_CUP),
-            NotificationIndividual(userId4, PENALTY, null, PenaltyType.DAMAGED_CUP.title)
+            NotificationIndividual(userId4, PENALTY, null, PenaltyType.DAMAGED_CUP.title),
+            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "3")
         )
 
         //when
@@ -49,20 +50,21 @@ class NotificationServiceTest : BaseServiceTest() {
         val findNotifications = notificationRepository.findAllById(ids)
         assertThat(findNotifications)
             .extracting("userId")
-            .containsExactly(userId1, userId2, userId3, userId4)
+            .containsExactly(userId1, userId2, userId3, userId4, userId4)
         assertThat(findNotifications)
             .extracting("type")
-            .containsExactly(POINT, REFUND, LOST_CUP, PENALTY)
+            .containsExactly(POINT, REFUND, LOST_CUP, PENALTY, NEAR_EXPIRATION)
         assertThat(findNotifications)
             .extracting("title")
-            .containsExactly(POINT.title, REFUND.title, LOST_CUP.title, PENALTY.title)
+            .containsExactly(POINT.title, REFUND.title, LOST_CUP.title, PENALTY.title, NEAR_EXPIRATION.title)
         assertThat(findNotifications)
             .extracting("content")
             .containsExactly(
                 "회원가입 보상 버블 10개가 지급되었습니다.",
                 "버블 20개 환불 요청이 처리되었습니다.",
                 "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
-                "'파손된 컵 반납'의 사유로 레드카드가 부여되었습니다."
+                "'파손된 컵 반납'의 사유로 레드카드가 부여되었습니다.",
+                "대여 중인 컵의 반납 기한이 3일 남았습니다."
             )
     }
 
