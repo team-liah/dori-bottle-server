@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
 import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
@@ -134,10 +135,12 @@ class UserService(
         user.imposePenalty(penaltyType, penaltyCause)
 
         Events.notify(
-            userId = id,
-            type = NotificationType.PENALTY,
-            content = "'${penaltyType.title}'의 사유로 레드카드가 부여되었습니다.",
-            null
+            NotificationIndividual(
+                userId = user.id,
+                type = NotificationType.PENALTY,
+                targetId = null,
+                penaltyType.title
+            )
         )
     }
 
