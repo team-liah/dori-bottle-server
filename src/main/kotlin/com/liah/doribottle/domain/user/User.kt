@@ -101,7 +101,7 @@ class User(
         protected set
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn
+    @JoinColumn(name = "group_id")
     var group: Group? = null
         protected set
 
