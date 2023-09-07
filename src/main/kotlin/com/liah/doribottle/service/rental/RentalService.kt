@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.cup.CupRepository
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -127,5 +129,31 @@ class RentalService(
             expired = expired,
             pageable = pageable
         ).map { it.toDto() }
+    }
+
+    //TODO: Test & Scheduler
+    @Transactional(readOnly = true)
+    fun remindExpiredDateBetween(
+        start: Instant,
+        end: Instant
+    ) {
+        val rentals = rentalRepository.findAllByExpiredDateBetweenAndStatus(
+            start = start,
+            end = end,
+            status = PROCEEDING
+        )
+
+        val notificationIndividuals = rentals.map {
+            // TODO: diff
+            val diff = 3
+            NotificationIndividual(
+                userId = it.user.id,
+                type = NotificationType.NEAR_EXPIRATION,
+                targetId = it.id,
+                "$diff"
+            )
+        }
+
+        Events.notifyAll(notificationIndividuals)
     }
 }
