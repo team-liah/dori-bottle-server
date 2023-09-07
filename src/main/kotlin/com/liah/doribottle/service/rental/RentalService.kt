@@ -3,6 +3,7 @@ package com.liah.doribottle.service.rental
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
@@ -99,10 +100,11 @@ class RentalService(
         rental.fail()
 
         Events.notify(
-            userId = rental.user.id,
-            type = NotificationType.LOST_CUP,
-            content = "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
-            targetId = rental.id
+            NotificationIndividual(
+                userId = rental.user.id,
+                type = NotificationType.LOST_CUP,
+                targetId = rental.id
+            )
         )
     }
 

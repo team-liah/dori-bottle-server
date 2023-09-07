@@ -1,6 +1,6 @@
 package com.liah.doribottle.event
 
-import com.liah.doribottle.domain.notification.NotificationType
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.event.notification.NotificationSaveEvent
 import com.liah.doribottle.event.user.FirstRentalUseEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -15,20 +15,15 @@ class Events {
         }
 
         fun notify(
-            userId: UUID,
-            type: NotificationType,
-            content: String,
-            targetId: UUID?
+            individual: NotificationIndividual
         ) {
-            publisher.publishEvent(
-                NotificationSaveEvent(
-                    userId = userId,
-                    type = type,
-                    title = type.title,
-                    content = content,
-                    targetId = targetId
-                )
-            )
+            notifyAll(listOf(individual))
+        }
+
+        fun notifyAll(
+            individuals: List<NotificationIndividual>
+        ) {
+            publisher.publishEvent(NotificationSaveEvent(individuals))
         }
 
         fun useFirstRental(

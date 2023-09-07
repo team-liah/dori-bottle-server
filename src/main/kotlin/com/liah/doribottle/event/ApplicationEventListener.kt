@@ -26,8 +26,8 @@ class ApplicationEventListener(
     @Async
     @TransactionalEventListener(NotificationSaveEvent::class)
     fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
-        notificationService.save(event.userId, event.type, event.title, event.content, event.targetId)
-        notificationService.alert(event.userId)
+        notificationService.saveAll(event.individuals)
+        event.individuals.forEach { notificationService.alert(it.userId) }
     }
 
     @Async

@@ -3,6 +3,7 @@ package com.liah.doribottle.service.point
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType
@@ -44,10 +45,13 @@ class PointService(
         val pointHistory = pointHistoryRepository.save(PointHistory(userId, eventType, saveAmounts))
 
         Events.notify(
-            userId = userId,
-            type = NotificationType.POINT,
-            content = "${eventType.title} 버블 ${saveAmounts}개가 지급되었습니다.",
-            targetId = pointHistory.id
+            NotificationIndividual(
+                userId = userId,
+                type = NotificationType.POINT,
+                targetId = pointHistory.id,
+                eventType.title,
+                "${point.saveAmounts}"
+            )
         )
 
         return point.id
@@ -65,10 +69,12 @@ class PointService(
         point.expire()
 
         Events.notify(
-            userId = userId,
-            type = NotificationType.REFUND,
-            content = "버블 ${point.remainAmounts}개 환불 요청이 처리되었습니다.",
-            targetId = pointHistory.id
+            NotificationIndividual(
+                userId = userId,
+                type = NotificationType.REFUND,
+                targetId = pointHistory.id,
+                "${point.remainAmounts}"
+            )
         )
     }
 
