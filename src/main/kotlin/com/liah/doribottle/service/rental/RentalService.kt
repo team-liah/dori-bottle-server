@@ -3,10 +3,11 @@ package com.liah.doribottle.service.rental
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.event.user.FirstRentalUsedEvent
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -15,7 +16,6 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.rental.dto.RentalDto
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -32,8 +32,7 @@ class RentalService(
     private val cupRepository: CupRepository,
     private val machineRepository: MachineRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
-    private val pointService: PointService,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val pointService: PointService
 ) {
     fun rent(
         userId: UUID,
@@ -52,7 +51,7 @@ class RentalService(
 
         if (!user.use) {
             user.use()
-            applicationEventPublisher.publishEvent(FirstRentalUsedEvent(user.id))
+            Events.useFirstRental(user.id)
         }
 
         return rental.id
@@ -98,6 +97,13 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.fail()
+
+        Events.notify(
+            userId = rental.user.id,
+            type = NotificationType.LOST_CUP,
+            content = "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
+            targetId = rental.id
+        )
     }
 
     @Transactional(readOnly = true)
