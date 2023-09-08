@@ -51,7 +51,7 @@ class RentalService(
 
         verifyCanRent(user)
 
-        val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 14))
+        val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 5))
         pointService.use(user.id, rental.cost)
 
         if (!user.use) {
