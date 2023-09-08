@@ -5,10 +5,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.service.cup.dto.CupDto
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Index
-import jakarta.persistence.Table
+import jakarta.persistence.*
 
 @Entity
 @Table(
@@ -21,6 +18,7 @@ class Cup(
     @Column(nullable = false, unique = true)
     val rfid: String = rfid
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: CupStatus = AVAILABLE
         protected set
