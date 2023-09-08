@@ -4,6 +4,7 @@ import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.web.v1.point.vm.PointHistorySearchResponse
+import io.swagger.v3.oas.annotations.Operation
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -17,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController
 class PointController(
     private val pointService: PointService
 ) {
+    @Operation(summary = "유저 잔여 포인트 조회")
     @GetMapping("/remain-point")
     fun getRemainPoint() = pointService.getSum(currentUserId()!!).toRemainPoint()
 
+    @Operation(summary = "유저 포인트 이력 조회")
     @GetMapping("/history")
     fun getAllHistories(
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable

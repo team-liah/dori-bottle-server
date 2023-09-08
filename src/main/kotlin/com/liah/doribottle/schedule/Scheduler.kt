@@ -4,6 +4,7 @@ import com.liah.doribottle.constant.LOST_CUP_PRICE
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.user.BlockedCauseType
+import com.liah.doribottle.extension.truncateToKstDay
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentMethodDto
@@ -12,6 +13,8 @@ import com.liah.doribottle.service.user.UserService
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Component
@@ -90,5 +93,17 @@ class Scheduler(
                 blockedCauseDescription = null
             )
         }
+    }
+
+    /**
+     * KST 기준 매일 오전 9시 리마인드 알림 생성
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    fun remindNearExpirationEveryDay() {
+        val now = Instant.now()
+        val start = now.truncateToKstDay()
+        val end = now.plus(4, ChronoUnit.DAYS).truncateToKstDay()
+
+        rentalService.remindExpiredDateBetween(start, end)
     }
 }

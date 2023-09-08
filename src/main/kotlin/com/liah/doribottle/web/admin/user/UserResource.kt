@@ -5,6 +5,7 @@ import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchResponse
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -18,9 +19,11 @@ import java.util.*
 class UserResource(
     private val userService: UserService
 ) {
+    @Operation(summary = "유저 조회")
     @GetMapping("/{id}")
     fun get(@PathVariable id: UUID) = userService.get(id).toResponse()
 
+    @Operation(summary = "유저 목록 조회")
     @GetMapping
     fun getAll(
         @ParameterObject request: UserSearchRequest,
@@ -40,6 +43,7 @@ class UserResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "유저 페널티 부과")
     @PostMapping("/{id}/penalty")
     fun imposePenalty(
         @PathVariable id: UUID,
@@ -52,6 +56,7 @@ class UserResource(
         )
     }
 
+    @Operation(summary = "유저 페널티 제거")
     @DeleteMapping("/{id}/penalty/{penaltyId}")
     fun removePenalty(
         @PathVariable id: UUID,

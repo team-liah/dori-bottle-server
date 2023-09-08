@@ -101,7 +101,7 @@ class User(
         protected set
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn
+    @JoinColumn(name = "group_id")
     var group: Group? = null
         protected set
 
@@ -212,6 +212,10 @@ class User(
         if (this.mutableBlockedCauses.isEmpty()) {
             this.blocked = false
         }
+    }
+
+    fun deactivate() {
+        this.active = false
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto())

@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.DisabledException
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Instant
 
@@ -120,19 +121,32 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("인증 예외")
     @Test
     fun authException() {
-        //given
-        val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
-        val loginPassword = "123456"
-        val encryptedPassword = passwordEncoder.encode(loginPassword)
-        saveUser.updatePassword(encryptedPassword)
-        clear()
-
-        // TODO: DisabledException, LockedException
         //when, then
         val badCredentialsException = assertThrows<BadCredentialsException> {
+            //given
+            val user = User(loginId, "Tester", loginId, Role.USER)
+            val loginPassword = "123456"
+            val encryptedPassword = passwordEncoder.encode(loginPassword)
+            user.updatePassword(encryptedPassword)
+            userRepository.save(user)
+            clear()
+
             accountService.auth(loginId, "000000")
         }
         assertThat(badCredentialsException.message).isEqualTo("Invalid login password.")
+
+        val disabledException = assertThrows<DisabledException> {
+            //given
+            val user = User("010-0001-0001", "Tester", "010-0001-0001", Role.USER)
+            val loginPassword = "123456"
+            val encryptedPassword = passwordEncoder.encode(loginPassword)
+            user.updatePassword(encryptedPassword)
+            user.deactivate()
+            userRepository.save(user)
+
+            accountService.auth("010-0001-0001", "123456")
+        }
+        assertThat(disabledException.message).isEqualTo("Account is disabled.")
     }
 
     @DisplayName("재인증")
@@ -187,5 +201,22 @@ class AccountServiceTest : BaseServiceTest() {
             accountService.preAuth(doriUser)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+    }
+
+    @DisplayName("유저 비활성화")
+    @Test
+    fun deactivate() {
+        //given
+        val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
+        clear()
+
+        //when
+        accountService.deactivate(user.id)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.active).isFalse()
     }
 }
