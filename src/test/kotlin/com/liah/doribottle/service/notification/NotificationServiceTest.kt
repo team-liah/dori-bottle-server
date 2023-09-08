@@ -39,7 +39,8 @@ class NotificationServiceTest : BaseServiceTest() {
             NotificationIndividual(userId2, REFUND, null, "20"),
             NotificationIndividual(userId3, LOST_CUP),
             NotificationIndividual(userId4, PENALTY, null, PenaltyType.DAMAGED_CUP.title),
-            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "3")
+            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "3", "123456"),
+            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "0", "234567")
         )
 
         //when
@@ -50,13 +51,13 @@ class NotificationServiceTest : BaseServiceTest() {
         val findNotifications = notificationRepository.findAllById(ids)
         assertThat(findNotifications)
             .extracting("userId")
-            .containsExactly(userId1, userId2, userId3, userId4, userId4)
+            .containsExactly(userId1, userId2, userId3, userId4, userId4, userId4)
         assertThat(findNotifications)
             .extracting("type")
-            .containsExactly(POINT, REFUND, LOST_CUP, PENALTY, NEAR_EXPIRATION)
+            .containsExactly(POINT, REFUND, LOST_CUP, PENALTY, NEAR_EXPIRATION, NEAR_EXPIRATION)
         assertThat(findNotifications)
             .extracting("title")
-            .containsExactly(POINT.title, REFUND.title, LOST_CUP.title, PENALTY.title, NEAR_EXPIRATION.title)
+            .containsExactly(POINT.title, REFUND.title, LOST_CUP.title, PENALTY.title, NEAR_EXPIRATION.title, NEAR_EXPIRATION.title)
         assertThat(findNotifications)
             .extracting("content")
             .containsExactly(
@@ -64,7 +65,8 @@ class NotificationServiceTest : BaseServiceTest() {
                 "버블 20개 환불 요청이 처리되었습니다.",
                 "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
                 "'파손된 컵 반납'의 사유로 레드카드가 부여되었습니다.",
-                "대여 중인 컵의 반납 기한이 3일 남았습니다."
+                "대여하신 컵의 반납 기한이 3일 남았습니다. (대여번호: 123456)",
+                "오늘은 대여하신 컵의 반납일입니다. (대여번호: 234567)"
             )
     }
 
