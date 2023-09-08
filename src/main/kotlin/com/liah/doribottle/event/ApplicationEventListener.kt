@@ -2,7 +2,7 @@ package com.liah.doribottle.event
 
 import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.event.notification.NotificationSaveEvent
-import com.liah.doribottle.event.user.FirstRentalUsedEvent
+import com.liah.doribottle.event.user.FirstRentalUseEvent
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.account.AdminAccountService
 import com.liah.doribottle.service.cup.CupService
@@ -26,13 +26,13 @@ class ApplicationEventListener(
     @Async
     @TransactionalEventListener(NotificationSaveEvent::class)
     fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
-        notificationService.save(event.userId, event.type, event.title, event.content, event.targetId)
-        notificationService.alert(event.userId)
+        notificationService.saveAll(event.individuals)
+        event.individuals.forEach { notificationService.alert(it.userId) }
     }
 
     @Async
-    @TransactionalEventListener(FirstRentalUsedEvent::class)
-    fun handleFirstRentalUsedEvent(event: FirstRentalUsedEvent) {
+    @TransactionalEventListener(FirstRentalUseEvent::class)
+    fun handleFirstRentalUseEvent(event: FirstRentalUseEvent) {
         userService.rewardInviterByInvitee(event.userId)
     }
 

@@ -3,13 +3,14 @@ package com.liah.doribottle.service.point
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
 import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.point.PointSaveType
-import com.liah.doribottle.event.notification.NotificationSaveEvent
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.point.PointHistoryQueryRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointQueryRepository
@@ -18,7 +19,6 @@ import com.liah.doribottle.service.point.dto.PointDto
 import com.liah.doribottle.service.point.dto.PointHistoryDto
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -32,8 +32,7 @@ class PointService(
     private val pointRepository: PointRepository,
     private val pointQueryRepository: PointQueryRepository,
     private val pointHistoryRepository: PointHistoryRepository,
-    private val pointHistoryQueryRepository: PointHistoryQueryRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val pointHistoryQueryRepository: PointHistoryQueryRepository
 ) {
     @CacheEvict(value = ["pointSum"], key = "#userId")
     fun save(
@@ -45,13 +44,13 @@ class PointService(
         val point = pointRepository.save(Point(userId, saveType, eventType, saveAmounts))
         val pointHistory = pointHistoryRepository.save(PointHistory(userId, eventType, saveAmounts))
 
-        applicationEventPublisher.publishEvent(
-            NotificationSaveEvent(
+        Events.notify(
+            NotificationIndividual(
                 userId = userId,
                 type = NotificationType.POINT,
-                title = eventType.title,
-                content = "버블 ${saveAmounts}개가 지급되었습니다.",
-                targetId = pointHistory.id
+                targetId = pointHistory.id,
+                eventType.title,
+                "${point.saveAmounts}"
             )
         )
 
@@ -69,13 +68,12 @@ class PointService(
 
         point.expire()
 
-        applicationEventPublisher.publishEvent(
-            NotificationSaveEvent(
+        Events.notify(
+            NotificationIndividual(
                 userId = userId,
-                type = NotificationType.POINT,
-                title = CANCEL_SAVE.title,
-                content = "버블 ${point.remainAmounts}개 환불 요청이 처리되었습니다.",
-                targetId = pointHistory.id
+                type = NotificationType.REFUND,
+                targetId = pointHistory.id,
+                "${point.remainAmounts}"
             )
         )
     }

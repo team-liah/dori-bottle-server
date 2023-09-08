@@ -29,6 +29,7 @@ import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.extension.truncateToKstDay
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -48,6 +49,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var rentalService: RentalService
@@ -474,6 +476,21 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(PROCEEDING, PROCEEDING, PROCEEDING)
     }
 
+    @DisplayName("만료 임박 리마인드")
+    @Test
+    fun remindExpiredDateBetween() {
+        insertRentals()
+        clear()
+
+        val now = Instant.now()
+        val start = now.truncateToKstDay()
+        val end = now.plus(4, ChronoUnit.DAYS).truncateToKstDay()
+
+        val count = rentalService.remindExpiredDateBetween(start, end)
+
+        assertThat(count).isEqualTo(4)
+    }
+
     private fun insertRentals() {
         val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
         val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
@@ -481,18 +498,18 @@ class RentalServiceTest : BaseServiceTest() {
         val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
         val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
         val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
-        val rental1 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental1 = rentalRepository.save(Rental(user, vendingMachine, true, 0))
         rental1.setRentalCup(cup1)
-        val rental2 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental2 = rentalRepository.save(Rental(user, vendingMachine, true, 1))
         rental2.setRentalCup(cup2)
-        val rental3 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental3 = rentalRepository.save(Rental(user, vendingMachine, true, 2))
         rental3.setRentalCup(cup3)
-        val rental4 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental4 = rentalRepository.save(Rental(user, vendingMachine, true, 3))
         rental4.setRentalCup(cup4)
-        val rental5 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental5 = rentalRepository.save(Rental(user, vendingMachine, true, 4))
         rental5.setRentalCup(cup5)
-        val rental6 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental6 = rentalRepository.save(Rental(user, vendingMachine, true, 5))
         rental6.setRentalCup(cup6)
-        val rental7 = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental7 = rentalRepository.save(Rental(user, vendingMachine, true, 6))
     }
 }
