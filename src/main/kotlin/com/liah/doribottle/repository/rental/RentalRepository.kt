@@ -9,5 +9,5 @@ import java.util.*
 
 @Repository
 interface RentalRepository : JpaRepository<Rental, UUID> {
-    fun findAllByExpiredDateBetweenAndStatus(start: Instant, end: Instant, status: RentalStatus): List<Rental>
+    fun findAllByExpiredDateBetweenAndStatusAndCupIsNotNull(start: Instant, end: Instant, status: RentalStatus): List<Rental>
 }

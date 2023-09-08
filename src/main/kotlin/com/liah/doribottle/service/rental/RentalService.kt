@@ -10,6 +10,8 @@ import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
+import com.liah.doribottle.extension.diffDaysTo
+import com.liah.doribottle.extension.truncateToKstDay
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -131,29 +133,34 @@ class RentalService(
         ).map { it.toDto() }
     }
 
-    //TODO: Test & Scheduler
+    //TODO: Scheduler
     @Transactional(readOnly = true)
     fun remindExpiredDateBetween(
         start: Instant,
         end: Instant
-    ) {
-        val rentals = rentalRepository.findAllByExpiredDateBetweenAndStatus(
+    ): Int {
+        val rentals = rentalRepository.findAllByExpiredDateBetweenAndStatusAndCupIsNotNull(
             start = start,
             end = end,
             status = PROCEEDING
         )
 
+        val truncatedNow = Instant.now().truncateToKstDay()
         val notificationIndividuals = rentals.map {
-            // TODO: diff
-            val diff = 3
+            val truncatedExpiredDate = it.expiredDate.truncateToKstDay()
+            val diff = truncatedNow.diffDaysTo(truncatedExpiredDate)
             NotificationIndividual(
                 userId = it.user.id,
                 type = NotificationType.NEAR_EXPIRATION,
                 targetId = it.id,
-                "$diff"
+                "$diff",
+                it.no
             )
         }
 
-        Events.notifyAll(notificationIndividuals)
+        if (notificationIndividuals.isNotEmpty())
+            Events.notifyAll(notificationIndividuals)
+
+        return notificationIndividuals.count()
     }
 }
