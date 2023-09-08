@@ -4,12 +4,15 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
 import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+import com.liah.doribottle.domain.notification.NotificationIndividual
+import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.PenaltyType
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -130,6 +133,15 @@ class UserService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.imposePenalty(penaltyType, penaltyCause)
+
+        Events.notify(
+            NotificationIndividual(
+                userId = user.id,
+                type = NotificationType.PENALTY,
+                targetId = null,
+                penaltyType.title
+            )
+        )
     }
 
     fun removePenalty(

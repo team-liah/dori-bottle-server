@@ -2,7 +2,10 @@ package com.liah.doribottle.service.notification
 
 import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.notification.Notification
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType.*
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.user.PenaltyType
 import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.notification.NotificationRepository
 import com.liah.doribottle.service.BaseServiceTest
@@ -24,26 +27,47 @@ class NotificationServiceTest : BaseServiceTest() {
 
     @DisplayName("알림 저장")
     @Test
-    fun save() {
+    fun saveAll() {
         //given, when
-        val userId = UUID.randomUUID()
-        val id = notificationService.save(
-            userId = userId,
-            type = POINT,
-            title = "Test",
-            content = "test",
-            targetId = null
+        val userId1 = UUID.randomUUID()
+        val userId2 = UUID.randomUUID()
+        val userId3 = UUID.randomUUID()
+        val userId4 = UUID.randomUUID()
+
+        val individuals = listOf(
+            NotificationIndividual(userId1, POINT, null, PointEventType.SAVE_REGISTER_REWARD.title, "10"),
+            NotificationIndividual(userId2, REFUND, null, "20"),
+            NotificationIndividual(userId3, LOST_CUP),
+            NotificationIndividual(userId4, PENALTY, null, PenaltyType.DAMAGED_CUP.title),
+            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "3", "123456"),
+            NotificationIndividual(userId4, NEAR_EXPIRATION, null, "0", "234567")
         )
+
+        //when
+        val ids = notificationService.saveAll(individuals)
         clear()
 
         //then
-        val findNotification = notificationRepository.findByIdOrNull(id)
-        assertThat(findNotification?.userId).isEqualTo(userId)
-        assertThat(findNotification?.type).isEqualTo(POINT)
-        assertThat(findNotification?.title).isEqualTo("Test")
-        assertThat(findNotification?.content).isEqualTo("test")
-        assertThat(findNotification?.targetId).isNull()
-        assertThat(findNotification?.read).isFalse
+        val findNotifications = notificationRepository.findAllById(ids)
+        assertThat(findNotifications)
+            .extracting("userId")
+            .containsExactly(userId1, userId2, userId3, userId4, userId4, userId4)
+        assertThat(findNotifications)
+            .extracting("type")
+            .containsExactly(POINT, REFUND, LOST_CUP, PENALTY, NEAR_EXPIRATION, NEAR_EXPIRATION)
+        assertThat(findNotifications)
+            .extracting("title")
+            .containsExactly(POINT.title, REFUND.title, LOST_CUP.title, PENALTY.title, NEAR_EXPIRATION.title, NEAR_EXPIRATION.title)
+        assertThat(findNotifications)
+            .extracting("content")
+            .containsExactly(
+                "회원가입 보상 버블 10개가 지급되었습니다.",
+                "버블 20개 환불 요청이 처리되었습니다.",
+                "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
+                "'파손된 컵 반납'의 사유로 레드카드가 부여되었습니다.",
+                "대여하신 컵의 반납 기한이 3일 남았습니다. (대여번호: 123456)",
+                "오늘은 대여하신 컵의 반납일입니다. (대여번호: 234567)"
+            )
     }
 
     @DisplayName("알림 조회")

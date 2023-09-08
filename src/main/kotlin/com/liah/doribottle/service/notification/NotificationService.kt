@@ -4,7 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.notification.Notification
-import com.liah.doribottle.domain.notification.NotificationType
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.notification.NotificationQueryRepository
 import com.liah.doribottle.repository.notification.NotificationRepository
@@ -23,24 +23,22 @@ class NotificationService(
     private val alertRepository: AlertRepository
 ) {
     @Transactional
-    fun save(
-        userId: UUID,
-        type: NotificationType,
-        title: String,
-        content: String,
-        targetId: UUID?
-    ): UUID {
-        val notification = notificationRepository.save(
-            Notification(
-                userId = userId,
-                type = type,
-                title = title,
-                content = content,
-                targetId = targetId
-            )
+    fun saveAll(
+        individuals: List<NotificationIndividual>
+    ): List<UUID> {
+        val notifications = notificationRepository.saveAll(
+            individuals.map { individual ->
+                Notification(
+                    userId = individual.userId,
+                    type = individual.type,
+                    title = individual.type.title,
+                    content = individual.content,
+                    targetId = individual.targetId
+                )
+            }
         )
 
-        return notification.id
+        return notifications.map { it.id }
     }
 
     @Transactional(readOnly = true)
