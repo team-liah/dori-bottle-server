@@ -133,7 +133,6 @@ class RentalService(
         ).map { it.toDto() }
     }
 
-    //TODO: Scheduler
     @Transactional(readOnly = true)
     fun remindExpiredDateBetween(
         start: Instant,
