@@ -64,7 +64,8 @@ class PointService(
     ) {
         val point = pointRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.POINT_NOT_FOUNT)
-        val pointHistory = pointHistoryRepository.save(PointHistory(userId, CANCEL_SAVE, -point.remainAmounts))
+        val remainAmounts = point.remainAmounts
+        val pointHistory = pointHistoryRepository.save(PointHistory(userId, CANCEL_SAVE, -remainAmounts))
 
         point.expire()
 
@@ -73,7 +74,7 @@ class PointService(
                 userId = userId,
                 type = NotificationType.REFUND,
                 targetId = pointHistory.id,
-                "${point.remainAmounts}"
+                "$remainAmounts"
             )
         )
     }
