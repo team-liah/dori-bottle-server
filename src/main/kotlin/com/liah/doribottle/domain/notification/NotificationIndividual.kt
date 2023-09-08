@@ -22,7 +22,13 @@ class NotificationIndividual(
             PROMOTION -> "새로운 프로모션이 등록되었습니다."
             PENALTY -> "'${args[0]}'의 사유로 레드카드가 부여되었습니다."
             LOST_CUP -> "컵의 반납 기한이 초과하여 분실 처리되었습니다."
-            NEAR_EXPIRATION -> "대여 중인 컵의 반납 기한이 ${args[0]}일 남았습니다."
+            NEAR_EXPIRATION -> {
+                if (args[0] == "0") {
+                    "오늘은 대여하신 컵의 반납일입니다. (대여번호: ${args[1]})"
+                } else {
+                    "대여하신 컵의 반납 기한이 ${args[0]}일 남았습니다. (대여번호: ${args[1]})"
+                }
+            }
         }
     }
 }
