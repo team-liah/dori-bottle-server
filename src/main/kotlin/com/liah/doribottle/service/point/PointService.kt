@@ -113,12 +113,12 @@ class PointService(
     @Transactional(readOnly = true)
     fun getAllHistories(
         userId: UUID? = null,
-        eventType: PointEventType? = null,
+        eventTypes: Set<PointEventType>? = null,
         pageable: Pageable
     ): Page<PointHistoryDto> {
         return pointHistoryQueryRepository.getAll(
             userId = userId,
-            eventType = eventType,
+            eventTypes = eventTypes,
             pageable = pageable
         ).map { it.toDto() }
     }
