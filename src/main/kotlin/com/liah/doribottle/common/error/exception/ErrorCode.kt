@@ -62,4 +62,7 @@ enum class ErrorCode(
 
     // Inquiry
     INQUIRY_NOT_FOUNT(404, "J001", "Inquiry entity not found."),
+
+    // Board
+    BOARD_ALREADY_CREATED(400, "K001", "Board is already created.")
 }
