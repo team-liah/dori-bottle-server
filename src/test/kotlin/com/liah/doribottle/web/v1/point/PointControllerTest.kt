@@ -5,7 +5,8 @@ import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.point.PointSaveType.REWARD
-import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -76,6 +77,62 @@ class PointControllerTest : BaseControllerTest() {
         val expectUserIds = listOf(user.id.toString(), user.id.toString(), user.id.toString())
         val expectEventType = listOf(USE_CUP.name, SAVE_PAY.name, SAVE_REGISTER_REWARD.name)
         val expectAmounts = listOf(-2, 10, 10)
+
+        mockMvc.perform(
+            get("${endPoint}/history")
+                .cookie(cookie)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].userId", `is`(expectUserIds)))
+            .andExpect(jsonPath("content[*].eventType", `is`(expectEventType)))
+            .andExpect(jsonPath("content[*].amounts", `is`(expectAmounts)))
+    }
+
+    @DisplayName("포인트 내역 조회 TC2")
+    @Test
+    fun getAllHistoriesTc2() {
+        insertHistories()
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("historyType", "SAVE")
+        params.add("page", "0")
+        params.add("size", "3")
+
+        val expectUserIds = listOf(user.id.toString(), user.id.toString())
+        val expectEventType = listOf(SAVE_PAY.name, SAVE_REGISTER_REWARD.name)
+        val expectAmounts = listOf(10, 10)
+
+        mockMvc.perform(
+            get("${endPoint}/history")
+                .cookie(cookie)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].userId", `is`(expectUserIds)))
+            .andExpect(jsonPath("content[*].eventType", `is`(expectEventType)))
+            .andExpect(jsonPath("content[*].amounts", `is`(expectAmounts)))
+    }
+
+    @DisplayName("포인트 내역 조회 TC3")
+    @Test
+    fun getAllHistoriesTc3() {
+        insertHistories()
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("historyType", "USE")
+        params.add("page", "0")
+        params.add("size", "3")
+
+        val expectUserIds = listOf(user.id.toString())
+        val expectEventType = listOf(USE_CUP.name)
+        val expectAmounts = listOf(-2)
 
         mockMvc.perform(
             get("${endPoint}/history")

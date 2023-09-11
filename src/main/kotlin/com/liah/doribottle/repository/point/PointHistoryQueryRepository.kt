@@ -16,18 +16,18 @@ class PointHistoryQueryRepository(
 ) {
     fun getAll(
         userId: UUID? = null,
-        eventType: PointEventType? = null,
+        eventTypes: Set<PointEventType>? = null,
         pageable: Pageable
     ): Page<PointHistory> {
         return queryFactory
             .selectFrom(pointHistory)
             .where(
                 userIdEq(userId),
-                eventTypeEq(eventType)
+                eventTypeIn(eventTypes)
             )
             .toPage(pageable)
     }
 
     private fun userIdEq(userId: UUID?) = userId?.let { pointHistory.userId.eq(it) }
-    private fun eventTypeEq(eventType: PointEventType?) = eventType?.let { pointHistory.eventType.eq(it) }
+    private fun eventTypeIn(eventTypes: Set<PointEventType>?) = eventTypes?.let { pointHistory.eventType.`in`(it) }
 }
