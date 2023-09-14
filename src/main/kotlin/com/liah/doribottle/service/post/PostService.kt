@@ -26,8 +26,7 @@ class PostService(
         authorId: UUID,
         type: PostType,
         title: String,
-        content: String,
-        notify: Boolean
+        content: String
     ): UUID {
         val author = adminRepository.findByIdOrNull(authorId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -36,14 +35,9 @@ class PostService(
                 author = author,
                 type = type,
                 title = title,
-                content = content,
-                notify = notify
+                content = content
             )
         )
-
-        if (notify) {
-            // TODO: Notify to users
-        }
 
         return post.id
     }
@@ -75,22 +69,15 @@ class PostService(
         id: UUID,
         type: PostType,
         title: String,
-        content: String,
-        notify: Boolean
+        content: String
     ) {
         val post = postRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.POST_NOT_FOUND)
 
-        val notifyToUsers = notify && !post.notify
-        if (notifyToUsers) {
-            // TODO: Notify to users
-        }
-
         post.update(
             type = type,
             title = title,
-            content = content,
-            notify = notify
+            content = content
         )
     }
 

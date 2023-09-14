@@ -15,8 +15,7 @@ class Post(
     author: Admin,
     type: PostType,
     title: String,
-    content: String,
-    notify: Boolean
+    content: String
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "admin_id", nullable = false)
@@ -34,21 +33,15 @@ class Post(
     var content: String = content
         protected set
 
-    @Column(nullable = false)
-    var notify: Boolean = notify
-        protected set
-
     fun update(
         type: PostType,
         title: String,
-        content: String,
-        notify: Boolean
+        content: String
     ) {
         this.type = type
         this.title = title
         this.content = content
-        this.notify = notify
     }
 
-    fun toDto() = PostDto(author.id, type, title, content, notify)
+    fun toDto() = PostDto(author.id, type, title, content)
 }

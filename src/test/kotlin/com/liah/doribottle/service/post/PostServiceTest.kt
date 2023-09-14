@@ -31,7 +31,7 @@ class PostServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val id = postService.register(admin.id, NOTICE, "공지글", "공지글 내용", false)
+        val id = postService.register(admin.id, NOTICE, "공지글", "공지글 내용")
         clear()
 
         //then
@@ -40,7 +40,6 @@ class PostServiceTest : BaseServiceTest() {
         assertThat(findPost?.type).isEqualTo(NOTICE)
         assertThat(findPost?.title).isEqualTo("공지글")
         assertThat(findPost?.content).isEqualTo("공지글 내용")
-        assertThat(findPost?.notify).isEqualTo(false)
     }
 
     @DisplayName("게시글 목록 조회")
@@ -66,19 +65,16 @@ class PostServiceTest : BaseServiceTest() {
         assertThat(result)
             .extracting("content")
             .containsExactly("공지글 1 내용", "공지글 2 내용", "공지글 3 내용", "공지글 4 내용", "공지글 5 내용")
-        assertThat(result)
-            .extracting("notify")
-            .containsExactly(false, false ,false, false, false)
     }
 
     private fun insertPosts() {
         val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
-        postRepository.save(Post(admin, NOTICE, "공지글 1", "공지글 1 내용", false))
-        postRepository.save(Post(admin, FAQ, "FAQ 1", "FAQ 1 내용", false))
-        postRepository.save(Post(admin, NOTICE, "공지글 2", "공지글 2 내용", false))
-        postRepository.save(Post(admin, NOTICE, "공지글 3", "공지글 3 내용", false))
-        postRepository.save(Post(admin, NOTICE, "공지글 4", "공지글 4 내용", false))
-        postRepository.save(Post(admin, NOTICE, "공지글 5", "공지글 5 내용", false))
+        postRepository.save(Post(admin, NOTICE, "공지글 1", "공지글 1 내용"))
+        postRepository.save(Post(admin, FAQ, "FAQ 1", "FAQ 1 내용"))
+        postRepository.save(Post(admin, NOTICE, "공지글 2", "공지글 2 내용"))
+        postRepository.save(Post(admin, NOTICE, "공지글 3", "공지글 3 내용"))
+        postRepository.save(Post(admin, NOTICE, "공지글 4", "공지글 4 내용"))
+        postRepository.save(Post(admin, NOTICE, "공지글 5", "공지글 5 내용"))
     }
 
     @DisplayName("게시글 조회")
@@ -86,7 +82,7 @@ class PostServiceTest : BaseServiceTest() {
     fun get() {
         //given
         val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
-        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용", false))
+        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 
         //when
@@ -97,7 +93,6 @@ class PostServiceTest : BaseServiceTest() {
         assertThat(result.type).isEqualTo(NOTICE)
         assertThat(result.title).isEqualTo("공지글")
         assertThat(result.content).isEqualTo("공지글 내용")
-        assertThat(result.notify).isEqualTo(false)
     }
 
     @DisplayName("게시글 수정")
@@ -105,11 +100,11 @@ class PostServiceTest : BaseServiceTest() {
     fun update() {
         //given
         val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
-        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용", false))
+        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 
         //when
-        postService.update(post.id, FAQ, "FAQ", "FAQ 내용", true)
+        postService.update(post.id, FAQ, "FAQ", "FAQ 내용")
         clear()
 
         //then
@@ -118,7 +113,6 @@ class PostServiceTest : BaseServiceTest() {
         assertThat(findPost?.type).isEqualTo(FAQ)
         assertThat(findPost?.title).isEqualTo("FAQ")
         assertThat(findPost?.content).isEqualTo("FAQ 내용")
-        assertThat(findPost?.notify).isEqualTo(true)
     }
 
     @DisplayName("게시글 삭제")
@@ -126,7 +120,7 @@ class PostServiceTest : BaseServiceTest() {
     fun remove() {
         //given
         val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
-        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용", false))
+        val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 
         //when
