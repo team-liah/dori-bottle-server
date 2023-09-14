@@ -44,11 +44,13 @@ class PostService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        authorId: UUID? = null,
         type: PostType? = null,
         keyword: String? = null,
         pageable: Pageable
     ): Page<PostDto> {
         return postQueryRepository.getAll(
+            authorId = authorId,
             type = type,
             keyword = keyword,
             pageable = pageable

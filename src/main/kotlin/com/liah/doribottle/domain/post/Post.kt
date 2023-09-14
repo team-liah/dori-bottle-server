@@ -9,7 +9,10 @@ import jakarta.persistence.FetchType.LAZY
 @Entity
 @Table(
     name = "post",
-    indexes = [Index(name = "IDX_POST_TYPE", columnList = "type")]
+    indexes = [
+        Index(name = "IDX_POST_ADMIN_ID", columnList = "admin_id"),
+        Index(name = "IDX_POST_TYPE", columnList = "type")
+    ]
 )
 class Post(
     author: Admin,
@@ -43,5 +46,5 @@ class Post(
         this.content = content
     }
 
-    fun toDto() = PostDto(author.id, type, title, content)
+    fun toDto() = PostDto(author.toDto(), type, title, content)
 }
