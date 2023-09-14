@@ -18,7 +18,7 @@ class Post(
     notify: Boolean
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(referencedColumnName = "board_type", name = "board_type", nullable = false)
+    @JoinColumn(referencedColumnName = "type", name = "board_type", nullable = false)
     var board: Board = board
         protected set
 
