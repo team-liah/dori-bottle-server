@@ -89,7 +89,7 @@ class PostServiceTest : BaseServiceTest() {
         val result = postService.get(post.id)
 
         //then
-        assertThat(result.authorId).isEqualTo(admin.id)
+        assertThat(result.author.id).isEqualTo(admin.id)
         assertThat(result.type).isEqualTo(NOTICE)
         assertThat(result.title).isEqualTo("공지글")
         assertThat(result.content).isEqualTo("공지글 내용")
