@@ -54,7 +54,7 @@ class RentalQueryRepository(
             .fetchFirst()
     }
 
-    fun existProceedingByUserId(
+    fun existsProceedingByUserId(
         userId: UUID
     ): Boolean {
         return queryFactory
@@ -67,7 +67,19 @@ class RentalQueryRepository(
             .fetchFirst() != null
     }
 
+    fun existsByNo(
+        no: String
+    ): Boolean {
+        return queryFactory
+            .selectFrom(rental)
+            .where(
+                noEq(no)
+            )
+            .fetchFirst() != null
+    }
+
     private fun userEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
+    private fun noEq(no: String?) = no?.let { rental.no.eq(it) }
     private fun cupEq(cupId: UUID?) = cupId?.let { rental.cup.id.eq(it) }
     private fun fromMachineEq(fromMachineId: UUID?) = fromMachineId?.let { rental.fromMachine.id.eq(it) }
     private fun toMachineEq(toMachineId: UUID?) = toMachineId?.let { rental.toMachine.id.eq(it) }

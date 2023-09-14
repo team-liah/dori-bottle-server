@@ -37,7 +37,7 @@ class NotificationServiceTest : BaseServiceTest() {
         val individuals = listOf(
             NotificationIndividual(userId1, POINT, null, PointEventType.SAVE_REGISTER_REWARD.title, "10"),
             NotificationIndividual(userId2, REFUND, null, "20"),
-            NotificationIndividual(userId3, LOST_CUP),
+            NotificationIndividual(userId3, LOST_CUP, null, "777777"),
             NotificationIndividual(userId4, PENALTY, null, PenaltyType.DAMAGED_CUP.title),
             NotificationIndividual(userId4, NEAR_EXPIRATION, null, "3", "123456"),
             NotificationIndividual(userId4, NEAR_EXPIRATION, null, "0", "234567")
@@ -63,7 +63,7 @@ class NotificationServiceTest : BaseServiceTest() {
             .containsExactly(
                 "회원가입 보상 버블 10개가 지급되었습니다.",
                 "버블 20개 환불 요청이 처리되었습니다.",
-                "컵의 반납 기한이 초과하여 분실 처리되었습니다.",
+                "컵의 반납 기한이 초과하여 분실 처리되었습니다. (대여번호: 777777)",
                 "'파손된 컵 반납'의 사유로 레드카드가 부여되었습니다.",
                 "대여하신 컵의 반납 기한이 3일 남았습니다. (대여번호: 123456)",
                 "오늘은 대여하신 컵의 반납일입니다. (대여번호: 234567)"
@@ -90,16 +90,16 @@ class NotificationServiceTest : BaseServiceTest() {
             .containsExactly(userId, userId, userId)
         assertThat(result)
             .extracting("type")
-            .containsExactly(POINT, NOTICE, PROMOTION)
+            .containsExactly(POINT, REFUND, PENALTY)
     }
 
     private fun insertNotifications(userId: UUID) {
         notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
         notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
-        notificationRepository.save(Notification(userId, PROMOTION, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
-        notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
+        notificationRepository.save(Notification(userId, REFUND, "Test", "test", null))
+        notificationRepository.save(Notification(userId, PENALTY, "Test", "test", null))
+        notificationRepository.save(Notification(userId, LOST_CUP, "Test", "test", null))
+        notificationRepository.save(Notification(userId, NEAR_EXPIRATION, "Test", "test", null))
     }
 
     @DisplayName("알림 확인")
