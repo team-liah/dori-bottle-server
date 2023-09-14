@@ -107,7 +107,8 @@ class RentalService(
             NotificationIndividual(
                 userId = rental.user.id,
                 type = NotificationType.LOST_CUP,
-                targetId = rental.id
+                targetId = rental.id,
+                rental.no
             )
         )
     }

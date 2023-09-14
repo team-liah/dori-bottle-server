@@ -165,7 +165,7 @@ class PaymentService(
             val anotherMethod = paymentMethodRepository.findFirstByUserIdAndDefault(method.user.id, false)
 
             if (anotherMethod == null) {
-                val existProceedingRental = rentalQueryRepository.existProceedingByUserId(method.user.id)
+                val existProceedingRental = rentalQueryRepository.existsProceedingByUserId(method.user.id)
                 if (existProceedingRental)
                     throw BusinessException(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
             } else {
