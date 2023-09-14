@@ -14,6 +14,7 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.validation.BindException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -35,6 +36,13 @@ class GlobalExceptionHandler {
     protected fun handleBindException(e: BindException): ResponseEntity<ErrorResponse> {
         log.error("BindException", e)
         val response = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.bindingResult)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    protected fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> {
+        log.error("MethodArgumentTypeMismatchException", e)
+        val response = ErrorResponse.of(e)
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 
