@@ -1,7 +1,8 @@
-package com.liah.doribottle.repository.board
+package com.liah.doribottle.repository.post
 
-import com.liah.doribottle.domain.board.Post
-import com.liah.doribottle.domain.board.QPost.Companion.post
+import com.liah.doribottle.domain.post.Post
+import com.liah.doribottle.domain.post.PostType
+import com.liah.doribottle.domain.post.QPost.Companion.post
 import com.liah.doribottle.extension.toPage
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
@@ -13,19 +14,19 @@ class PostQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
-        boardType: String? = null,
+        type: PostType? = null,
         keyword: String? = null,
         pageable: Pageable
     ): Page<Post> {
         return queryFactory
             .selectFrom(post)
             .where(
-                boardTypeEq(boardType),
+                typeEq(type),
                 keywordContains(keyword)
             )
             .toPage(pageable)
     }
 
-    private fun boardTypeEq(boardType: String?) = boardType?.let { post.board.type.eq(it) }
+    private fun typeEq(type: PostType?) = type?.let { post.type.eq(it) }
     private fun keywordContains(keyword: String?) = keyword?.let { post.title.contains(it).or(post.content.contains(it)) }
 }

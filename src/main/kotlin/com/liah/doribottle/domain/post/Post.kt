@@ -1,29 +1,30 @@
-package com.liah.doribottle.domain.board
+package com.liah.doribottle.domain.post
 
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
-import com.liah.doribottle.service.board.dto.PostDto
+import com.liah.doribottle.domain.user.Admin
+import com.liah.doribottle.service.post.dto.PostDto
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
 
 @Entity
 @Table(
     name = "post",
-    indexes = [Index(name = "IDX_POST_BOARD_TYPE", columnList = "board_type")]
+    indexes = [Index(name = "IDX_POST_TYPE", columnList = "type")]
 )
 class Post(
-    board: Board,
-    author: Author,
+    author: Admin,
+    type: PostType,
     title: String,
     content: String,
     notify: Boolean
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(referencedColumnName = "type", name = "board_type", nullable = false)
-    var board: Board = board
-        protected set
+    @JoinColumn(name = "admin_id", nullable = false)
+    val author: Admin = author
 
-    @Embedded
-    val author: Author = author
+    @Column(nullable = false)
+    var type: PostType = type
+        protected set
 
     @Column(nullable = false)
     var title: String = title
@@ -38,14 +39,16 @@ class Post(
         protected set
 
     fun update(
+        type: PostType,
         title: String,
         content: String,
         notify: Boolean
     ) {
+        this.type = type
         this.title = title
         this.content = content
         this.notify = notify
     }
 
-    fun toDto() = PostDto(author.toDto(), board.type, title, content, notify)
+    fun toDto() = PostDto(author.id, type, title, content, notify)
 }
