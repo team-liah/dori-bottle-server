@@ -7,6 +7,5 @@ data class PostDto(
     val authorId: UUID,
     val type: PostType,
     val title: String,
-    val content: String,
-    val notify: Boolean
+    val content: String
 )

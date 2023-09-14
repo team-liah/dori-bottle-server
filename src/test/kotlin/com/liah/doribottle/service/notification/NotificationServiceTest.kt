@@ -90,16 +90,16 @@ class NotificationServiceTest : BaseServiceTest() {
             .containsExactly(userId, userId, userId)
         assertThat(result)
             .extracting("type")
-            .containsExactly(POINT, NOTICE, PROMOTION)
+            .containsExactly(POINT, REFUND, PENALTY)
     }
 
     private fun insertNotifications(userId: UUID) {
         notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
         notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
-        notificationRepository.save(Notification(userId, PROMOTION, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
-        notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
+        notificationRepository.save(Notification(userId, REFUND, "Test", "test", null))
+        notificationRepository.save(Notification(userId, PENALTY, "Test", "test", null))
+        notificationRepository.save(Notification(userId, LOST_CUP, "Test", "test", null))
+        notificationRepository.save(Notification(userId, NEAR_EXPIRATION, "Test", "test", null))
     }
 
     @DisplayName("알림 확인")

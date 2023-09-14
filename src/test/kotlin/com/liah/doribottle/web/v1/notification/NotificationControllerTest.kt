@@ -3,7 +3,8 @@ package com.liah.doribottle.web.v1.notification
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.notification.Notification
-import com.liah.doribottle.domain.notification.NotificationType.*
+import com.liah.doribottle.domain.notification.NotificationType.PENALTY
+import com.liah.doribottle.domain.notification.NotificationType.POINT
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.notification.AlertRepository
@@ -53,7 +54,7 @@ class NotificationControllerTest : BaseControllerTest() {
         params.add("page", "0")
         params.add("size", "3")
 
-        val expectTypeValue = listOf(POINT.name, NOTICE.name, PROMOTION.name)
+        val expectTypeValue = listOf(POINT.name, PENALTY.name, PENALTY.name)
         val expectUserIdValue = listOf(user.id.toString(), user.id.toString(), user.id.toString())
         mockMvc.perform(
             get(endPoint)
@@ -73,9 +74,9 @@ class NotificationControllerTest : BaseControllerTest() {
     private fun insertNotifications(userId: UUID) {
         notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
         notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
-        notificationRepository.save(Notification(userId, PROMOTION, "Test", "test", null))
-        notificationRepository.save(Notification(userId, NOTICE, "Test", "test", null))
+        notificationRepository.save(Notification(userId, PENALTY, "Test", "test", null))
+        notificationRepository.save(Notification(userId, PENALTY, "Test", "test", null))
+        notificationRepository.save(Notification(userId, PENALTY, "Test", "test", null))
         notificationRepository.save(Notification(UUID.randomUUID(), POINT, "Test", "test", null))
         notificationRepository.save(Notification(userId, POINT, "Test", "test", null))
 
