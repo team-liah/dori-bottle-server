@@ -1,7 +1,9 @@
 package com.liah.doribottle.event
 
+import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.event.dummy.DummyInitEvent
-import com.liah.doribottle.event.notification.NotificationSaveEvent
+import com.liah.doribottle.event.notification.NotificationAllEvent
+import com.liah.doribottle.event.notification.NotificationIndividualEvent
 import com.liah.doribottle.event.user.FirstRentalUseEvent
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.account.AdminAccountService
@@ -10,6 +12,7 @@ import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.user.UserService
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionalEventListener
@@ -24,10 +27,28 @@ class ApplicationEventListener(
     private val userService: UserService
 ) {
     @Async
-    @TransactionalEventListener(NotificationSaveEvent::class)
-    fun handleNotificationSaveEvent(event: NotificationSaveEvent) {
+    @TransactionalEventListener(NotificationIndividualEvent::class)
+    fun handleNotificationIndividualEvent(event: NotificationIndividualEvent) {
         notificationService.saveAll(event.individuals)
         event.individuals.forEach { notificationService.alert(it.userId) }
+    }
+
+    @Async
+    @TransactionalEventListener(NotificationAllEvent::class)
+    fun handleNotificationAllEvent(event: NotificationAllEvent) {
+        val users = userService.getAll(
+            active = true,
+            pageable = Pageable.unpaged()
+        )
+        val individuals = users.content.map { user ->
+            NotificationIndividual(
+                userId = user.id,
+                type = event.type,
+                targetId = event.targetId
+            )
+        }
+        notificationService.saveAll(individuals)
+        individuals.forEach { notificationService.alert(it.userId) }
     }
 
     @Async
