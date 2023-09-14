@@ -4,7 +4,6 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.board.Board
-import com.liah.doribottle.domain.board.BoardType
 import com.liah.doribottle.domain.board.Post
 import com.liah.doribottle.repository.board.BoardRepository
 import com.liah.doribottle.repository.board.PostQueryRepository
@@ -29,7 +28,7 @@ class BoardService(
     fun create(
         name: String,
         description: String,
-        type: BoardType
+        type: String
     ): UUID {
         verifyDuplicatedType(type)
 
@@ -44,7 +43,7 @@ class BoardService(
         return board.id
     }
 
-    private fun verifyDuplicatedType(type: BoardType) {
+    private fun verifyDuplicatedType(type: String) {
         val existingBoard = boardRepository.findByType(type)
         if (existingBoard != null) {
             throw BusinessException(ErrorCode.BOARD_ALREADY_CREATED)
@@ -67,7 +66,7 @@ class BoardService(
 
     fun registerPost(
         authorDto: AuthorDto,
-        type: BoardType,
+        type: String,
         title: String,
         content: String,
         notify: Boolean
@@ -94,7 +93,7 @@ class BoardService(
 
     @Transactional(readOnly = true)
     fun getAllPosts(
-        boardType: BoardType? = null,
+        boardType: String? = null,
         keyword: String? = null,
         pageable: Pageable
     ): Page<PostDto> {

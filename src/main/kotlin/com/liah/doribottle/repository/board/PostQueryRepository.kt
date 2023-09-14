@@ -1,6 +1,5 @@
 package com.liah.doribottle.repository.board
 
-import com.liah.doribottle.domain.board.BoardType
 import com.liah.doribottle.domain.board.Post
 import com.liah.doribottle.domain.board.QPost.Companion.post
 import com.liah.doribottle.extension.toPage
@@ -14,7 +13,7 @@ class PostQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
-        boardType: BoardType? = null,
+        boardType: String? = null,
         keyword: String? = null,
         pageable: Pageable
     ): Page<Post> {
@@ -27,6 +26,6 @@ class PostQueryRepository(
             .toPage(pageable)
     }
 
-    private fun boardTypeEq(boardType: BoardType?) = boardType?.let { post.board.type.eq(it) }
+    private fun boardTypeEq(boardType: String?) = boardType?.let { post.board.type.eq(it) }
     private fun keywordContains(keyword: String?) = keyword?.let { post.title.contains(it).or(post.content.contains(it)) }
 }

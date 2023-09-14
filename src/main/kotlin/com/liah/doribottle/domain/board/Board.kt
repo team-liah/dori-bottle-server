@@ -20,7 +20,7 @@ class Board(
     val description: String,
 
     @Column(nullable = false, unique = true)
-    val type: BoardType
+    val type: String
 ) : PrimaryKeyEntity() {
     fun toDto() = BoardDto(id, name, description, type)
 }
