@@ -1,6 +1,7 @@
 package com.liah.doribottle.service.post.dto
 
 import com.liah.doribottle.domain.post.PostType
+import com.liah.doribottle.web.v1.post.vm.PostSearchResponse
 import java.util.*
 
 data class PostDto(
@@ -8,4 +9,6 @@ data class PostDto(
     val type: PostType,
     val title: String,
     val content: String
-)
+) {
+    fun toSearchResponse() = PostSearchResponse(type, title, content)
+}
