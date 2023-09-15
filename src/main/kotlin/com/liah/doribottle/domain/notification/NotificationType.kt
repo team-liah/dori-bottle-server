@@ -7,5 +7,6 @@ enum class NotificationType(
     REFUND("환불 완료"),
     PENALTY("레드카드"),
     LOST_CUP("분실 처리"),
+    AUTO_PAYMENT("자동결제"),
     NEAR_EXPIRATION("컵 반납 임박")
 }
