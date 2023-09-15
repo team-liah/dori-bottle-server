@@ -3,9 +3,14 @@ package com.liah.doribottle.service.payment
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.domain.notification.NotificationIndividual
+import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.payment.*
 import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
+import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
+import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.payment.*
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalQueryRepository
@@ -86,6 +91,16 @@ class PaymentService(
 
         if (payment.status == CANCELED && payment.type == SAVE_POINT) {
             point?.let { pointService.expire(it.id, it.userId) }
+        } else if (payment.status == SUCCEEDED && payment.type == LOST_CUP) {
+            Events.notify(
+                NotificationIndividual(
+                    userId = payment.user.id,
+                    type = NotificationType.AUTO_PAYMENT,
+                    targetId = payment.id,
+                    "${payment.price}",
+                    payment.type.title
+                )
+            )
         }
     }
 
