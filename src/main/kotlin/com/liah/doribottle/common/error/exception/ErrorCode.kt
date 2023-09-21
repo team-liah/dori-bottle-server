@@ -30,8 +30,10 @@ enum class ErrorCode(
     INVITER_NOT_ALLOWED(400, "C004", "Invalid inviter."),
     INVITER_REGISTRATION_OVERDUE(400, "C005", "Inviter registration is overdue."),
     INVITER_NOT_FOUND(404, "C006", "Inviter entity not found."),
-    BLOCKED_USER_ACCESS_DENIED(403, "C007", "BlockedUser is denied access."),
+    BLOCKED_USER_ACCESS_DENIED(403, "C007", "BlockedUser is denied access. (Five penalties)"),
     UNBLOCKED_USER(400, "C008", "Unblocked user."),
+    LOGIN_ID_NOT_ALLOWED(400, "C009", "LoginId is cannot be changed."),
+    BLOCKED_USER_ACCESS_DENIED_LOST_CUP(403, "C010", "BlockedUser is denied access. (Lost cup penalty)"),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
@@ -62,4 +64,7 @@ enum class ErrorCode(
 
     // Inquiry
     INQUIRY_NOT_FOUNT(404, "J001", "Inquiry entity not found."),
+
+    // Post
+    POST_NOT_FOUND(404, "K003", "Post entity not found.")
 }

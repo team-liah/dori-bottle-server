@@ -113,6 +113,11 @@ class User(
     protected val mutableBlockedCauses: MutableList<BlockedCause> = mutableListOf()
     val blockedCauses: List<BlockedCause> get() =  mutableBlockedCauses
 
+    fun updateLoginId(loginId: String) {
+        this.loginId = loginId
+        this.phoneNumber = loginId
+    }
+
     fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
         this.loginExpirationDate = Instant.now().plus(5, ChronoUnit.MINUTES)
@@ -214,7 +219,7 @@ class User(
         }
     }
 
-    fun deactivate() {
+    fun inactivate() {
         this.active = false
     }
 

@@ -2,6 +2,7 @@ package com.liah.doribottle.common.error
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import org.springframework.validation.BindingResult
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 data class ErrorResponse private constructor(
@@ -19,6 +20,8 @@ data class ErrorResponse private constructor(
             ErrorResponse(errorCode, errors)
         fun of(e: MethodArgumentTypeMismatchException) =
             ErrorResponse(ErrorCode.INVALID_TYPE_VALUE, FieldError.of(e.name, e.value.toString(), e.errorCode))
+        fun of(e: MissingServletRequestParameterException) =
+            ErrorResponse(ErrorCode.INVALID_INPUT_VALUE, FieldError.of(e.parameterName, null, e.message))
     }
 
     private constructor(errorCode: ErrorCode, errors: List<FieldError> = emptyList()): this(
