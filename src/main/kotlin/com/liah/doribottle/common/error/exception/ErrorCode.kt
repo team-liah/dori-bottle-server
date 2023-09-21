@@ -32,6 +32,7 @@ enum class ErrorCode(
     INVITER_NOT_FOUND(404, "C006", "Inviter entity not found."),
     BLOCKED_USER_ACCESS_DENIED(403, "C007", "BlockedUser is denied access."),
     UNBLOCKED_USER(400, "C008", "Unblocked user."),
+    LOGIN_ID_NOT_ALLOWED(400, "C009", "LoginId is cannot be changed."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
