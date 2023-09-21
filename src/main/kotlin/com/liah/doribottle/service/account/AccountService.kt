@@ -6,6 +6,7 @@ import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.LoginIdChange
 import com.liah.doribottle.domain.user.Role
@@ -147,8 +148,15 @@ class AccountService(
     }
 
     private fun verifyCanRent(user: User) {
-        if (user.blocked)
-            throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+        if (user.blocked) {
+            val existsFivePenalties = user.blockedCauses.find { it.type == BlockedCauseType.FIVE_PENALTIES } != null
+            val errorCode = if (existsFivePenalties) {
+                ErrorCode.BLOCKED_USER_ACCESS_DENIED
+            } else {
+                ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP
+            }
+            throw ForbiddenException(errorCode)
+        }
         paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
@@ -170,13 +178,13 @@ class AccountService(
     }
 
     @Transactional
-    fun deactivate(
+    fun inactivate(
         id: UUID
     ) {
        val user = userRepository.findByIdOrNull(id)
            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-       user.deactivate()
+       user.inactivate()
     }
 
     fun createLoginIdChange(
