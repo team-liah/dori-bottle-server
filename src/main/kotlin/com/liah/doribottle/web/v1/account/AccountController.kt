@@ -37,7 +37,7 @@ class AccountController(
 ) {
     @Operation(summary = "인증 SMS 발송 요청")
     @PostMapping("/auth/send-sms")
-    fun sendSms(
+    fun sendAuthSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
         val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
@@ -220,6 +220,42 @@ class AccountController(
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
+            .build()
+    }
+
+    @Operation(summary = "로그인 ID 변경 SMS 발송 요청")
+    @PostMapping("/change-login-id/send-sms")
+    fun sendLoginIdChangeSms(
+        @Valid @RequestBody request: SendSmsRequest
+    ) {
+        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
+        accountService.createLoginIdChange(
+            userId = currentUserId()!!,
+            toLoginId = request.loginId!!,
+            authCode = authCode
+        )
+
+        smsService.sendLoginAuthSms(request.loginId, authCode)
+    }
+
+    @Operation(summary = "로그인 ID 변경")
+    @PutMapping("/change-login-id")
+    fun changeLoginId(
+        httpRequest: HttpServletRequest,
+        @Valid @RequestBody request: LoginIdChangeRequest
+    ): ResponseEntity<Void> {
+        accountService.changeLoginId(
+            userId = currentUserId()!!,
+            authCode = request.authCode!!
+        )
+
+        val expiredAccessTokenCookie = expireCookie(
+            url = httpRequest.requestURL.toString(),
+            name = ACCESS_TOKEN
+        )
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
             .build()
     }
 
