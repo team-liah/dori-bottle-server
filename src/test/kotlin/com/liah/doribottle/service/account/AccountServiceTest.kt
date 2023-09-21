@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.account
 
+import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.config.security.DoriUser
@@ -15,9 +16,11 @@ import com.liah.doribottle.domain.payment.card.CardProvider
 import com.liah.doribottle.domain.payment.card.CardType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
+import com.liah.doribottle.domain.user.LoginIdChangeRequest
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.user.LoginIdChangeRequestRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -37,12 +40,14 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Instant
+import java.util.*
 
 class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired private lateinit var loginIdChangeRequestRepository: LoginIdChangeRequestRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
@@ -218,5 +223,95 @@ class AccountServiceTest : BaseServiceTest() {
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.active).isFalse()
+    }
+
+    @DisplayName("로그인 아이디 변경 요청 생성")
+    @Test
+    fun createLoginIdChangeRequest() {
+        //given
+        val userId = UUID.randomUUID()
+        val toLoginId = "010-0000-0000"
+        val authCode = "123456"
+
+        //when
+        accountService.createLoginIdChangeRequest(userId, toLoginId, authCode)
+
+        //then
+        val findLoginIdChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(userId.toString())
+        assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
+        assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo("010-0000-0000")
+        assertThat(findLoginIdChangeRequest?.authCode).isEqualTo("123456")
+    }
+
+    @DisplayName("로그인 아이디 변경 요청 생성 TC2")
+    @Test
+    fun createLoginIdChangeRequestTc2() {
+        //given
+        val userId = UUID.randomUUID()
+        val toLoginId = "010-0000-0000"
+        val authCode1 = "123456"
+        val authCode2 = "456789"
+
+        //when
+        accountService.createLoginIdChangeRequest(userId, toLoginId, authCode1)
+        accountService.createLoginIdChangeRequest(userId, toLoginId, authCode2)
+
+        //then
+        val findLoginIdChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(userId.toString())
+        assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
+        assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo("010-0000-0000")
+        assertThat(findLoginIdChangeRequest?.authCode).isEqualTo(authCode2)
+    }
+
+    @DisplayName("로그인 아이디 변경 요청 생성 예외")
+    @Test
+    fun createLoginIdChangeRequestException() {
+        //given
+        userRepository.save(User(loginId, "Tester", loginId, Role.USER))
+        val userId = UUID.randomUUID()
+        val authCode = "123456"
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            accountService.createLoginIdChangeRequest(userId, loginId, authCode)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ALREADY_REGISTERED)
+    }
+
+    @DisplayName("로그인 아이디 변경")
+    @Test
+    fun changeLoginId() {
+        //given
+        val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
+        val authCode = "123456"
+        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-0000-0000", authCode))
+        clear()
+
+        //when
+        accountService.changeLoginId(user.id, authCode)
+        clear()
+
+        val findUser = userRepository.findByIdOrNull(user.id)
+        val findLoginIdChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(user.id.toString())
+
+        assertThat(findUser?.loginId).isEqualTo("010-0000-0000")
+        assertThat(findLoginIdChangeRequest).isNull()
+    }
+
+    @DisplayName("로그인 아이디 변경 예외")
+    @Test
+    fun changeLoginIdException() {
+        //given
+        val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
+        val authCode = "123456"
+        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-0000-0000", authCode))
+        clear()
+
+        //when
+        val exception = assertThrows<BusinessException> {
+            accountService.changeLoginId(user.id, "000000")
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.LOGIN_ID_NOT_ALLOWED)
     }
 }
