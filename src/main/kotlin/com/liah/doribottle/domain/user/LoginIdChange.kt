@@ -4,8 +4,8 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.redis.core.RedisHash
 import org.springframework.data.redis.core.TimeToLive
 
-@RedisHash(value = "loginIdChangeRequest")
-data class LoginIdChangeRequest(
+@RedisHash(value = "loginIdChange")
+data class LoginIdChange(
     @Id
     var userId: String?,
 

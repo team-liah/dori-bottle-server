@@ -115,6 +115,7 @@ class User(
 
     fun updateLoginId(loginId: String) {
         this.loginId = loginId
+        this.phoneNumber = loginId
     }
 
     fun updatePassword(loginPassword: String) {
