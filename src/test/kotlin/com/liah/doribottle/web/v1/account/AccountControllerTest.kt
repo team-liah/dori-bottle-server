@@ -19,22 +19,21 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
+import com.liah.doribottle.domain.user.LoginIdChangeRequest
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.user.LoginIdChangeRequestRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.inquiry.dto.BankAccountDto
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.service.sqs.AwsSqsSender
 import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.v1.account.vm.AuthRequest
-import com.liah.doribottle.web.v1.account.vm.DeactivateRequest
-import com.liah.doribottle.web.v1.account.vm.RegisterRequest
-import com.liah.doribottle.web.v1.account.vm.SendSmsRequest
+import com.liah.doribottle.web.v1.account.vm.*
 import jakarta.servlet.http.Cookie
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.*
@@ -63,6 +62,7 @@ class AccountControllerTest : BaseControllerTest() {
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired private lateinit var pointRepository: PointRepository
     @Autowired private lateinit var inquiryRepository: InquiryRepository
+    @Autowired private lateinit var loginIdChangeRequestRepository: LoginIdChangeRequestRepository
 
     @MockBean
     private lateinit var mockSmsService: SmsService
@@ -97,7 +97,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @DisplayName("인증요청")
     @Test
-    fun sendSms() {
+    fun sendAuthSms() {
         doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest(USER_LOGIN_ID)
 
@@ -397,5 +397,103 @@ class AccountControllerTest : BaseControllerTest() {
         assertThat(findPoint?.remainAmounts).isEqualTo(10)
 
         assertThat(findInquiries).isEmpty()
+    }
+
+    @DisplayName("로그인 ID 변경 요청")
+    @Test
+    fun sendLoginIdChangeSms() {
+        //given
+        val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
+        val body = SendSmsRequest("010-1234-1234")
+
+        //when
+        mockMvc.perform(
+            post("$endPoint/change-login-id/send-sms")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+
+        //then
+        verify(mockSmsService, times(1)).sendLoginAuthSms(any<String>(), any<String>())
+
+        val findLoginChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(user.id.toString())
+        assertThat(findLoginChangeRequest?.toLoginId).isEqualTo("010-1234-1234")
+    }
+
+    @DisplayName("로그인 ID 변경 요청 예외")
+    @Test
+    fun sendLoginIdChangeSmsException() {
+        //given
+        val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
+        val anotherUser = userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
+        val body = SendSmsRequest("010-1111-1111")
+
+        //when, then
+        mockMvc.perform(
+            post("$endPoint/change-login-id/send-sms")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("code", `is`(ErrorCode.USER_ALREADY_REGISTERED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.USER_ALREADY_REGISTERED.message)))
+    }
+
+    @DisplayName("로그인 ID 변경")
+    @Test
+    fun changeLoginId() {
+        //given
+        val authCode = "123456"
+        val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
+        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-1111-1111", authCode))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val body = ChangeLoginIdRequest(authCode)
+
+        //when, then
+        mockMvc.perform(
+            post("$endPoint/change-login-id")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+    }
+
+    @DisplayName("로그인 ID 변경 예외")
+    @Test
+    fun changeLoginIdException() {
+        //given
+        val authCode = "123456"
+        val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
+        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-1111-1111", authCode))
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val body = ChangeLoginIdRequest("000000")
+
+        //when, then
+        mockMvc.perform(
+            post("$endPoint/change-login-id")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("code", `is`(ErrorCode.LOGIN_ID_NOT_ALLOWED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.LOGIN_ID_NOT_ALLOWED.message)))
     }
 }
