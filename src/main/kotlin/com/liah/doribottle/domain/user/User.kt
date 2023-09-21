@@ -214,7 +214,7 @@ class User(
         }
     }
 
-    fun deactivate() {
+    fun inactivate() {
         this.active = false
     }
 

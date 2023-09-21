@@ -50,7 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.Instant
 import java.util.*
@@ -212,13 +213,32 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isForbidden)
-            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
-            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.message)))
+            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP.message)))
     }
 
     @DisplayName("Dori User Pre Auth Token Exception TC2")
     @Test
     fun getPreAuthTokenExceptionTc2() {
+        val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
+        user.block(BlockedCauseType.FIVE_PENALTIES, null)
+        userRepository.save(user)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get("$endPoint/pre-auth")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
+            .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
+            .andExpect(jsonPath("message", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.message)))
+    }
+
+    @DisplayName("Dori User Pre Auth Token Exception TC3")
+    @Test
+    fun getPreAuthTokenExceptionTc3() {
         userRepository.save(User("010-1234-1234", "Tester", "010-1234-1234", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
@@ -274,7 +294,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @DisplayName("회원 탈퇴")
     @Test
-    fun deactivate() {
+    fun inactivate() {
         //given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
@@ -288,7 +308,7 @@ class AccountControllerTest : BaseControllerTest() {
 
         //when, then
         mockMvc.perform(
-            delete(endPoint)
+            post("${endPoint}/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -322,7 +342,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @DisplayName("회원 탈퇴 TC2")
     @Test
-    fun deactivateTc2() {
+    fun inactivateTc2() {
         //given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
@@ -334,7 +354,7 @@ class AccountControllerTest : BaseControllerTest() {
 
         //when, then
         mockMvc.perform(
-            delete(endPoint)
+            post("${endPoint}/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -364,7 +384,7 @@ class AccountControllerTest : BaseControllerTest() {
 
     @DisplayName("회원 탈퇴 TC3")
     @Test
-    fun deactivateTc3() {
+    fun inactivateTc3() {
         //given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
@@ -376,7 +396,7 @@ class AccountControllerTest : BaseControllerTest() {
 
         //when, then
         mockMvc.perform(
-            delete(endPoint)
+            post("${endPoint}/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
