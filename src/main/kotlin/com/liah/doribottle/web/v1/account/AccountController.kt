@@ -160,13 +160,13 @@ class AccountController(
     }
 
     @Operation(summary = "회원 탈퇴")
-    @DeleteMapping
-    fun deactivate(
+    @PostMapping("/inactivate")
+    fun inactivate(
         httpRequest: HttpServletRequest,
         @Valid @RequestBody request: DeactivateRequest
     ): ResponseEntity<Void> {
         val currentUserId = currentUserId()!!
-        accountService.deactivate(currentUserId)
+        accountService.inactivate(currentUserId)
 
         if (request.bankAccount != null) {
             val remainPayPoints = pointService.getAllRemainByUserId(currentUserId)
