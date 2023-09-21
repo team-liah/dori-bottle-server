@@ -7,9 +7,11 @@ import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Gender
+import com.liah.doribottle.domain.user.LoginIdChangeRequest
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.user.LoginIdChangeRequestRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -27,6 +29,7 @@ import java.util.*
 class AccountService(
     private val userRepository: UserRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
+    private val loginIdChangeRequestRepository: LoginIdChangeRequestRepository,
     private val awsSqsSender: AwsSqsSender,
     private val tokenProvider: TokenProvider,
     private val passwordEncoder: PasswordEncoder
@@ -174,6 +177,57 @@ class AccountService(
            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
        user.deactivate()
+    }
+
+    fun createLoginIdChangeRequest(
+        userId: UUID,
+        toLoginId: String,
+        authCode: String
+    ) {
+        verifyDuplicatedLoginId(toLoginId)
+
+        loginIdChangeRequestRepository.save(
+            LoginIdChangeRequest(
+                userId = userId.toString(),
+                toLoginId = toLoginId,
+                authCode = authCode
+            )
+        )
+    }
+
+    fun changeLoginId(
+        userId: UUID,
+        authCode: String
+    ) {
+        val toLoginId = verifyAndGetToLoginId(userId, authCode)
+        verifyDuplicatedLoginId(toLoginId)
+
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        user.updateLoginId(toLoginId)
+        userRepository.save(user)
+    }
+
+    private fun verifyAndGetToLoginId(
+        userId: UUID,
+        authCode: String
+    ): String {
+        val id = userId.toString()
+        val loginIdChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(id)
+        val toLoginId = loginIdChangeRequest?.toLoginId
+        if (loginIdChangeRequest?.authCode != authCode || toLoginId == null)
+            throw BusinessException(ErrorCode.LOGIN_ID_NOT_ALLOWED)
+
+        loginIdChangeRequestRepository.deleteById(id)
+
+        return toLoginId
+    }
+
+    private fun verifyDuplicatedLoginId(loginId: String) {
+        val user = userRepository.findByLoginId(loginId)
+        if (user != null)
+            throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
     }
 
     // TODO: Remove
