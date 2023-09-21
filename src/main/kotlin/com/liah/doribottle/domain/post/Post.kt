@@ -32,6 +32,7 @@ class Post(
     var title: String = title
         protected set
 
+    @Lob
     @Column(nullable = false)
     var content: String = content
         protected set
