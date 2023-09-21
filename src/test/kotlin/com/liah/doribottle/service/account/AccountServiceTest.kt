@@ -141,7 +141,7 @@ class AccountServiceTest : BaseServiceTest() {
             val loginPassword = "123456"
             val encryptedPassword = passwordEncoder.encode(loginPassword)
             user.updatePassword(encryptedPassword)
-            user.deactivate()
+            user.inactivate()
             userRepository.save(user)
 
             accountService.auth("010-0001-0001", "123456")
@@ -200,18 +200,18 @@ class AccountServiceTest : BaseServiceTest() {
             val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER)
             accountService.preAuth(doriUser)
         }
-        assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP)
     }
 
     @DisplayName("유저 비활성화")
     @Test
-    fun deactivate() {
+    fun inactivate() {
         //given
         val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
         clear()
 
         //when
-        accountService.deactivate(user.id)
+        accountService.inactivate(user.id)
         clear()
 
         //then
