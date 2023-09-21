@@ -229,7 +229,7 @@ class AccountController(
         @Valid @RequestBody request: SendSmsRequest
     ) {
         val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
-        accountService.createLoginIdChangeRequest(
+        accountService.createLoginIdChange(
             userId = currentUserId()!!,
             toLoginId = request.loginId!!,
             authCode = authCode
@@ -239,10 +239,10 @@ class AccountController(
     }
 
     @Operation(summary = "로그인 ID 변경")
-    @PostMapping("/change-login-id")
+    @PutMapping("/change-login-id")
     fun changeLoginId(
         httpRequest: HttpServletRequest,
-        @Valid @RequestBody request: ChangeLoginIdRequest
+        @Valid @RequestBody request: LoginIdChangeRequest
     ): ResponseEntity<Void> {
         accountService.changeLoginId(
             userId = currentUserId()!!,

@@ -19,14 +19,14 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.domain.user.LoginIdChangeRequest
+import com.liah.doribottle.domain.user.LoginIdChange
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.point.PointRepository
-import com.liah.doribottle.repository.user.LoginIdChangeRequestRepository
+import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.inquiry.dto.BankAccountDto
 import com.liah.doribottle.service.sms.SmsService
@@ -62,7 +62,7 @@ class AccountControllerTest : BaseControllerTest() {
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired private lateinit var pointRepository: PointRepository
     @Autowired private lateinit var inquiryRepository: InquiryRepository
-    @Autowired private lateinit var loginIdChangeRequestRepository: LoginIdChangeRequestRepository
+    @Autowired private lateinit var loginIdChangeRepository: LoginIdChangeRepository
 
     @MockBean
     private lateinit var mockSmsService: SmsService
@@ -422,8 +422,8 @@ class AccountControllerTest : BaseControllerTest() {
         //then
         verify(mockSmsService, times(1)).sendLoginAuthSms(any<String>(), any<String>())
 
-        val findLoginChangeRequest = loginIdChangeRequestRepository.findByIdOrNull(user.id.toString())
-        assertThat(findLoginChangeRequest?.toLoginId).isEqualTo("010-1234-1234")
+        val findLoginChange = loginIdChangeRepository.findByIdOrNull(user.id.toString())
+        assertThat(findLoginChange?.toLoginId).isEqualTo("010-1234-1234")
     }
 
     @DisplayName("로그인 ID 변경 요청 예외")
@@ -456,14 +456,14 @@ class AccountControllerTest : BaseControllerTest() {
         //given
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
-        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-1111-1111", authCode))
+        loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        val body = ChangeLoginIdRequest(authCode)
+        val body = LoginIdChangeRequest(authCode)
 
         //when, then
         mockMvc.perform(
-            post("$endPoint/change-login-id")
+            put("$endPoint/change-login-id")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -479,14 +479,14 @@ class AccountControllerTest : BaseControllerTest() {
         //given
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
-        loginIdChangeRequestRepository.save(LoginIdChangeRequest(user.id.toString(), 300, "010-1111-1111", authCode))
+        loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        val body = ChangeLoginIdRequest("000000")
+        val body = LoginIdChangeRequest("000000")
 
         //when, then
         mockMvc.perform(
-            post("$endPoint/change-login-id")
+            put("$endPoint/change-login-id")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
