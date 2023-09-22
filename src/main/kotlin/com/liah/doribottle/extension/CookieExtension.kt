@@ -14,7 +14,7 @@ fun createCookie(
     value: String,
     expiredMs: Long
 ) = ResponseCookie.from(name, value)
-    .domain(".${parseSubDomain(url)}")
+    .domain(".${getHost(url)}")
     .sameSite("None")
     .httpOnly(true)
     .secure(true)
@@ -22,14 +22,4 @@ fun createCookie(
     .maxAge(expiredMs/1000)
     .build()
 
-private fun parseSubDomain(url: String): String {
-    var part = URI(url).host.split(".")
-    return if(part.size > 1) {
-        if (part.first() == "www") {
-            part = part.drop(1)
-        }
-        part.joinToString(".")
-    } else {
-        part.first()
-    }
-}
+private fun getHost(url: String) = URI(url).host
