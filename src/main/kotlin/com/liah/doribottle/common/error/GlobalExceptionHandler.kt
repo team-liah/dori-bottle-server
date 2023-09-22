@@ -3,7 +3,6 @@ package com.liah.doribottle.common.error
 import com.liah.doribottle.common.error.exception.*
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.extension.expireCookie
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -75,13 +74,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException::class)
-    protected fun handleBadCredentialsException(httpRequest: HttpServletRequest, e: BadCredentialsException): ResponseEntity<ErrorResponse> {
+    protected fun handleBadCredentialsException(e: BadCredentialsException): ResponseEntity<ErrorResponse> {
         log.error("BadCredentialsException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
@@ -89,13 +85,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DisabledException::class)
-    protected fun handleDisabledException(httpRequest: HttpServletRequest, e: DisabledException): ResponseEntity<ErrorResponse> {
+    protected fun handleDisabledException(e: DisabledException): ResponseEntity<ErrorResponse> {
         log.error("DisabledException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
@@ -128,13 +121,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UnauthorizedException::class)
-    protected fun handleUnauthorizedException(httpRequest: HttpServletRequest, e: UnauthorizedException): ResponseEntity<ErrorResponse> {
+    protected fun handleUnauthorizedException(e: UnauthorizedException): ResponseEntity<ErrorResponse> {
         log.error("UnauthorizedException", e)
         val response = ErrorResponse.of(e.errorCode)
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
