@@ -14,7 +14,7 @@ fun createCookie(
     value: String,
     expiredMs: Long
 ) = ResponseCookie.from(name, value)
-    .domain(".${getHost(url)}")
+    .domain(getHost(url))
     .sameSite("None")
     .httpOnly(true)
     .secure(true)
