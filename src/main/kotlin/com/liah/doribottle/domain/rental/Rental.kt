@@ -6,7 +6,7 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.rental.RentalStatus.*
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.randomString
+import com.liah.doribottle.extension.generateRandomString
 import com.liah.doribottle.service.rental.dto.RentalDto
 import jakarta.persistence.*
 import java.time.Instant
@@ -28,7 +28,7 @@ class Rental(
     dayLimit: Long
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
-    val no: String = randomString(8)
+    val no: String = generateRandomString(8)
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
