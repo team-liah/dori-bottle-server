@@ -6,11 +6,7 @@ import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
-import com.liah.doribottle.domain.user.BlockedCauseType
-import com.liah.doribottle.domain.user.Gender
-import com.liah.doribottle.domain.user.LoginIdChange
-import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -67,7 +63,7 @@ class AccountService(
     }
 
     @Transactional
-    fun updatePassword(
+    fun saveOrUpdatePassword(
         loginId: String,
         loginPassword: String
     ): UUID {
@@ -234,8 +230,14 @@ class AccountService(
 
     private fun verifyDuplicatedLoginId(loginId: String) {
         val user = userRepository.findByLoginId(loginId)
-        if (user != null)
-            throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
+        val isNotExist = user == null
+        val isGuest = user?.role == Role.GUEST
+
+        when {
+            isNotExist -> return
+            isGuest -> userRepository.delete(user!!)
+            else -> throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
+        }
     }
 
     // TODO: Remove

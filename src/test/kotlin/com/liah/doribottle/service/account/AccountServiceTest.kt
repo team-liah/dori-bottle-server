@@ -85,12 +85,12 @@ class AccountServiceTest : BaseServiceTest() {
 
     @DisplayName("비밀번호 업데이트")
     @Test
-    fun updatePassword() {
+    fun saveOrUpdatePassword() {
         //given
         val loginPassword = "123456"
 
         //when
-        val id = accountService.updatePassword(loginId, loginPassword)
+        val id = accountService.saveOrUpdatePassword(loginId, loginPassword)
         clear()
 
         //then
@@ -261,6 +261,29 @@ class AccountServiceTest : BaseServiceTest() {
         assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
         assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo("010-0000-0000")
         assertThat(findLoginIdChangeRequest?.authCode).isEqualTo(authCode2)
+    }
+
+    @DisplayName("로그인 아이디 변경 요청 생성 TC3")
+    @Test
+    fun createLoginIdChangeTc3() {
+        //given
+        val guest = userRepository.save(User(loginId, "Tester", loginId, Role.GUEST))
+        val userId = UUID.randomUUID()
+        val authCode = "123456"
+        clear()
+
+        //when
+        accountService.createLoginIdChange(userId, loginId, authCode)
+
+        //then
+        val findLoginIdChangeRequest = loginIdChangeRepository.findByIdOrNull(userId.toString())
+        val findGuest = userRepository.findByIdOrNull(guest.id)
+
+        assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
+        assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo(loginId)
+        assertThat(findLoginIdChangeRequest?.authCode).isEqualTo(authCode)
+
+        assertThat(findGuest).isNull()
     }
 
     @DisplayName("로그인 아이디 변경 요청 생성 예외")
