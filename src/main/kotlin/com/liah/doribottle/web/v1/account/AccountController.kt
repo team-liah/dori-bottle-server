@@ -19,7 +19,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.concurrent.ThreadLocalRandom
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -39,8 +38,8 @@ class AccountController(
     fun sendAuthSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
-        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
-        accountService.updatePassword(request.loginId!!, authCode)
+        val authCode = generateRandomNumberString()
+        accountService.saveOrUpdatePassword(request.loginId!!, authCode)
 
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
@@ -195,7 +194,7 @@ class AccountController(
     fun sendLoginIdChangeSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
-        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
+        val authCode = generateRandomNumberString()
         accountService.createLoginIdChange(
             userId = currentUserId()!!,
             toLoginId = request.loginId!!,
@@ -205,7 +204,7 @@ class AccountController(
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
 
-    @Operation(summary = "로그인 ID 변경")
+    @Operation(summary = "로그인ID 변경")
     @PutMapping("/change-login-id")
     fun changeLoginId(
         @Valid @RequestBody request: LoginIdChangeRequest
