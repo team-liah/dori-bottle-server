@@ -18,10 +18,7 @@ class RestAuthenticationEntryPoint : AuthenticationEntryPoint {
         e: AuthenticationException
     ) {
         val errorResponse = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(
-            url = request.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         response.setHeader(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
         response.contentType = "application/json"
         response.status = HttpServletResponse.SC_UNAUTHORIZED

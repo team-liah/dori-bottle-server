@@ -5,7 +5,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
-import com.liah.doribottle.extension.randomString
+import com.liah.doribottle.extension.generateRandomString
 import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
 import jakarta.persistence.*
@@ -56,7 +56,7 @@ class User(
         protected set
 
     @Column(nullable = false, unique = true)
-    val invitationCode: String = randomString(6)
+    val invitationCode: String = generateRandomString(6)
 
     @Column(nullable = false)
     var invitationCount: Int = 0

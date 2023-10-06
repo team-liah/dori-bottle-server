@@ -2,6 +2,7 @@ package com.liah.doribottle.extension
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.util.concurrent.ThreadLocalRandom
 
 fun Any.convertAnyToString(): String {
     return jacksonObjectMapper().writeValueAsString(this)
@@ -13,4 +14,6 @@ fun <T> String.convertStringToAny(): T {
 }
 
 private val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-fun randomString(size: Int) = List(size) { charPool.random() }.joinToString("")
+fun generateRandomString(size: Int) = List(size) { charPool.random() }.joinToString("")
+
+fun generateRandomNumberString() = String.format("%06d", ThreadLocalRandom.current().nextInt(999999))

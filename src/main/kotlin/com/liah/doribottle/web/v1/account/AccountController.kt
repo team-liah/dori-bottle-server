@@ -13,14 +13,12 @@ import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.v1.account.vm.*
 import io.swagger.v3.oas.annotations.Operation
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.concurrent.ThreadLocalRandom
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -40,8 +38,8 @@ class AccountController(
     fun sendAuthSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
-        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
-        accountService.updatePassword(request.loginId!!, authCode)
+        val authCode = generateRandomNumberString()
+        accountService.saveOrUpdatePassword(request.loginId!!, authCode)
 
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
@@ -49,7 +47,6 @@ class AccountController(
     @Operation(summary = "인증")
     @PostMapping("/auth")
     fun auth(
-        httpRequest: HttpServletRequest,
         @Valid @RequestBody request: AuthRequest
     ): ResponseEntity<AuthResponse> {
         val result = accountService.auth(
@@ -58,13 +55,11 @@ class AccountController(
         )
 
         val accessTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = ACCESS_TOKEN,
             value = result.accessToken,
             expiredMs = jwtExpiredMs
         )
         val refreshTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
             value = result.refreshToken,
             expiredMs = refreshTokenExpiredMs
@@ -78,19 +73,16 @@ class AccountController(
     @Operation(summary = "인증 Refresh")
     @PostMapping("/refresh-auth")
     fun refreshAuth(
-        httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?
     ): ResponseEntity<AuthResponse> {
         val result = accountService.refreshAuth(refreshToken)
 
         val accessTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = ACCESS_TOKEN,
             value = result.accessToken,
             expiredMs = jwtExpiredMs
         )
         val refreshTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
             value = result.refreshToken,
             expiredMs = refreshTokenExpiredMs
@@ -108,7 +100,6 @@ class AccountController(
     @Operation(summary = "회원 등록")
     @PostMapping("/register")
     fun register(
-        httpRequest: HttpServletRequest,
         @CookieValue("refresh_token") refreshToken: String?,
         @Valid @RequestBody request: RegisterRequest
     ): ResponseEntity<AuthResponse> {
@@ -129,26 +120,18 @@ class AccountController(
         }
 
         return if (result == null) {
-            val expiredAccessTokenCookie = expireCookie(
-                url = httpRequest.requestURL.toString(),
-                name = ACCESS_TOKEN
-            )
-            val expiredRefreshTokenCookie = expireCookie(
-                url = httpRequest.requestURL.toString(),
-                name = REFRESH_TOKEN
-            )
+            val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+            val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
             ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
                 .build()
         } else {
             val accessTokenCookie = createCookie(
-                url = httpRequest.requestURL.toString(),
                 name = ACCESS_TOKEN,
                 value = result.accessToken,
                 expiredMs = jwtExpiredMs
             )
             val refreshTokenCookie = createCookie(
-                url = httpRequest.requestURL.toString(),
                 name = REFRESH_TOKEN,
                 value = result.refreshToken,
                 expiredMs = refreshTokenExpiredMs
@@ -162,7 +145,6 @@ class AccountController(
     @Operation(summary = "회원 탈퇴")
     @PostMapping("/inactivate")
     fun inactivate(
-        httpRequest: HttpServletRequest,
         @Valid @RequestBody request: DeactivateRequest
     ): ResponseEntity<Void> {
         val currentUserId = currentUserId()!!
@@ -190,15 +172,8 @@ class AccountController(
             )
         }
 
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
-        val expiredRefreshTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = REFRESH_TOKEN
-        )
-
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()
@@ -206,18 +181,9 @@ class AccountController(
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    fun logout(
-        httpRequest: HttpServletRequest
-    ): ResponseEntity<Void> {
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
-        val expiredRefreshTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = REFRESH_TOKEN
-        )
-
+    fun logout(): ResponseEntity<Void> {
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()
@@ -228,7 +194,7 @@ class AccountController(
     fun sendLoginIdChangeSms(
         @Valid @RequestBody request: SendSmsRequest
     ) {
-        val authCode = ThreadLocalRandom.current().nextInt(100000, 999999).toString()
+        val authCode = generateRandomNumberString()
         accountService.createLoginIdChange(
             userId = currentUserId()!!,
             toLoginId = request.loginId!!,
@@ -238,10 +204,9 @@ class AccountController(
         smsService.sendLoginAuthSms(request.loginId, authCode)
     }
 
-    @Operation(summary = "로그인 ID 변경")
+    @Operation(summary = "로그인ID 변경")
     @PutMapping("/change-login-id")
     fun changeLoginId(
-        httpRequest: HttpServletRequest,
         @Valid @RequestBody request: LoginIdChangeRequest
     ): ResponseEntity<Void> {
         accountService.changeLoginId(
@@ -249,11 +214,7 @@ class AccountController(
             authCode = request.authCode!!
         )
 
-        val expiredAccessTokenCookie = expireCookie(
-            url = httpRequest.requestURL.toString(),
-            name = ACCESS_TOKEN
-        )
-
+        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
             .build()
@@ -261,24 +222,19 @@ class AccountController(
 
     //TODO: Remove
     @PostMapping("/dummy-auth")
-    fun dummyAuth(
-        httpRequest: HttpServletRequest
-    ): ResponseEntity<AuthResponse> {
+    fun dummyAuth(): ResponseEntity<AuthResponse> {
         val result = accountService.dummyAuth()
 
         val accessTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = ACCESS_TOKEN,
             value = result.accessToken,
             expiredMs = jwtExpiredMs
         )
         val refreshTokenCookie = createCookie(
-            url = httpRequest.requestURL.toString(),
             name = REFRESH_TOKEN,
             value = result.refreshToken,
             expiredMs = refreshTokenExpiredMs
         )
-
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
             .body(result.toResponse())
