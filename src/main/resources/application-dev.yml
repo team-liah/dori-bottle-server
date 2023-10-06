@@ -13,7 +13,7 @@ spring:
         default_batch_fetch_size: 100
   data:
     redis:
-      host: localhost
+      host: redis-dev
       port: 6379
   cloud:
     aws:
