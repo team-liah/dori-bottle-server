@@ -4,5 +4,5 @@ enum class ToastTemplate(
     val id: String,
     val title: String
 ) {
-    LOGIN("LOGIN_AUTH", "로그인 인증")
+    AUTH("AUTH", "인증코드 발송")
 }

@@ -35,7 +35,7 @@ app:
       expiredMs: 1209600000 # 2weeks
   toast:
     sms:
-      url: https://api-sms.cloud.toast.com/
+      baseUrl: https://api-sms.cloud.toast.com/
       appKey: dummyKey
       secretKey: dummyKey
       sendNo: dummyNo
