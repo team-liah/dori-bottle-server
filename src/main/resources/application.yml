@@ -47,3 +47,11 @@ app:
       queueName: point-save-queue.fifo
   schedule:
     enabled: true
+  payments:
+    tosspayments:
+      baseUrl: https://api.tosspayments.com/
+      secretKey: ${TOSS_PAYMENTS_SECRET_KEY}
+    kakaopay:
+      baseUrl: https://kapi.kakao.com/
+      adminKey: temp
+      cid: TC0ONETIME
