@@ -5,4 +5,4 @@ data class TossBillingExecuteRequest(
     val amount: Long,
     val orderId: String,
     val orderName: String
-) : TossPaymentsRestApiRequest()
+)
