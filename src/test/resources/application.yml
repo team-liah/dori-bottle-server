@@ -41,7 +41,7 @@ app:
       sendNo: dummyNo
   toss:
     payments:
-      url: https://api.tosspayments.com/
+      baseUrl: https://api.tosspayments.com/
       secretKey: dummyKey
   aws:
     sqs:
