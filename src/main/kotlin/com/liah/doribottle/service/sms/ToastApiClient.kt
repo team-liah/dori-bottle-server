@@ -38,10 +38,10 @@ class ToastApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .retrieve()
-            .bodyToFlux(ToastSmsSendApiResponse::class.java)
+            .bodyToMono(ToastSmsSendApiResponse::class.java)
 
         flux.subscribe { response ->
-             if (response.header?.isSuccessful == false) {
+             if (!response.header.isSuccessful) {
                  log.error("ErrorRecipientNo : $recipientNo")
                  log.error("ErrorCode : ${response.header.resultCode}")
                  log.error("ErrorMessage : ${response.header.resultMessage}")
