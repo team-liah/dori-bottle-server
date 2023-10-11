@@ -98,7 +98,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("인증요청")
     @Test
     fun sendAuthSms() {
-        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
+        doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest(USER_LOGIN_ID)
 
         mockMvc.perform(
@@ -109,7 +109,7 @@ class AccountControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockSmsService, times(1)).sendLoginAuthSms(any<String>(), any<String>())
+        verify(mockSmsService, times(1)).sendAuthSms(any<String>(), any<String>())
     }
 
     @DisplayName("인증")
@@ -425,7 +425,7 @@ class AccountControllerTest : BaseControllerTest() {
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
+        doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1234-1234")
 
         //when
@@ -439,7 +439,7 @@ class AccountControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
 
         //then
-        verify(mockSmsService, times(1)).sendLoginAuthSms(any<String>(), any<String>())
+        verify(mockSmsService, times(1)).sendAuthSms(any<String>(), any<String>())
 
         val findLoginChange = loginIdChangeRepository.findByIdOrNull(user.id.toString())
         assertThat(findLoginChange?.toLoginId).isEqualTo("010-1234-1234")
@@ -453,7 +453,7 @@ class AccountControllerTest : BaseControllerTest() {
         val anotherUser = userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        doNothing().`when`(mockSmsService).sendLoginAuthSms(any<String>(), any<String>())
+        doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1111-1111")
 
         //when, then
