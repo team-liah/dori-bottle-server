@@ -41,7 +41,7 @@ class ToastApiClient(
             .bodyToFlux(ToastSmsSendApiResponse::class.java)
 
         flux.subscribe { response ->
-             if (!response.header.isSuccessful) {
+             if (response.header?.isSuccessful == false) {
                  log.error("ErrorRecipientNo : $recipientNo")
                  log.error("ErrorCode : ${response.header.resultCode}")
                  log.error("ErrorMessage : ${response.header.resultMessage}")

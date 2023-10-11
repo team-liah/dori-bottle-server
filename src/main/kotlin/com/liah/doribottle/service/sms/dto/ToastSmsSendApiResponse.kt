@@ -2,7 +2,7 @@ package com.liah.doribottle.service.sms.dto
 
 data class ToastSmsSendApiResponse(
     val header: Header,
-    val body: Any
+    val body: Any?
 ) {
     data class Header(
         val resultCode: Int,
