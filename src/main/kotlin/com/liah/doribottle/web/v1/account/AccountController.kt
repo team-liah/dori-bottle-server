@@ -41,7 +41,7 @@ class AccountController(
         val authCode = generateRandomNumberString()
         accountService.saveOrUpdatePassword(request.loginId!!, authCode)
 
-        smsService.sendLoginAuthSms(request.loginId, authCode)
+        smsService.sendAuthSms(request.loginId, authCode)
     }
 
     @Operation(summary = "인증")
@@ -201,7 +201,7 @@ class AccountController(
             authCode = authCode
         )
 
-        smsService.sendLoginAuthSms(request.loginId, authCode)
+        smsService.sendAuthSms(request.loginId, authCode)
     }
 
     @Operation(summary = "로그인ID 변경")

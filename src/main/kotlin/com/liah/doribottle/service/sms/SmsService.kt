@@ -1,18 +1,18 @@
 package com.liah.doribottle.service.sms
 
-import com.liah.doribottle.service.sms.dto.ToastTemplate.LOGIN
+import com.liah.doribottle.service.sms.dto.ToastTemplate
 import org.springframework.stereotype.Service
 
 @Service
 class SmsService(
     private val toastApiClient: ToastApiClient
 ) {
-    fun sendLoginAuthSms(
+    fun sendAuthSms(
         phoneNumber: String,
         authCode: String
     ) {
-        toastApiClient.sendAuthSms(
-            template = LOGIN,
+        toastApiClient.sendSms(
+            template = ToastTemplate.AUTH,
             recipientNo = phoneNumber.replace("-", ""),
             templateParameter = mapOf("authCode" to authCode)
         )

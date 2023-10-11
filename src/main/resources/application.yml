@@ -34,13 +34,13 @@ app:
       expiredMs: 1209600000 # 2weeks
   toast:
     sms:
-      url: https://api-sms.cloud.toast.com/
+      baseUrl: https://api-sms.cloud.toast.com/
       appKey: ${TOAST_APP_KEY}
       secretKey: ${TOAST_SECRET_KEY}
       sendNo: ${TOAST_SEND_NO}
   toss:
     payments:
-      url: https://api.tosspayments.com/
+      baseUrl: https://api.tosspayments.com/
       secretKey: ${TOSS_PAYMENTS_SECRET_KEY}
   aws:
     sqs:
