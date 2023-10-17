@@ -16,16 +16,16 @@ DoriBottle is a [Spring Boot](https://spring.io/guides/gs/spring-boot) applicati
    brew install h2
    h2
    ```
-3) Modify Ip 218.38.137.27 to localhost.
+3) Modify Ip 218.38.137.27 to localhost. - in H2 console
    ```
    http://localhost:8082/?key=value
    ```
-4) Modify JDBC URL and connect database.
+4) Modify JDBC URL and connect database. - in H2 console
    ```
    jdbc:h2:~/doribottle-h2-local
    ```
 5) Verify .mv.db file is created in the home directory.
-6) After disconnecting from the h2 database, modify the JDBC URL and re-connect database.
+6) After disconnecting from the h2 database, modify the JDBC URL and re-connect database. - in H2 console
    ```
    jdbc:h2:tcp://localhost/~/doribottle-h2-local
    ```
