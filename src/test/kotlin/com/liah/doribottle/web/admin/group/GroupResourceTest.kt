@@ -43,7 +43,7 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = GroupRegisterRequest("서울대학교", UNIVERSITY)
+        val body = GroupRegisterRequest("서울대학교", UNIVERSITY, 30)
 
         mockMvc.perform(
             post(endPoint)
@@ -80,8 +80,8 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY))
-        val body = GroupUpdateRequest("리아", COMPANY)
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 10))
+        val body = GroupUpdateRequest("리아", COMPANY, 20)
 
         mockMvc.perform(
             put("$endPoint/${group.id}")
@@ -96,7 +96,7 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun delete() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY))
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
 
         mockMvc.perform(
             delete("$endPoint/${group.id}")
@@ -110,7 +110,7 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun addUser() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY))
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
 
         mockMvc.perform(
@@ -125,7 +125,7 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun removeUser() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY))
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         userEntity.updateGroup(group)
         val user = userRepository.save(userEntity)
@@ -142,7 +142,7 @@ class GroupResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun removeUserException() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY))
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
 
         mockMvc.perform(
@@ -155,11 +155,11 @@ class GroupResourceTest : BaseControllerTest() {
     }
 
     private fun insertGroups() {
-        groupRepository.save(Group("대학1", UNIVERSITY))
-        groupRepository.save(Group("대학2", UNIVERSITY))
-        groupRepository.save(Group("대학3", UNIVERSITY))
-        groupRepository.save(Group("대학4", UNIVERSITY))
-        groupRepository.save(Group("대학5", UNIVERSITY))
-        groupRepository.save(Group("대학6", UNIVERSITY))
+        groupRepository.save(Group("대학1", UNIVERSITY, 30))
+        groupRepository.save(Group("대학2", UNIVERSITY, 30))
+        groupRepository.save(Group("대학3", UNIVERSITY, 30))
+        groupRepository.save(Group("대학4", UNIVERSITY, 30))
+        groupRepository.save(Group("대학5", UNIVERSITY, 30))
+        groupRepository.save(Group("대학6", UNIVERSITY, 30))
     }
 }

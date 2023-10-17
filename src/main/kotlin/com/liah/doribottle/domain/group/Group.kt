@@ -8,7 +8,8 @@ import jakarta.persistence.*
 @Table(name = "`group`")
 class Group(
     name: String,
-    type: GroupType
+    type: GroupType,
+    discountRate: Int
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var name: String = name
@@ -19,13 +20,19 @@ class Group(
     var type: GroupType = type
         protected set
 
+    @Column(nullable = false)
+    var discountRate: Int = discountRate
+        protected set
+
     fun update(
         name: String,
-        type: GroupType
+        type: GroupType,
+        discountRate: Int
     ) {
         this.name = name
         this.type = type
+        this.discountRate = discountRate
     }
 
-    fun toDto() = GroupDto(id, name, type)
+    fun toDto() = GroupDto(id, name, type, discountRate)
 }

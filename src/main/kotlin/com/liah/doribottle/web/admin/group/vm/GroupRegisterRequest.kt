@@ -7,5 +7,7 @@ data class GroupRegisterRequest(
     @field:NotNull
     val name: String?,
     @field:NotNull
-    val type: GroupType?
+    val type: GroupType?,
+    @field:NotNull
+    val discountRate: Int?
 )

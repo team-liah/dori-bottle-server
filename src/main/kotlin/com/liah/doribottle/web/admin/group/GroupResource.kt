@@ -25,7 +25,11 @@ class GroupResource(
     fun register(
         @Valid @RequestBody request: GroupRegisterRequest
     ): UUID {
-        return groupService.register(request.name!!, request.type!!)
+        return groupService.register(
+            name = request.name!!,
+            type = request.type!!,
+            discountRate = request.discountRate!!
+        )
     }
 
     @Operation(summary = "기관 목록 조회")
@@ -49,7 +53,12 @@ class GroupResource(
         @PathVariable id: UUID,
         @Valid @RequestBody request: GroupUpdateRequest
     ) {
-        groupService.update(id, request.name!!, request.type!!)
+        groupService.update(
+            id = id,
+            name = request.name!!,
+            type = request.type!!,
+            discountRate = request.discountRate!!
+        )
     }
 
     @Operation(summary = "기관 삭제")

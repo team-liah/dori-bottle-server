@@ -7,7 +7,8 @@ import java.util.UUID
 data class GroupDto(
     val id: UUID,
     val name: String,
-    val type: GroupType
+    val type: GroupType,
+    val discountRate: Int
 ) {
     fun toSearchResponse() = GroupSearchResponse(id, name, type)
 }
