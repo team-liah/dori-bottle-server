@@ -36,7 +36,7 @@ class UserResourceTest : BaseControllerTest() {
 
     @BeforeEach
     internal fun init() {
-        group = groupRepository.save(Group("리아", GroupType.COMPANY))
+        group = groupRepository.save(Group("리아", GroupType.COMPANY, 30))
     }
 
     @AfterEach
