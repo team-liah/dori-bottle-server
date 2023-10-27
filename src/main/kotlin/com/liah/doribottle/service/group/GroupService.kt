@@ -60,6 +60,13 @@ class GroupService(
         ).map { it.toDto() }
     }
 
+    @Transactional(readOnly = true)
+    fun findByUserId(
+        userId: UUID
+    ): GroupDto? {
+        return groupQueryRepository.findByUserId(userId)?.toDto()
+    }
+
     fun update(
         id: UUID,
         name: String,

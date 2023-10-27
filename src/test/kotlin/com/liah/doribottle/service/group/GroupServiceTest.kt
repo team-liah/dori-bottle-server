@@ -82,6 +82,22 @@ class GroupServiceTest : BaseServiceTest() {
             .containsExactly(10, 10, 10)
     }
 
+    @DisplayName("기관 목록 조회")
+    @Test
+    fun findByUserId() {
+        val user1 = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val user2 = userRepository.save(User("010-0000-0000", "Tester 2", "010-0000-0000", Role.USER))
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 30))
+        user1.updateGroup(group)
+        clear()
+
+        val result1 = groupService.findByUserId(user1.id)
+        val result2 = groupService.findByUserId(user2.id)
+
+        assertThat(result1?.id).isEqualTo(group.id)
+        assertThat(result2).isNull()
+    }
+
     @DisplayName("기관 수정")
     @Test
     fun update() {
