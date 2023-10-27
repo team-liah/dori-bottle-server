@@ -62,7 +62,7 @@ class UserServiceTest : BaseServiceTest() {
     @Test
     fun getTc2() {
         //given
-        val group = groupRepository.save(Group("리아", COMPANY))
+        val group = groupRepository.save(Group("리아", COMPANY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         user.updateGroup(group)
@@ -92,7 +92,7 @@ class UserServiceTest : BaseServiceTest() {
     @Test
     fun getTc3() {
         //given
-        val group = groupRepository.save(Group("리아", COMPANY))
+        val group = groupRepository.save(Group("리아", COMPANY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         user.block(LOST_CUP_PENALTY, null)
@@ -164,7 +164,7 @@ class UserServiceTest : BaseServiceTest() {
     }
 
     private fun insertUsers() {
-        val group = groupRepository.save(Group("리아", COMPANY))
+        val group = groupRepository.save(Group("리아", COMPANY, 30))
         val userEntity1 = User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER)
         userEntity1.updateGroup(group)
         userRepository.save(userEntity1)

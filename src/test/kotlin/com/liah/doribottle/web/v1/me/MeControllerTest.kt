@@ -54,7 +54,7 @@ class MeControllerTest : BaseControllerTest() {
 
     @BeforeEach
     internal fun init() {
-        val group = groupRepository.save(Group("리아", GroupType.COMPANY))
+        val group = groupRepository.save(Group("리아", GroupType.COMPANY, 30))
         val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
         userEntity.register()
         userEntity.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")

@@ -25,9 +25,16 @@ class GroupService(
 ) {
     fun register(
         name: String,
-        type: GroupType
+        type: GroupType,
+        discountRate: Int
     ): UUID {
-        val group = groupRepository.save(Group(name, type))
+        val group = groupRepository.save(
+            Group(
+                name = name,
+                type = type,
+                discountRate = discountRate
+            )
+        )
 
         return group.id
     }
@@ -53,15 +60,23 @@ class GroupService(
         ).map { it.toDto() }
     }
 
+    @Transactional(readOnly = true)
+    fun findByUserId(
+        userId: UUID
+    ): GroupDto? {
+        return groupQueryRepository.findByUserId(userId)?.toDto()
+    }
+
     fun update(
         id: UUID,
         name: String,
-        type: GroupType
+        type: GroupType,
+        discountRate: Int
     ) {
         val group = groupRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
 
-        group.update(name, type)
+        group.update(name, type, discountRate)
     }
 
     fun delete(id: UUID) {
