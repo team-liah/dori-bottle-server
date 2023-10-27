@@ -5,6 +5,8 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.*
@@ -27,6 +29,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.cup.CupRepository
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -73,6 +76,8 @@ class PaymentControllerTest : BaseControllerTest() {
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
     @Autowired
     private lateinit var userRepository: UserRepository
+    @Autowired
+    private lateinit var groupRepository: GroupRepository
     @Autowired
     private lateinit var pointRepository: PointRepository
     @Autowired
@@ -134,6 +139,57 @@ class PaymentControllerTest : BaseControllerTest() {
 
         assertThat(findPayment?.user?.id).isEqualTo(user.id)
         assertThat(findPayment?.price).isEqualTo(900)
+        assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
+        assertThat(findPayment?.card?.number).isEqualTo("12341234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(SUCCEEDED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
+        assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)
+
+        assertThat(findPoint.saveAmounts).isEqualTo(category.amounts)
+    }
+
+    @DisplayName("포인트 충전 결제 TC2: 기관 할인")
+    @Test
+    fun payToSavePointTc2() {
+        //given
+        val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        val group = groupRepository.save(Group("Group", GroupType.UNIVERSITY, 20))
+        user.updateGroup(group)
+        userRepository.save(user)
+        val billingKey = "dummyBillingKey"
+        val paymentKey = "dummyPaymentKey"
+        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val body = PayToSavePointRequest(category.id)
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/save-point")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+
+        verify(mockTossPaymentsService, times(1))
+            .executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findPoint = pointRepository.findAll().firstOrNull()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(720)
         assertThat(findPayment?.type).isEqualTo(SAVE_POINT)
         assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
         assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
@@ -642,6 +698,42 @@ class PaymentControllerTest : BaseControllerTest() {
 
         mockMvc.perform(
             get("${endPoint}/category")
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("pageable.totalElements", `is`(5)))
+            .andExpect(jsonPath("content[*].amounts", `is`(expectAmountsValue)))
+            .andExpect(jsonPath("content[*].price", `is`(expectPriceValue)))
+            .andExpect(jsonPath("content[*].discountRate", `is`(expectDiscountRateValue)))
+            .andExpect(jsonPath("content[*].discountPrice", `is`(expectDiscountPriceValue)))
+    }
+
+    @DisplayName("결제 카테고리 목록 조회 TC2")
+    @Test
+    fun getAllCategoriesTc2() {
+        //given
+        val group = groupRepository.save(Group("Group", GroupType.UNIVERSITY, 20))
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.updateGroup(group)
+        userRepository.save(user)
+        insertCategories()
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("page", "0")
+        params.add("size", "3")
+
+        val expectAmountsValue = listOf(10, 20, 40)
+        val expectPriceValue = listOf(1000, 2000, 4000)
+        val expectDiscountRateValue = listOf(10, 0, 10)
+        val expectDiscountPriceValue = listOf(720, 1600, 2880)
+
+        mockMvc.perform(
+            get("${endPoint}/category")
+                .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)

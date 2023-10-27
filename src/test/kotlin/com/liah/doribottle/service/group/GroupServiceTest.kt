@@ -30,20 +30,21 @@ class GroupServiceTest : BaseServiceTest() {
     @Test
     fun register() {
         //given, when
-        val id = groupService.register("서울대학교", UNIVERSITY)
+        val id = groupService.register("서울대학교", UNIVERSITY, 30)
         clear()
 
         //then
         val findGroup = groupRepository.findByIdOrNull(id)
         assertThat(findGroup?.name).isEqualTo("서울대학교")
         assertThat(findGroup?.type).isEqualTo(UNIVERSITY)
+        assertThat(findGroup?.discountRate).isEqualTo(30)
     }
 
     @DisplayName("기관 조회")
     @Test
     fun get() {
         //given
-        val group = groupRepository.save(Group("서울대학교", UNIVERSITY))
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 30))
         clear()
 
         //when
@@ -52,6 +53,7 @@ class GroupServiceTest : BaseServiceTest() {
         //then
         assertThat(groupDto.name).isEqualTo("서울대학교")
         assertThat(groupDto.type).isEqualTo(UNIVERSITY)
+        assertThat(groupDto.discountRate).isEqualTo(30)
     }
 
     @DisplayName("기관 목록 조회")
@@ -75,30 +77,50 @@ class GroupServiceTest : BaseServiceTest() {
         assertThat(result)
             .extracting("type")
             .containsExactly(UNIVERSITY, UNIVERSITY, UNIVERSITY)
+        assertThat(result)
+            .extracting("discountRate")
+            .containsExactly(10, 10, 10)
+    }
+
+    @DisplayName("기관 목록 조회")
+    @Test
+    fun findByUserId() {
+        val user1 = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
+        val user2 = userRepository.save(User("010-0000-0000", "Tester 2", "010-0000-0000", Role.USER))
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 30))
+        user1.updateGroup(group)
+        clear()
+
+        val result1 = groupService.findByUserId(user1.id)
+        val result2 = groupService.findByUserId(user2.id)
+
+        assertThat(result1?.id).isEqualTo(group.id)
+        assertThat(result2).isNull()
     }
 
     @DisplayName("기관 수정")
     @Test
     fun update() {
         //given
-        val group = groupRepository.save(Group("서울대학교", UNIVERSITY))
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 30))
         clear()
 
         //when
-        groupService.update(group.id, "리아", COMPANY)
+        groupService.update(group.id, "리아", COMPANY, 10)
         clear()
 
         //then
         val findGroup = groupRepository.findByIdOrNull(group.id)
         assertThat(findGroup?.name).isEqualTo("리아")
         assertThat(findGroup?.type).isEqualTo(COMPANY)
+        assertThat(findGroup?.discountRate).isEqualTo(10)
     }
 
     @DisplayName("기관 삭제")
     @Test
     fun delete() {
         //given
-        val group = groupRepository.save(Group("서울대학교", UNIVERSITY))
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 10))
         val user1 = userRepository.save(User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER))
         val user2 = userRepository.save(User("010-0000-0002", "Tester 2", "010-0000-0002", Role.USER))
         user1.updateGroup(group)
@@ -122,7 +144,7 @@ class GroupServiceTest : BaseServiceTest() {
     @Test
     fun addUser() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-        val group = groupRepository.save(Group("리아", COMPANY))
+        val group = groupRepository.save(Group("리아", COMPANY, 10))
         clear()
 
         groupService.addUser(group.id, user.id)
@@ -136,7 +158,7 @@ class GroupServiceTest : BaseServiceTest() {
     @Test
     fun removeUser() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-        val group = groupRepository.save(Group("리아", COMPANY))
+        val group = groupRepository.save(Group("리아", COMPANY, 10))
         user.updateGroup(group)
         clear()
 
@@ -151,8 +173,8 @@ class GroupServiceTest : BaseServiceTest() {
     @Test
     fun removeUserException() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-        val group1 = groupRepository.save(Group("리아", COMPANY))
-        val group2 = groupRepository.save(Group("삼성", COMPANY))
+        val group1 = groupRepository.save(Group("리아", COMPANY, 10))
+        val group2 = groupRepository.save(Group("삼성", COMPANY, 10))
         user.updateGroup(group1)
         clear()
 
@@ -163,11 +185,11 @@ class GroupServiceTest : BaseServiceTest() {
     }
 
     private fun insertGroups() {
-        groupRepository.save(Group("대학1", UNIVERSITY))
-        groupRepository.save(Group("대학2", UNIVERSITY))
-        groupRepository.save(Group("대학3", UNIVERSITY))
-        groupRepository.save(Group("대학4", UNIVERSITY))
-        groupRepository.save(Group("대학5", UNIVERSITY))
-        groupRepository.save(Group("대학6", UNIVERSITY))
+        groupRepository.save(Group("대학1", UNIVERSITY, 10))
+        groupRepository.save(Group("대학2", UNIVERSITY, 10))
+        groupRepository.save(Group("대학3", UNIVERSITY, 10))
+        groupRepository.save(Group("대학4", UNIVERSITY, 10))
+        groupRepository.save(Group("대학5", UNIVERSITY, 10))
+        groupRepository.save(Group("대학6", UNIVERSITY, 10))
     }
 }
