@@ -10,5 +10,5 @@ data class GroupDto(
     val type: GroupType,
     val discountRate: Int
 ) {
-    fun toSearchResponse() = GroupSearchResponse(id, name, type)
+    fun toSearchResponse() = GroupSearchResponse(id, name, type, discountRate)
 }

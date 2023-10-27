@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.extension.currentUserId
+import com.liah.doribottle.service.group.GroupService
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.point.PointService
@@ -28,7 +29,8 @@ class PaymentController(
     private val paymentService: PaymentService,
     private val tossPaymentsService: TossPaymentsService,
     private val pointService: PointService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val groupService: GroupService
 ) {
     @Operation(summary = "결제 - 포인트 충전")
     @PostMapping("/save-point")
@@ -36,8 +38,9 @@ class PaymentController(
         @Valid @RequestBody request: PayToSavePointRequest
     ): UUID {
         val currentUserId = currentUserId()!!
+        val currentUserGroup = groupService.findByUserId(currentUserId)
         val category = paymentService.getCategory(request.categoryId!!)
-        val price = category.getFinalPrice()
+        val price = category.getFinalPrice(currentUserGroup?.discountRate)
         val method = paymentService.getDefaultMethod(currentUserId)
         val id = paymentService.create(
             userId = currentUserId,
@@ -226,11 +229,12 @@ class PaymentController(
     fun getAllCategories(
         @ParameterObject @PageableDefault(sort = ["amounts"], direction = Sort.Direction.ASC) pageable: Pageable
     ): CustomPage<PaymentCategorySearchResponse> {
+        val currentUserGroup = groupService.findByUserId(currentUserId()!!)
         val result = paymentService.getAllCategories(
             expired = false,
             deleted = false,
             pageable = pageable
-        ).map { it.toUserResponse() }
+        ).map { it.toUserResponse(currentUserGroup?.discountRate) }
 
         return CustomPage.of(result)
     }
