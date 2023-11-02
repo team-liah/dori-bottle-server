@@ -12,7 +12,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 
@@ -24,22 +23,6 @@ class AdminAccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     private val loginId = "liah"
-
-    @DisplayName("관리자 등록")
-    @Test
-    fun register() {
-        //given, when
-        val adminId = adminAccountService.register(loginId, "123456", "Tester", Role.ADMIN)
-        clear()
-
-        //then
-        val findUser = adminRepository.findByIdOrNull(adminId)
-
-        assertThat(findUser?.loginId).isEqualTo(loginId)
-        assertThat(passwordEncoder.matches("123456", findUser?.loginPassword)).isTrue
-        assertThat(findUser?.name).isEqualTo("Tester")
-        assertThat(findUser?.role).isEqualTo(Role.ADMIN)
-    }
 
     @DisplayName("인증")
     @Test
