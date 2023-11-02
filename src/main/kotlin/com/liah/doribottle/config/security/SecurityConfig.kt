@@ -27,6 +27,7 @@ class SecurityConfig(
             .addFilterBefore(JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { authorize -> authorize
                 .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                .requestMatchers("/actuator/health/liveness", "/actuator/health/readiness").permitAll()
                 .requestMatchers("/api/v1/account/auth/send-sms", "/api/v1/account/auth", "/api/v1/account/refresh-auth", "/api/v1/account/logout").permitAll()
                 .requestMatchers("/admin/api/account/auth", "/admin/api/account/logout").permitAll()
                 .requestMatchers("/api/v1/account/dummy-auth", "/api/v1/account/dummy-data").permitAll() //TODO: Remove
