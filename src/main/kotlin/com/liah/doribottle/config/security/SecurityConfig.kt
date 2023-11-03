@@ -33,6 +33,7 @@ class SecurityConfig(
                 .requestMatchers("/api/v1/account/dummy-auth", "/api/v1/account/dummy-data").permitAll() //TODO: Remove
                 .requestMatchers("/api/v1/me").authenticated()
                 .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
+                .requestMatchers("/admin/api/admin/**").hasRole(Role.ADMIN.name)
                 .requestMatchers("/admin/**").hasAnyRole(Role.ADMIN.name, Role.MACHINE_ADMIN.name)
                 .anyRequest().hasRole(Role.USER.name)
             }

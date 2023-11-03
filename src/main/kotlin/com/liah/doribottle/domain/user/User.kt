@@ -80,9 +80,10 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: Role =
-        if (role != Role.ADMIN && role != Role.MACHINE_ADMIN) role
-        else throw IllegalArgumentException("Non User role is not allowed.")
+    var role: Role = role.validateUser()
+        set(value) {
+            field = value.validateUser()
+        }
 
     @Column
     var agreedTermsOfServiceDate: Instant? = null

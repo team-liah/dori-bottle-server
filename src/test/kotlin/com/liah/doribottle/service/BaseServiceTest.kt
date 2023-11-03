@@ -20,6 +20,7 @@ class BaseServiceTest {
 
     companion object {
         const val USER_LOGIN_ID = "010-5638-3316"
+        const val ADMIN_LOGIN_ID = "admin"
         const val CUP_RFID = "A1:A1:A1:A1"
         const val MACHINE_NO = "000-00000"
         const val MACHINE_NO1 = "000-00001"
