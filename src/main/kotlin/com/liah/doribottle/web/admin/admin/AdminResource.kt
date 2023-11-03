@@ -1,7 +1,7 @@
 package com.liah.doribottle.web.admin.admin
 
 import com.liah.doribottle.common.pageable.CustomPage
-import com.liah.doribottle.service.account.dto.AdminDto
+import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.service.user.AdminService
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterOrUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminSearchRequest

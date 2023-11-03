@@ -7,7 +7,7 @@ import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
-import com.liah.doribottle.service.account.dto.AdminDto
+import com.liah.doribottle.service.user.dto.AdminDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull

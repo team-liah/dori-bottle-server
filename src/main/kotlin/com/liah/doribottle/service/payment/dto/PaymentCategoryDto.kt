@@ -11,7 +11,6 @@ data class PaymentCategoryDto(
     val discountRate: Int,
     val discountExpiredDate: Instant?,
     val expiredDate: Instant?,
-    val deleted: Boolean,
     val createdDate: Instant,
     val lastModifiedDate: Instant
 ) {
@@ -45,6 +44,6 @@ data class PaymentCategoryDto(
         )
         return PaymentCategorySearchResponse(id, amounts, price, discountRate, discountPrice, discountExpiredDate, expiredDate)
     }
-    fun toAdminResponse() = com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse(id, amounts, price, discountRate, getDiscountPrice(price, discountRate), discountExpiredDate, expiredDate, deleted)
+    fun toAdminResponse() = com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse(id, amounts, price, discountRate, getDiscountPrice(price, discountRate), discountExpiredDate, expiredDate)
     private fun getDiscountPrice(price: Long, discountRate: Int) = price-(price*discountRate/100)
 }

@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.account.dto
+package com.liah.doribottle.service.user.dto
 
 import com.liah.doribottle.domain.user.Role
 import java.time.Instant

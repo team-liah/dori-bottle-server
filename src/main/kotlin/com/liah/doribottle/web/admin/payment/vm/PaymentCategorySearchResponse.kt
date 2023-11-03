@@ -10,6 +10,5 @@ data class PaymentCategorySearchResponse(
     val discountRate: Int,
     val discountPrice: Long,
     val discountExpiredDate: Instant?,
-    val expiredDate: Instant?,
-    val deleted: Boolean
+    val expiredDate: Instant?
 )

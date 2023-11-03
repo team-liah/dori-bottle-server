@@ -15,14 +15,12 @@ class PaymentCategoryQueryRepository(
 ) {
     fun getAll(
         expired: Boolean? = null,
-        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<PaymentCategory> {
         return queryFactory
             .selectFrom(paymentCategory)
             .where(
-                expired(expired),
-                deleted(deleted)
+                expired(expired)
             )
             .toPage(pageable)
     }
@@ -34,6 +32,4 @@ class PaymentCategoryQueryRepository(
             paymentCategory.expiredDate.isNull.or(paymentCategory.expiredDate.after(Instant.now()))
         }
     }
-
-    private fun deleted(deleted: Boolean?) = deleted?.let { paymentCategory.deleted.eq(deleted) }
 }
