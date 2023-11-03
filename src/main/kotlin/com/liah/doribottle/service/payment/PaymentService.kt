@@ -232,6 +232,26 @@ class PaymentService(
         ).map { it.toDto() }
     }
 
+    fun updateCategory(
+        categoryId: UUID,
+        amounts: Long,
+        price: Long,
+        discountRate: Int,
+        discountExpiredDate: Instant?,
+        expiredDate: Instant?
+    ) {
+        val category = paymentCategoryRepository.findByIdOrNull(categoryId)
+            ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
+
+        category.update(
+            amounts = amounts,
+            price = price,
+            discountRate = discountRate,
+            discountExpiredDate = discountExpiredDate,
+            expiredDate = expiredDate
+        )
+    }
+
     fun removeCategory(
         categoryId: UUID
     ) {

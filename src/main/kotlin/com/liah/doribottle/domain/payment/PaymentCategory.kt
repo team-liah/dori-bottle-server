@@ -17,19 +17,38 @@ class PaymentCategory(
     expiredDate: Instant?
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
-    val amounts: Long = amounts
+    var amounts: Long = amounts
+        protected set
 
     @Column(nullable = false)
-    val price: Long = price
+    var price: Long = price
+        protected set
 
     @Column(nullable = false)
-    val discountRate: Int = discountRate
+    var discountRate: Int = discountRate
+        protected set
 
     @Column
-    val discountExpiredDate: Instant? = discountExpiredDate
+    var discountExpiredDate: Instant? = discountExpiredDate
+        protected set
 
     @Column
-    val expiredDate: Instant? = expiredDate
+    var expiredDate: Instant? = expiredDate
+        protected set
+
+    fun update(
+        amounts: Long,
+        price: Long,
+        discountRate: Int,
+        discountExpiredDate: Instant?,
+        expiredDate: Instant?
+    ) {
+        this.amounts = amounts
+        this.price = price
+        this.discountRate = discountRate
+        this.discountExpiredDate = discountExpiredDate
+        this.expiredDate = expiredDate
+    }
 
     fun toDto() = PaymentCategoryDto(id, amounts, price, discountRate, discountExpiredDate, expiredDate, createdDate, lastModifiedDate)
 }

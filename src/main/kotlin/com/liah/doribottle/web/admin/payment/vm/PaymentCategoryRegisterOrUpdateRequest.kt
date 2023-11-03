@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 import java.time.Instant
 
-data class PaymentCategoryRegisterRequest(
+data class PaymentCategoryRegisterOrUpdateRequest(
     @field:NotNull
     val amounts: Long?,
     @field:NotNull
