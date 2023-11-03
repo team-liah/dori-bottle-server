@@ -22,19 +22,17 @@ class AdminAccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
     @Autowired private lateinit var tokenProvider: TokenProvider
 
-    private val loginId = "liah"
-
     @DisplayName("인증")
     @Test
     fun auth() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val saveAdmin = adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
+        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
         clear()
 
         //when
-        val authDto = adminAccountService.auth(loginId, loginPassword)
+        val authDto = adminAccountService.auth(ADMIN_LOGIN_ID, loginPassword)
         clear()
 
         //then
@@ -50,12 +48,12 @@ class AdminAccountServiceTest : BaseServiceTest() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
+        adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
         clear()
 
         //when, then
         val badCredentialsException = assertThrows<BadCredentialsException> {
-            adminAccountService.auth(loginId, "000000")
+            adminAccountService.auth(ADMIN_LOGIN_ID, "000000")
         }
         assertThat(badCredentialsException.message).isEqualTo("Invalid login password.")
     }
@@ -66,7 +64,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val saveAdmin = adminRepository.save(Admin(loginId, encryptedPassword, "Tester", Role.ADMIN))
+        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
         val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveAdmin.id.toString()))
         clear()
 
