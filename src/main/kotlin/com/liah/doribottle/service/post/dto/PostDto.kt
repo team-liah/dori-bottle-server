@@ -1,7 +1,7 @@
 package com.liah.doribottle.service.post.dto
 
 import com.liah.doribottle.domain.post.PostType
-import com.liah.doribottle.service.account.dto.AdminDto
+import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.web.v1.post.vm.PostSearchResponse
 import java.time.Instant
 import java.util.*

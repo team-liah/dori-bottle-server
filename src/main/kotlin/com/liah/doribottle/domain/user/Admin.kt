@@ -1,7 +1,7 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.SoftDeleteEntity
-import com.liah.doribottle.service.account.dto.AdminDto
+import com.liah.doribottle.service.user.dto.AdminDto
 import jakarta.persistence.*
 
 @Entity
