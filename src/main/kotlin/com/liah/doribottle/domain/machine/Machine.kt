@@ -79,5 +79,5 @@ class Machine(
         }
     }
 
-    fun toDto() = MachineDto(id, no, name, type, address?.toDto(), capacity, cupAmounts, state)
+    fun toDto() = MachineDto(id, no, name, type, address?.toDto(), capacity, cupAmounts, state, createdDate, lastModifiedDate)
 }

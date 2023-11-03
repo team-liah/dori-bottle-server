@@ -14,7 +14,9 @@ data class PaymentMethodDto(
     val type: PaymentMethodType,
     val card: CardDto,
     val default: Boolean,
-    val authenticatedDate: Instant
+    val authenticatedDate: Instant,
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 ) {
     fun toResponse() = PaymentMethodSearchResponse(id, type, card.toResponse(), default)
 }

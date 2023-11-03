@@ -2,9 +2,9 @@ package com.liah.doribottle.web.admin.user
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.user.UserService
+import com.liah.doribottle.service.user.dto.UserDto
 import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchRequest
-import com.liah.doribottle.web.admin.user.vm.UserSearchResponse
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -21,14 +21,14 @@ class UserResource(
 ) {
     @Operation(summary = "유저 조회")
     @GetMapping("/{id}")
-    fun get(@PathVariable id: UUID) = userService.get(id).toResponse()
+    fun get(@PathVariable id: UUID) = userService.get(id)
 
     @Operation(summary = "유저 목록 조회")
     @GetMapping
     fun getAll(
         @ParameterObject request: UserSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): CustomPage<UserSearchResponse> {
+    ): CustomPage<UserDto> {
         val result = userService.getAll(
             name = request.name,
             phoneNumber = request.phoneNumber,
@@ -38,7 +38,7 @@ class UserResource(
             blocked = request.blocked,
             groupId = request.groupId,
             pageable = pageable
-        ).map { it.toSearchResponse() }
+        )
 
         return CustomPage.of(result)
     }

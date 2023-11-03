@@ -23,7 +23,7 @@ class Cup(
     var status: CupStatus = AVAILABLE
         protected set
 
-    fun toDto() = CupDto(id, rfid, status)
+    fun toDto() = CupDto(id, rfid, status, createdDate, lastModifiedDate)
 
     // TODO: 제거
     fun changeState(

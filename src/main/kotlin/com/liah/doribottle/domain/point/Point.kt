@@ -63,5 +63,5 @@ class Point(
         remainAmounts = 0
     }
 
-    fun toDto() = PointDto(id, userId, saveType, description, saveAmounts, remainAmounts)
+    fun toDto() = PointDto(id, userId, saveType, description, saveAmounts, remainAmounts, createdDate, lastModifiedDate)
 }
