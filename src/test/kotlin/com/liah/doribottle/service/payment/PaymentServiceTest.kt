@@ -588,7 +588,6 @@ class PaymentServiceTest : BaseServiceTest() {
         //when
         val result = paymentService.getAllCategories(
             expired = false,
-            deleted = false,
             pageable = Pageable.ofSize(3)
         )
 
@@ -617,8 +616,7 @@ class PaymentServiceTest : BaseServiceTest() {
 
         //then
         val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
-
-        assertThat(findCategory?.deleted).isEqualTo(true)
+        assertThat(findCategory).isNull()
     }
 
     private fun insertCategories() {
