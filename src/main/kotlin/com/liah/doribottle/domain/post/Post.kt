@@ -47,5 +47,5 @@ class Post(
         this.content = content
     }
 
-    fun toDto() = PostDto(author.toDto(), type, title, content)
+    fun toDto() = PostDto(id, author.toDto(), type, title, content, createdDate, lastModifiedDate)
 }

@@ -11,7 +11,9 @@ data class PaymentCategoryDto(
     val discountRate: Int,
     val discountExpiredDate: Instant?,
     val expiredDate: Instant?,
-    val deleted: Boolean
+    val deleted: Boolean,
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 ) {
     fun getFinalPrice(
         initDiscountRate: Int?

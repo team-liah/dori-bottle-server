@@ -13,7 +13,8 @@ data class NotificationDto(
     val content: String,
     val targetId: UUID?,
     val read: Boolean,
-    val createdDate: Instant
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 ) {
     fun toSearchResponse() = NotificationSearchResponse(id, userId, type, title, content, targetId, read, createdDate)
 }

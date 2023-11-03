@@ -34,5 +34,5 @@ class Group(
         this.discountRate = discountRate
     }
 
-    fun toDto() = GroupDto(id, name, type, discountRate)
+    fun toDto() = GroupDto(id, name, type, discountRate, createdDate, lastModifiedDate)
 }

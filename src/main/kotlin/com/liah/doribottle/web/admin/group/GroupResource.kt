@@ -2,9 +2,9 @@ package com.liah.doribottle.web.admin.group
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.group.GroupService
+import com.liah.doribottle.service.group.dto.GroupDto
 import com.liah.doribottle.web.admin.group.vm.GroupRegisterRequest
 import com.liah.doribottle.web.admin.group.vm.GroupSearchRequest
-import com.liah.doribottle.web.admin.group.vm.GroupSearchResponse
 import com.liah.doribottle.web.admin.group.vm.GroupUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -37,12 +37,12 @@ class GroupResource(
     fun getAll(
         @ParameterObject request: GroupSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): CustomPage<GroupSearchResponse> {
+    ): CustomPage<GroupDto> {
         val result = groupService.getAll(
             name = request.name,
             type = request.type,
             pageable = pageable
-        ).map { it.toSearchResponse() }
+        )
 
         return CustomPage.of(result)
     }

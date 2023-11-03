@@ -31,5 +31,5 @@ class PaymentCategory(
     @Column
     val expiredDate: Instant? = expiredDate
 
-    fun toDto() = PaymentCategoryDto(id, amounts, price, discountRate, discountExpiredDate, expiredDate, deleted)
+    fun toDto() = PaymentCategoryDto(id, amounts, price, discountRate, discountExpiredDate, expiredDate, deleted, createdDate, lastModifiedDate)
 }
