@@ -8,6 +8,7 @@ import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterOrUpdateRequest
 import org.hamcrest.Matchers
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -83,7 +84,7 @@ class AdminResourceTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(jsonPath("content[*].name", Matchers.`is`(expectValue)))
+            .andExpect(jsonPath("content[*].name", `is`(expectValue)))
     }
 
     private fun insertAdmins() {
