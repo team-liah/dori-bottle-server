@@ -1,20 +1,14 @@
 package com.liah.doribottle.service.account
 
-import com.liah.doribottle.common.error.exception.BusinessException
-import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.domain.user.Admin
-import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.user.AdminRepository
-import com.liah.doribottle.service.account.dto.AdminDto
 import com.liah.doribottle.service.account.dto.AuthDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -23,34 +17,6 @@ class AdminAccountService(
     private val passwordEncoder: PasswordEncoder,
     private val tokenProvider: TokenProvider
 ) {
-    @Transactional
-    fun register(
-        loginId: String,
-        loginPassword: String,
-        name: String,
-        role: Role
-    ): UUID {
-        verifyDuplicatedLoginId(loginId)
-
-        val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val admin = adminRepository.save(
-            Admin(
-                loginId = loginId,
-                loginPassword = encryptedPassword,
-                name = name,
-                role = role
-            )
-        )
-
-        return admin.id
-    }
-
-    private fun verifyDuplicatedLoginId(loginId: String) {
-        val admin = adminRepository.findByLoginId(loginId)
-        if (admin != null)
-            throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
-    }
-
     fun auth(
         loginId: String,
         loginPassword: String
@@ -108,34 +74,5 @@ class AdminAccountService(
     ): String {
         tokenProvider.expireRefreshToken(origin)
         return tokenProvider.generateRefreshToken(userId.toString())
-    }
-
-    // TODO: Migrate AdminService
-    @Transactional(readOnly = true)
-    fun get(
-        loginId: String
-    ): AdminDto {
-        val admin = adminRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-
-        return admin.toDto()
-    }
-
-    //TODO: Remove
-    fun createDummyAdmin(
-        adminLoginId: String,
-        adminLoginPassword: String,
-        machineLoginId: String,
-        machineLoginPassword: String,
-    ) {
-        val admin = adminRepository.findByLoginId(adminLoginId)
-        if (admin == null) {
-            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN)
-        }
-
-        val machine = adminRepository.findByLoginId(machineLoginId)
-        if (machine == null) {
-            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN)
-        }
     }
 }
