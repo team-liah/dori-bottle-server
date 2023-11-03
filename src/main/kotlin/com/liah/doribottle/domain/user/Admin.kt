@@ -46,5 +46,5 @@ class Admin(
         this.role = role
     }
 
-    fun toDto() = AdminDto(id, loginId, name, role)
+    fun toDto() = AdminDto(id, loginId, loginPassword, name, role, deleted, createdDate, lastModifiedDate)
 }
