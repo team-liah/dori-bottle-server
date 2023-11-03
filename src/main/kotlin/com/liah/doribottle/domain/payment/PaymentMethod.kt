@@ -51,5 +51,5 @@ class PaymentMethod(
         this.default = default
     }
 
-    fun toDto() = PaymentMethodDto(id, user.id, billingKey, providerType, type, card.toDto(), default, authenticatedDate)
+    fun toDto() = PaymentMethodDto(id, user.id, billingKey, providerType, type, card.toDto(), default, authenticatedDate, createdDate, lastModifiedDate)
 }

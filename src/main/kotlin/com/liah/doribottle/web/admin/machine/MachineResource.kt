@@ -2,7 +2,11 @@ package com.liah.doribottle.web.admin.machine
 
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.machine.MachineService
-import com.liah.doribottle.web.admin.machine.vm.*
+import com.liah.doribottle.service.machine.dto.MachineDto
+import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineSearchRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -35,8 +39,8 @@ class MachineResource(
     @GetMapping("/{id}")
     fun get(
         @PathVariable id: UUID
-    ): MachineResponse {
-        return machineService.get(id).toResponse()
+    ): MachineDto {
+        return machineService.get(id)
     }
 
     @Operation(summary = "기기 목록 조회")
@@ -44,7 +48,7 @@ class MachineResource(
     fun getAll(
         @ParameterObject request: MachineSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): CustomPage<MachineSearchResponse> {
+    ): CustomPage<MachineDto> {
         val result = machineService.getAll(
                 no = request.no,
                 name = request.name,
@@ -52,7 +56,7 @@ class MachineResource(
                 state = request.state,
                 addressKeyword = request.addressKeyword,
                 pageable = pageable
-            ).map { it.toSearchResponse() }
+            )
 
         return CustomPage.of(result)
     }

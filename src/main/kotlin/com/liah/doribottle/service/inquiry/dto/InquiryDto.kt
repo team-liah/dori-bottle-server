@@ -2,6 +2,7 @@ package com.liah.doribottle.service.inquiry.dto
 
 import com.liah.doribottle.domain.inquiry.InquiryStatus
 import com.liah.doribottle.domain.inquiry.InquiryType
+import java.time.Instant
 import java.util.*
 
 data class InquiryDto(
@@ -11,5 +12,7 @@ data class InquiryDto(
     val bankAccount: BankAccountDto?,
     val content: String?,
     val answer: String?,
-    val status: InquiryStatus
+    val status: InquiryStatus,
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 )
