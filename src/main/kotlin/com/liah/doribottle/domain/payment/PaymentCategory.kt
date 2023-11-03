@@ -1,6 +1,6 @@
 package com.liah.doribottle.domain.payment
 
-import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.service.payment.dto.PaymentCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -15,7 +15,7 @@ class PaymentCategory(
     discountRate: Int,
     discountExpiredDate: Instant?,
     expiredDate: Instant?
-) : SoftDeleteEntity() {
+) : PrimaryKeyEntity() {
     @Column(nullable = false)
     val amounts: Long = amounts
 
@@ -31,5 +31,5 @@ class PaymentCategory(
     @Column
     val expiredDate: Instant? = expiredDate
 
-    fun toDto() = PaymentCategoryDto(id, amounts, price, discountRate, discountExpiredDate, expiredDate, deleted, createdDate, lastModifiedDate)
+    fun toDto() = PaymentCategoryDto(id, amounts, price, discountRate, discountExpiredDate, expiredDate, createdDate, lastModifiedDate)
 }

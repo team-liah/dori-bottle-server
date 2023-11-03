@@ -41,7 +41,6 @@ class PaymentResource(
     ): CustomPage<PaymentCategorySearchResponse> {
         val result = paymentService.getAllCategories(
             expired = request.expired,
-            deleted = request.deleted,
             pageable = pageable
         ).map { it.toAdminResponse() }
 

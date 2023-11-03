@@ -224,12 +224,10 @@ class PaymentService(
     @Transactional(readOnly = true)
     fun getAllCategories(
         expired: Boolean? = null,
-        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<PaymentCategoryDto> {
         return paymentCategoryQueryRepository.getAll(
             expired = expired,
-            deleted = deleted,
             pageable = pageable
         ).map { it.toDto() }
     }
@@ -240,6 +238,6 @@ class PaymentService(
         val category = paymentCategoryRepository.findByIdOrNull(categoryId)
             ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
 
-        category.delete()
+        paymentCategoryRepository.delete(category)
     }
 }
