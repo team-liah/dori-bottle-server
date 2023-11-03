@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   datasource:
     url: jdbc:h2:mem:doribottle_test;DB_CLOSE_DELAY=-1;
     username: sa
@@ -46,6 +50,8 @@ app:
   aws:
     sqs:
       queueName: dummyQueue
+    s3:
+      bucket: dummyBucket
   schedule:
     enabled: false
 
