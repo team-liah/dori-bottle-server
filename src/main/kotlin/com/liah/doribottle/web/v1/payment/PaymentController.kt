@@ -232,7 +232,6 @@ class PaymentController(
         val currentUserGroup = groupService.findByUserId(currentUserId()!!)
         val result = paymentService.getAllCategories(
             expired = false,
-            deleted = false,
             pageable = pageable
         ).map { it.toUserResponse(currentUserGroup?.discountRate) }
 

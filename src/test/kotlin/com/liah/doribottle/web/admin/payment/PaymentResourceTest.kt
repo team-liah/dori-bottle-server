@@ -6,11 +6,13 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterRequest
+import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -30,7 +32,7 @@ class PaymentResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun registerCategory() {
-        val body = PaymentCategoryRegisterRequest(10, 1000, 10, null, null)
+        val body = PaymentCategoryRegisterOrUpdateRequest(10, 1000, 10, null, null)
 
         mockMvc.perform(
             post("${endPoint}/category")
@@ -69,6 +71,29 @@ class PaymentResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("content[*].discountPrice", `is`(expectDiscountPriceValue)))
     }
 
+    @DisplayName("결제 카테고리 수정")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun updateCategory() {
+        //given
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, null, null))
+        val body = PaymentCategoryRegisterOrUpdateRequest(20, 2000, 20, null, null)
+
+        //when, then
+        mockMvc.perform(
+            put("${endPoint}/category/${category.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+
+        val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
+        assertThat(findCategory?.amounts).isEqualTo(20)
+        assertThat(findCategory?.price).isEqualTo(2000)
+        assertThat(findCategory?.discountRate).isEqualTo(20)
+    }
+
     @DisplayName("결제 카테고리 제거")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
@@ -81,6 +106,9 @@ class PaymentResourceTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
+
+        val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
+        assertThat(findCategory).isNull()
     }
 
     private fun insertCategories() {
