@@ -588,7 +588,6 @@ class PaymentServiceTest : BaseServiceTest() {
         //when
         val result = paymentService.getAllCategories(
             expired = false,
-            deleted = false,
             pageable = Pageable.ofSize(3)
         )
 
@@ -601,7 +600,29 @@ class PaymentServiceTest : BaseServiceTest() {
             .containsExactly(1000L, 2000L, 3000L)
     }
 
-    @DisplayName("결제 카테고리 상세 조회")
+    @DisplayName("결제 카테고리 수정")
+    @Test
+    fun updateCategory() {
+        //given
+        val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
+        val after20Days = Instant.now().plus(20, ChronoUnit.DAYS)
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
+        clear()
+
+        //when
+        paymentService.updateCategory(category.id, 20, 2000, 20, after20Days, after20Days)
+        clear()
+
+        //then
+        val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
+        assertThat(findCategory?.amounts).isEqualTo(20)
+        assertThat(findCategory?.price).isEqualTo(2000)
+        assertThat(findCategory?.discountRate).isEqualTo(20)
+        assertThat(findCategory?.discountExpiredDate).isEqualTo(after20Days)
+        assertThat(findCategory?.expiredDate).isEqualTo(after20Days)
+    }
+
+    @DisplayName("결제 카테고리 제거")
     @Test
     fun removeCategory() {
         //given
@@ -617,8 +638,7 @@ class PaymentServiceTest : BaseServiceTest() {
 
         //then
         val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
-
-        assertThat(findCategory?.deleted).isEqualTo(true)
+        assertThat(findCategory).isNull()
     }
 
     private fun insertCategories() {
