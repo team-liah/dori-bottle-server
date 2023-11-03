@@ -2,6 +2,7 @@ package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.service.user.dto.AdminDto
+import com.liah.doribottle.service.user.dto.AdminSimpleDto
 import jakarta.persistence.*
 
 @Entity
@@ -47,4 +48,5 @@ class Admin(
     }
 
     fun toDto() = AdminDto(id, loginId, loginPassword, name, role, deleted, createdDate, lastModifiedDate)
+    fun toSimpleDto() = AdminSimpleDto(id, loginId, name, role)
 }
