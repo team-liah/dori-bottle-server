@@ -4,7 +4,7 @@ import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.post.PostType
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.post.PostService
-import com.liah.doribottle.web.admin.post.vm.PostDetailSearchResponse
+import com.liah.doribottle.service.post.dto.PostDto
 import com.liah.doribottle.web.admin.post.vm.PostRegisterOrUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -40,22 +40,20 @@ class PostResource(
         @RequestParam(value = "type", required = false) type: PostType?,
         @RequestParam(value = "keyword", required = false) keyword: String?,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): CustomPage<PostDetailSearchResponse> {
+    ): CustomPage<PostDto> {
         val result = postService.getAll(
             authorId = authorId,
             type = type,
             keyword = keyword,
             pageable = pageable
-        ).map { it.toDetailSearchResponse() }
+        )
 
         return CustomPage.of(result)
     }
 
     @Operation(summary = "게시글 조회")
     @GetMapping("/{id}")
-    fun get(
-        @PathVariable id: UUID
-    ) = postService.get(id).toDetailSearchResponse()
+    fun get(@PathVariable id: UUID) = postService.get(id)
 
     @Operation(summary = "게시글 수정")
     @PutMapping("/{id}")
