@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   datasource:
     url: jdbc:mariadb://doribottle-database.c92a4l3bvio6.ap-northeast-2.rds.amazonaws.com/doribottle_dev
     username: ${DB_USERNAME}
@@ -45,6 +49,8 @@ app:
   aws:
     sqs:
       queueName: point-save-queue.fifo
+    s3:
+      bucket: doribottle-asset
   schedule:
     enabled: true
 
