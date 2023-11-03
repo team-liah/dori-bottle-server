@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   datasource:
     url: jdbc:h2:tcp://localhost/~/doribottle-h2-local
     username: sa
@@ -20,7 +24,6 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
-
 
 logging.level:
   org.hibernate.SQL: debug
@@ -46,6 +49,8 @@ app:
   aws:
     sqs:
       queueName: point-save-queue.fifo
+    s3:
+      bucket: doribottle-asset
   schedule:
     enabled: true
 
