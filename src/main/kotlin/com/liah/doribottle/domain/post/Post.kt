@@ -33,7 +33,7 @@ class Post(
         protected set
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "longtext")
     var content: String = content
         protected set
 
