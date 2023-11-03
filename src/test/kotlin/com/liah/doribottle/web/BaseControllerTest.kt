@@ -25,12 +25,11 @@ class BaseControllerTest {
     protected lateinit var mockMvc: MockMvc
 
     @Autowired
+    protected lateinit var context: WebApplicationContext
+    @Autowired
     private lateinit var tokenProvider: TokenProvider
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
-
-    @Autowired
-    private lateinit var context: WebApplicationContext
 
     @BeforeEach
     internal fun setUp() {

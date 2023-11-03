@@ -22,5 +22,5 @@ class BlockedCause(
     @Column
     val description: String? = null
 ) : PrimaryKeyEntity() {
-    fun toDto() = BlockedCauseDto(id, user.id, type, description)
+    fun toDto() = BlockedCauseDto(id, user.id, type, description, createdDate, lastModifiedDate)
 }

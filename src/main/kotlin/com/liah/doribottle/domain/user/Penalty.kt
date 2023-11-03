@@ -22,5 +22,5 @@ class Penalty(
     @Column
     val cause: String?
 ) : PrimaryKeyEntity() {
-    fun toDto() = PenaltyDto(id, user.id, type, cause)
+    fun toDto() = PenaltyDto(id, user.id, type, cause, createdDate, lastModifiedDate)
 }

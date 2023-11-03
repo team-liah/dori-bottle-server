@@ -16,7 +16,8 @@ data class PaymentDto(
     val status: PaymentStatus,
     val result: PaymentResultDto?,
     val point: PointDto?,
-    val createdDate: Instant
+    val createdDate: Instant,
+    val lastModifiedDate: Instant
 ) {
     fun toSearchResponse() = PaymentSearchResponse(id, userId, price, type, card.toResponse(), status, point?.saveAmounts, point?.remainAmounts, createdDate)
 }

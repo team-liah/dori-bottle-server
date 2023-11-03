@@ -48,3 +48,14 @@ app:
       queueName: dummyQueue
   schedule:
     enabled: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

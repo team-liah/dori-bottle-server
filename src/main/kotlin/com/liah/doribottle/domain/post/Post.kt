@@ -33,7 +33,7 @@ class Post(
         protected set
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "longtext")
     var content: String = content
         protected set
 
@@ -47,5 +47,5 @@ class Post(
         this.content = content
     }
 
-    fun toDto() = PostDto(author.toDto(), type, title, content)
+    fun toDto() = PostDto(id, author.toDto(), type, title, content, createdDate, lastModifiedDate)
 }
