@@ -1,6 +1,6 @@
 package com.liah.doribottle.domain.user
 
-import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.service.account.dto.AdminDto
 import jakarta.persistence.*
 
@@ -14,7 +14,7 @@ class Admin(
     loginPassword: String,
     name: String,
     role: Role
-) : PrimaryKeyEntity() {
+) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
         protected set
@@ -29,9 +29,22 @@ class Admin(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: Role =
-        if (role != Role.GUEST && role != Role.USER) role
-        else throw IllegalArgumentException("Non Admin role is not allowed.")
+    var role: Role = role.validateAdmin()
+        set(value) {
+            field = value.validateAdmin()
+        }
+
+    fun update(
+        loginId: String,
+        loginPassword: String,
+        name: String,
+        role: Role
+    ) {
+        this.loginId = loginId
+        this.loginPassword = loginPassword
+        this.name = name
+        this.role = role
+    }
 
     fun toDto() = AdminDto(id, loginId, name, role)
 }
