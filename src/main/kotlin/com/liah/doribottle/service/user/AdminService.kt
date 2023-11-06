@@ -28,7 +28,10 @@ class AdminService(
         loginId: String,
         loginPassword: String,
         name: String,
-        role: Role
+        role: Role,
+        email: String?,
+        phoneNumber: String?,
+        description: String?
     ): UUID {
         verifyDuplicatedLoginId(loginId)
 
@@ -38,7 +41,10 @@ class AdminService(
                 loginId = loginId,
                 loginPassword = encryptedPassword,
                 name = name,
-                role = role
+                role = role,
+                email = email,
+                phoneNumber = phoneNumber,
+                description = description
             )
         )
 
@@ -82,18 +88,36 @@ class AdminService(
     fun update(
         id: UUID,
         loginId: String,
-        loginPassword: String,
         name: String,
-        role: Role
+        role: Role,
+        email: String?,
+        phoneNumber: String?,
+        description: String?
     ) {
         val admin = adminRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         admin.update(
             loginId = loginId,
-            loginPassword = loginPassword,
             name = name,
-            role = role
+            role = role,
+            email = email,
+            phoneNumber = phoneNumber,
+            description = description
+        )
+    }
+
+    @Transactional
+    fun updatePassword(
+        id: UUID,
+        loginPassword: String
+    ) {
+        val admin = adminRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        admin.updatePassword(
+            loginPassword = encryptedPassword
         )
     }
 
@@ -116,12 +140,12 @@ class AdminService(
     ) {
         val admin = adminRepository.findByLoginId(adminLoginId)
         if (admin == null) {
-            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN)
+            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN, null, null, null)
         }
 
         val machine = adminRepository.findByLoginId(machineLoginId)
         if (machine == null) {
-            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN)
+            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN, null, null, null)
         }
     }
 }

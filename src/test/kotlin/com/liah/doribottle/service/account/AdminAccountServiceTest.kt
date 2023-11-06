@@ -28,7 +28,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
+        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN, null, null, null))
         clear()
 
         //when
@@ -48,7 +48,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
+        adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN, null, null, null))
         clear()
 
         //when, then
@@ -64,7 +64,7 @@ class AdminAccountServiceTest : BaseServiceTest() {
         //given
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN))
+        val saveAdmin = adminRepository.save(Admin(ADMIN_LOGIN_ID, encryptedPassword, "Tester", Role.ADMIN, null, null, null))
         val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveAdmin.id.toString()))
         clear()
 

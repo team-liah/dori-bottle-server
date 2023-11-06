@@ -27,7 +27,7 @@ class AdminServiceTest : BaseServiceTest() {
     @Test
     fun register() {
         //given, when
-        val adminId = adminService.register(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN)
+        val adminId = adminService.register(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null)
         clear()
 
         //then
@@ -43,17 +43,17 @@ class AdminServiceTest : BaseServiceTest() {
     @Test
     fun registerException() {
         //given
-        adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN))
+        adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
         //when, then
         val exception1 = assertThrows<BusinessException> {
-            adminService.register(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN)
+            adminService.register(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null)
         }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.USER_ALREADY_REGISTERED)
 
         val exception2 = assertThrows<IllegalArgumentException> {
-            adminService.register("user", "123456", "Tester", Role.USER)
+            adminService.register("user", "123456", "Tester", Role.USER, null, null, null)
         }
         assertThat(exception2.message).isEqualTo("Non Admin role is not allowed.")
     }
@@ -62,7 +62,7 @@ class AdminServiceTest : BaseServiceTest() {
     @Test
     fun get() {
         //given
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
         //when
@@ -103,26 +103,25 @@ class AdminServiceTest : BaseServiceTest() {
     }
 
     private fun insertAdmins() {
-        adminRepository.save(Admin("admin1", "123456", "Tester 1", Role.ADMIN))
-        adminRepository.save(Admin("admin2", "123456", "Tester 2", Role.MACHINE_ADMIN))
-        adminRepository.save(Admin("admin3", "123456", "Tester 3", Role.INSTITUTION))
-        adminRepository.save(Admin("admin4", "123456", "Tester 4", Role.MACHINE_ADMIN))
-        adminRepository.save(Admin("admin5", "123456", "Tester 5", Role.ADMIN))
-        adminRepository.save(Admin("admin6", "123456", "Tester 6", Role.INSTITUTION))
+        adminRepository.save(Admin("admin1", "123456", "Tester 1", Role.ADMIN, null, null, null))
+        adminRepository.save(Admin("admin2", "123456", "Tester 2", Role.MACHINE_ADMIN, null, null, null))
+        adminRepository.save(Admin("admin3", "123456", "Tester 3", Role.INSTITUTION, null, null, null))
+        adminRepository.save(Admin("admin4", "123456", "Tester 4", Role.MACHINE_ADMIN, null, null, null))
+        adminRepository.save(Admin("admin5", "123456", "Tester 5", Role.ADMIN, null, null, null))
+        adminRepository.save(Admin("admin6", "123456", "Tester 6", Role.INSTITUTION, null, null, null))
     }
 
     @DisplayName("관리자 수정")
     @Test
     fun update() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
-        adminService.update(admin.id, "updated", "updated", "updated", Role.MACHINE_ADMIN)
+        adminService.update(admin.id, "updated", "updated", Role.MACHINE_ADMIN, null, null, null)
         clear()
 
         val findAdmin = adminRepository.findByIdOrNull(admin.id)
         assertThat(findAdmin?.loginId).isEqualTo("updated")
-        assertThat(findAdmin?.loginPassword).isEqualTo("updated")
         assertThat(findAdmin?.name).isEqualTo("updated")
         assertThat(findAdmin?.role).isEqualTo(Role.MACHINE_ADMIN)
     }
@@ -130,19 +129,32 @@ class AdminServiceTest : BaseServiceTest() {
     @DisplayName("관리자 수정 예외")
     @Test
     fun updateException() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
         val exception = assertThrows<IllegalArgumentException> {
-            adminService.update(admin.id, "updated", "updated", "updated", Role.USER)
+            adminService.update(admin.id, "updated", "updated", Role.USER, null, null, null)
         }
         assertThat(exception.message).isEqualTo("Non Admin role is not allowed.")
+    }
+
+    @DisplayName("관리자 비밀번호 수정")
+    @Test
+    fun updatePassword() {
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
+        clear()
+
+        adminService.updatePassword(admin.id, "updated")
+        clear()
+
+        val findAdmin = adminRepository.findByIdOrNull(admin.id)
+        assertThat(passwordEncoder.matches("updated", findAdmin?.loginPassword)).isTrue
     }
 
     @DisplayName("관리자 삭제")
     @Test
     fun delete() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
         adminService.delete(admin.id)
