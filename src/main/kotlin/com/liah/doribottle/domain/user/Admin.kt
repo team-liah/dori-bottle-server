@@ -66,6 +66,12 @@ class Admin(
         this.description = description
     }
 
+    fun updatePassword(
+        loginPassword: String
+    ) {
+        this.loginPassword = loginPassword
+    }
+
     fun toDto() = AdminDto(id, loginId, name, role, email, phoneNumber, description, deleted, createdDate, lastModifiedDate)
     fun toSimpleDto() = AdminSimpleDto(id, loginId, name, role)
 }

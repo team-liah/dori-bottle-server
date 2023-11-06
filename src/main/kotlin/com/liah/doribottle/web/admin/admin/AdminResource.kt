@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.admin
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.user.AdminService
 import com.liah.doribottle.service.user.dto.AdminDto
+import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminSearchRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminUpdateRequest
@@ -75,6 +76,18 @@ class AdminResource(
             email = request.email,
             phoneNumber = request.phoneNumber,
             description = request.description
+        )
+    }
+
+    @Operation(summary = "관리자 비밀번호 변경")
+    @PutMapping("/{id}/password")
+    fun updatePassword(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: AdminPasswordUpdateRequest
+    ) {
+        adminService.updatePassword(
+            id = id,
+            loginPassword = request.loginPassword!!
         )
     }
 

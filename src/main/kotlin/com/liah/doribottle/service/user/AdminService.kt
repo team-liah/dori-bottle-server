@@ -108,6 +108,20 @@ class AdminService(
     }
 
     @Transactional
+    fun updatePassword(
+        id: UUID,
+        loginPassword: String
+    ) {
+        val admin = adminRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        admin.updatePassword(
+            loginPassword = encryptedPassword
+        )
+    }
+
+    @Transactional
     fun delete(
         id: UUID
     ) {
