@@ -5,6 +5,5 @@ import com.liah.doribottle.domain.user.Role
 data class AdminSearchRequest(
     val loginId: String?,
     val name: String?,
-    val role: Role?,
-    val deleted: Boolean?
+    val role: Role?
 )

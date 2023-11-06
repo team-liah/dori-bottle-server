@@ -150,5 +150,6 @@ class AdminServiceTest : BaseServiceTest() {
 
         val findAdmin = adminRepository.findByIdOrNull(admin.id)
         assertThat(findAdmin?.deleted).isTrue()
+        assertThat(findAdmin?.loginId).startsWith("Deleted")
     }
 }
