@@ -4,6 +4,7 @@ import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.service.user.dto.AdminSimpleDto
 import jakarta.persistence.*
+import java.util.*
 
 @Entity
 @Table(
@@ -34,6 +35,11 @@ class Admin(
         set(value) {
             field = value.validateAdmin()
         }
+
+    override fun delete() {
+        this.loginId = "Deleted ${UUID.randomUUID()}"
+        super.delete()
+    }
 
     fun update(
         loginId: String,
