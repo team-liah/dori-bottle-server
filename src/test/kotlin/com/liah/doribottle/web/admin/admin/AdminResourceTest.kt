@@ -6,6 +6,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -122,6 +123,22 @@ class AdminResourceTest : BaseControllerTest() {
 
         mockMvc.perform(
             put("$endPoint/${admin.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("관리자 비밀번호 변경")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun updatePassword() {
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
+        val body = AdminPasswordUpdateRequest("updated")
+
+        mockMvc.perform(
+            put("$endPoint/${admin.id}/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
