@@ -62,7 +62,7 @@ class AdminResource(
         return CustomPage.of(result)
     }
 
-    @Operation(summary = "관리자 수정")
+    @Operation(summary = "관리자 정보 수정")
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
