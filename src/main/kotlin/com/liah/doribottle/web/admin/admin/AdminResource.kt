@@ -1,10 +1,12 @@
 package com.liah.doribottle.web.admin.admin
 
 import com.liah.doribottle.common.pageable.CustomPage
-import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.service.user.AdminService
-import com.liah.doribottle.web.admin.admin.vm.AdminRegisterOrUpdateRequest
+import com.liah.doribottle.service.user.dto.AdminDto
+import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
+import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminSearchRequest
+import com.liah.doribottle.web.admin.admin.vm.AdminUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -22,13 +24,16 @@ class AdminResource(
     @Operation(summary = "관리자 등록")
     @PostMapping
     fun register(
-        @Valid @RequestBody request: AdminRegisterOrUpdateRequest
+        @Valid @RequestBody request: AdminRegisterRequest
     ): UUID {
         return adminService.register(
             loginId = request.loginId!!,
             loginPassword = request.loginPassword!!,
             name = request.name!!,
-            role = request.role!!
+            role = request.role!!,
+            email = request.email,
+            phoneNumber = request.phoneNumber,
+            description = request.description
         )
     }
 
@@ -61,14 +66,28 @@ class AdminResource(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: AdminRegisterOrUpdateRequest
+        @Valid @RequestBody request: AdminUpdateRequest
     ) {
         adminService.update(
             id = id,
             loginId = request.loginId!!,
-            loginPassword = request.loginPassword!!,
             name = request.name!!,
-            role = request.role!!
+            role = request.role!!,
+            email = request.email,
+            phoneNumber = request.phoneNumber,
+            description = request.description
+        )
+    }
+
+    @Operation(summary = "관리자 비밀번호 변경")
+    @PutMapping("/{id}/password")
+    fun updatePassword(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: AdminPasswordUpdateRequest
+    ) {
+        adminService.updatePassword(
+            id = id,
+            loginPassword = request.loginPassword!!
         )
     }
 
