@@ -15,7 +15,10 @@ class Admin(
     loginId: String,
     loginPassword: String,
     name: String,
-    role: Role
+    role: Role,
+    email: String?,
+    phoneNumber: String?,
+    description: String?
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -36,6 +39,18 @@ class Admin(
             field = value.validateAdmin()
         }
 
+    @Column
+    var email: String? = email
+        protected set
+
+    @Column
+    var phoneNumber: String? = phoneNumber
+        protected set
+
+    @Column
+    var description: String? = description
+        protected set
+
     override fun delete() {
         this.loginId = "Deleted ${UUID.randomUUID()}"
         super.delete()
@@ -43,16 +58,26 @@ class Admin(
 
     fun update(
         loginId: String,
-        loginPassword: String,
         name: String,
-        role: Role
+        role: Role,
+        email: String?,
+        phoneNumber: String?,
+        description: String?
     ) {
         this.loginId = loginId
-        this.loginPassword = loginPassword
         this.name = name
         this.role = role
+        this.email = email
+        this.phoneNumber = phoneNumber
+        this.description = description
     }
 
-    fun toDto() = AdminDto(id, loginId, loginPassword, name, role, deleted, createdDate, lastModifiedDate)
+    fun updatePassword(
+        loginPassword: String
+    ) {
+        this.loginPassword = loginPassword
+    }
+
+    fun toDto() = AdminDto(id, loginId, name, role, email, phoneNumber, description, deleted, createdDate, lastModifiedDate)
     fun toSimpleDto() = AdminSimpleDto(id, loginId, name, role)
 }

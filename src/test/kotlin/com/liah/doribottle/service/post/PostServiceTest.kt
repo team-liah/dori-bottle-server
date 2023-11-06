@@ -27,7 +27,7 @@ class PostServiceTest : BaseServiceTest() {
     @Test
     fun register() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
         clear()
 
         //when
@@ -68,7 +68,7 @@ class PostServiceTest : BaseServiceTest() {
     }
 
     private fun insertPosts() {
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
         postRepository.save(Post(admin, NOTICE, "공지글 1", "공지글 1 내용"))
         postRepository.save(Post(admin, FAQ, "FAQ 1", "FAQ 1 내용"))
         postRepository.save(Post(admin, NOTICE, "공지글 2", "공지글 2 내용"))
@@ -81,7 +81,7 @@ class PostServiceTest : BaseServiceTest() {
     @Test
     fun get() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 
@@ -99,7 +99,7 @@ class PostServiceTest : BaseServiceTest() {
     @Test
     fun update() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 
@@ -119,7 +119,7 @@ class PostServiceTest : BaseServiceTest() {
     @Test
     fun remove() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         clear()
 

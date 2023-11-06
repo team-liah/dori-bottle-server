@@ -7,9 +7,11 @@ import java.util.*
 data class AdminDto(
     val id: UUID,
     val loginId: String,
-    val loginPassword: String,
     val name: String,
     val role: Role,
+    val email: String?,
+    val phoneNumber: String?,
+    val description: String?,
     val deleted: Boolean,
     val createdDate: Instant,
     val lastModifiedDate: Instant
