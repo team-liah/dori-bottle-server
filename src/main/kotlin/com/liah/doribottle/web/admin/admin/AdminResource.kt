@@ -55,14 +55,14 @@ class AdminResource(
             loginId = request.loginId,
             name = request.name,
             role = request.role,
-            deleted = request.deleted ?: false,
+            deleted = false,
             pageable = pageable
         )
 
         return CustomPage.of(result)
     }
 
-    @Operation(summary = "관리자 수정")
+    @Operation(summary = "관리자 정보 수정")
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
