@@ -138,6 +138,19 @@ class AdminServiceTest : BaseServiceTest() {
         assertThat(exception.message).isEqualTo("Non Admin role is not allowed.")
     }
 
+    @DisplayName("관리자 비밀번호 수정")
+    @Test
+    fun updatePassword() {
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
+        clear()
+
+        adminService.updatePassword(admin.id, "updated")
+        clear()
+
+        val findAdmin = adminRepository.findByIdOrNull(admin.id)
+        assertThat(passwordEncoder.matches("updated", findAdmin?.loginPassword)).isTrue
+    }
+
     @DisplayName("관리자 삭제")
     @Test
     fun delete() {
