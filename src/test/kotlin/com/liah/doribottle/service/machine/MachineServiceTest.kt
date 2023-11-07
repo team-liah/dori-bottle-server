@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineState.MALFUNCTION
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
@@ -160,7 +161,7 @@ class MachineServiceTest : BaseServiceTest() {
 
         //when
         val newAddress = AddressDto("00000", "마장로", null)
-        machineService.update(machine.id, "new name", newAddress, 200, 10)
+        machineService.update(machine.id, "new name", newAddress, 200, 10, MALFUNCTION)
         clear()
 
         //then
@@ -173,23 +174,6 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(findMachine?.address?.address2).isNull()
         assertThat(findMachine?.capacity).isEqualTo(200)
         assertThat(findMachine?.cupAmounts).isEqualTo(10)
-        assertThat(findMachine?.state).isEqualTo(NORMAL)
-    }
-
-    @DisplayName("자판기 컵 개수 수정")
-    @Test
-    fun updateCupAmounts() {
-        //given
-        val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
-        clear()
-
-        //when
-        machineService.updateCupAmounts(machine.id, 100)
-        clear()
-
-        //then
-        val findMachine = machineRepository.findByIdOrNull(machine.id)
-        assertThat(findMachine?.cupAmounts).isEqualTo(100)
+        assertThat(findMachine?.state).isEqualTo(MALFUNCTION)
     }
 }

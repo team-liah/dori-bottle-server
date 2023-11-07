@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.user.Role
@@ -11,7 +12,7 @@ import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachinePatchRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -144,7 +145,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun update() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 50)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 50, NORMAL)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -160,7 +161,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun updateExceptionTc2() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, -1)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, -1, NORMAL)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -172,15 +173,15 @@ class MachineResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("code", `is`(ErrorCode.INVALID_INPUT_VALUE.code)))
     }
 
-    @DisplayName("자판기 컵 개수 수정")
+    @DisplayName("자판기 정보 패치")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
-    fun updateCupAmounts() {
+    fun patch() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineCupAmountsUpdateRequest(100)
+        val body = MachinePatchRequest("updated",  null, null, 10, null)
 
         mockMvc.perform(
-            put("$endPoint/${machine.id}/cup-amounts")
+            patch("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
