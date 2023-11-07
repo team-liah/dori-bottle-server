@@ -98,16 +98,6 @@ class MachineService(
         )
     }
 
-    fun updateCupAmounts(
-        id: UUID,
-        cupAmounts: Int
-    ) {
-        val machine = machineRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
-
-        machine.updateCupAmounts(cupAmounts)
-    }
-
     // TODO: Remove
     fun createDummyMachine(
         no: String,

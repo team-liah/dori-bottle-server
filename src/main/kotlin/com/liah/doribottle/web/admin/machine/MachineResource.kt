@@ -3,7 +3,10 @@ package com.liah.doribottle.web.admin.machine
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.service.machine.dto.MachineDto
-import com.liah.doribottle.web.admin.machine.vm.*
+import com.liah.doribottle.web.admin.machine.vm.MachinePatchUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineSearchRequest
+import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -86,18 +89,6 @@ class MachineResource(
             address = request.address ?: machine.address,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts
-        )
-    }
-
-    @Operation(summary = "기기 컵 개수 수정")
-    @PutMapping("/{id}/cup-amounts")
-    fun updateCupAmounts(
-        @PathVariable id: UUID,
-        @Valid @RequestBody request: MachineCupAmountsUpdateRequest
-    ) {
-        machineService.updateCupAmounts(
-            id = id,
-            cupAmounts = request.cupAmounts!!
         )
     }
 }
