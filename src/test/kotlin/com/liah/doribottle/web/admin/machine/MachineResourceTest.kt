@@ -11,7 +11,6 @@ import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
 import com.liah.doribottle.web.admin.machine.vm.MachinePatchUpdateRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
@@ -182,22 +181,6 @@ class MachineResourceTest : BaseControllerTest() {
 
         mockMvc.perform(
             patch("$endPoint/${machine.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
-        )
-            .andExpect(status().isOk)
-    }
-
-    @DisplayName("자판기 컵 개수 수정")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun updateCupAmounts() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineCupAmountsUpdateRequest(100)
-
-        mockMvc.perform(
-            put("$endPoint/${machine.id}/cup-amounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
