@@ -27,7 +27,7 @@ class MachineService(
         no: String,
         name: String,
         type: MachineType,
-        address: AddressDto?,
+        address: AddressDto,
         capacity: Int
     ): UUID {
         verifyDuplicatedNo(no)
@@ -37,7 +37,7 @@ class MachineService(
                 no = no,
                 name = name,
                 type = type,
-                address = address?.toEmbeddable(),
+                address = address.toEmbeddable(),
                 capacity = capacity
             )
         )
@@ -83,7 +83,7 @@ class MachineService(
     fun update(
         id: UUID,
         name: String,
-        address: AddressDto?,
+        address: AddressDto,
         capacity: Int,
         cupAmounts: Int
     ) {
@@ -92,10 +92,10 @@ class MachineService(
 
         machine.update(
             name = name,
-            address = address?.toEmbeddable(),
-            capacity = capacity
+            address = address.toEmbeddable(),
+            capacity = capacity,
+            cupAmounts = cupAmounts
         )
-        machine.updateCupAmounts(cupAmounts)
     }
 
     fun updateCupAmounts(

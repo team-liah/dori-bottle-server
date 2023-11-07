@@ -12,6 +12,7 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.machine.vm.MachineCupAmountsUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachinePatchUpdateRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -170,6 +171,22 @@ class MachineResourceTest : BaseControllerTest() {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.INVALID_INPUT_VALUE.code)))
+    }
+
+    @DisplayName("자판기 정보 패치")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun patch() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachinePatchUpdateRequest("updated",  null, null, 10)
+
+        mockMvc.perform(
+            patch("$endPoint/${machine.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
     }
 
     @DisplayName("자판기 컵 개수 수정")

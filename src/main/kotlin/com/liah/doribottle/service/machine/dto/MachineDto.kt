@@ -11,7 +11,7 @@ data class MachineDto(
     val no: String,
     val name: String,
     val type: MachineType,
-    val address: AddressDto?,
+    val address: AddressDto,
     val capacity: Int,
     val cupAmounts: Int,
     val state: MachineState,
