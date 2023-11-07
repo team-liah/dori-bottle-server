@@ -27,7 +27,7 @@ class MachineService(
         no: String,
         name: String,
         type: MachineType,
-        address: AddressDto?,
+        address: AddressDto,
         capacity: Int
     ): UUID {
         verifyDuplicatedNo(no)
@@ -37,7 +37,7 @@ class MachineService(
                 no = no,
                 name = name,
                 type = type,
-                address = address?.toEmbeddable(),
+                address = address.toEmbeddable(),
                 capacity = capacity
             )
         )
@@ -83,29 +83,21 @@ class MachineService(
     fun update(
         id: UUID,
         name: String,
-        address: AddressDto?,
+        address: AddressDto,
         capacity: Int,
-        cupAmounts: Int
+        cupAmounts: Int,
+        state: MachineState
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         machine.update(
             name = name,
-            address = address?.toEmbeddable(),
-            capacity = capacity
+            address = address.toEmbeddable(),
+            capacity = capacity,
+            cupAmounts = cupAmounts,
+            state = state
         )
-        machine.updateCupAmounts(cupAmounts)
-    }
-
-    fun updateCupAmounts(
-        id: UUID,
-        cupAmounts: Int
-    ) {
-        val machine = machineRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
-
-        machine.updateCupAmounts(cupAmounts)
     }
 
     // TODO: Remove
