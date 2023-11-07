@@ -52,11 +52,13 @@ class Machine(
         name: String,
         address: Address,
         capacity: Int,
-        cupAmounts: Int
+        cupAmounts: Int,
+        state: MachineState
     ) {
         this.name = name
         this.address = address
         this.capacity = capacity
+        this.state = state
         updateCupAmounts(cupAmounts)
     }
 

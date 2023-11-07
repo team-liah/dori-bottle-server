@@ -85,7 +85,8 @@ class MachineService(
         name: String,
         address: AddressDto,
         capacity: Int,
-        cupAmounts: Int
+        cupAmounts: Int,
+        state: MachineState
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
@@ -94,7 +95,8 @@ class MachineService(
             name = name,
             address = address.toEmbeddable(),
             capacity = capacity,
-            cupAmounts = cupAmounts
+            cupAmounts = cupAmounts,
+            state = state
         )
     }
 

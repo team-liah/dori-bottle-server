@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.user.Role
@@ -11,7 +12,7 @@ import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.web.BaseControllerTest
-import com.liah.doribottle.web.admin.machine.vm.MachinePatchUpdateRequest
+import com.liah.doribottle.web.admin.machine.vm.MachinePatchRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -144,7 +145,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun update() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 50)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, 50, NORMAL)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -160,7 +161,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun updateExceptionTc2() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, -1)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), 100, -1, NORMAL)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -177,7 +178,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun patch() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
-        val body = MachinePatchUpdateRequest("updated",  null, null, 10)
+        val body = MachinePatchRequest("updated",  null, null, 10, null)
 
         mockMvc.perform(
             patch("$endPoint/${machine.id}")
