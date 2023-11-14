@@ -1,7 +1,7 @@
 package com.liah.doribottle.web.admin.rental
 
 import com.liah.doribottle.service.rental.RentalService
-import com.liah.doribottle.web.admin.rental.vm.RentalCupUpdateRequest
+import com.liah.doribottle.web.admin.rental.vm.RentalCupMapRequest
 import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -14,10 +14,10 @@ class RentalResource(
     private val rentalService: RentalService
 ) {
     @Operation(summary = "대여 정보 - 컵 매핑")
-    @PutMapping("/{id}/cup")
-    fun updateRentalCup(
+    @PostMapping("/{id}/map")
+    fun mapRentalCup(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: RentalCupUpdateRequest
+        @Valid @RequestBody request: RentalCupMapRequest
     ) {
         rentalService.updateRentalCup(
             id = id,
