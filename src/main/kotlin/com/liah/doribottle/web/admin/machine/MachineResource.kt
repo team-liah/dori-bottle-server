@@ -55,6 +55,7 @@ class MachineResource(
                 type = request.type,
                 state = request.state,
                 addressKeyword = request.addressKeyword,
+                deleted = false,
                 pageable = pageable
             )
 
@@ -92,5 +93,30 @@ class MachineResource(
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state
         )
+    }
+
+    @Operation(summary = "기기 패치 - POST")
+    @PostMapping("/{id}/patch")
+    fun patchPost(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: MachinePatchRequest
+    ) {
+        val machine = machineService.get(id)
+        machineService.update(
+            id = id,
+            name = request.name ?: machine.name,
+            address = request.address ?: machine.address,
+            capacity = request.capacity ?: machine.capacity,
+            cupAmounts = request.cupAmounts ?: machine.cupAmounts,
+            state = request.state ?: machine.state
+        )
+    }
+
+    @Operation(summary = "기기 삭제")
+    @DeleteMapping("/{id}")
+    fun delete(
+        @PathVariable id: UUID
+    ) {
+        machineService.delete(id)
     }
 }

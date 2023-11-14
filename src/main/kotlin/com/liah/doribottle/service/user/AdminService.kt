@@ -23,7 +23,6 @@ class AdminService(
     private val adminQueryRepository: AdminQueryRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    @Transactional
     fun register(
         loginId: String,
         loginPassword: String,
@@ -84,7 +83,6 @@ class AdminService(
         ).map { it.toDto() }
     }
 
-    @Transactional
     fun update(
         id: UUID,
         loginId: String,
@@ -107,7 +105,6 @@ class AdminService(
         )
     }
 
-    @Transactional
     fun updatePassword(
         id: UUID,
         loginPassword: String
@@ -121,7 +118,6 @@ class AdminService(
         )
     }
 
-    @Transactional
     fun delete(
         id: UUID
     ) {
