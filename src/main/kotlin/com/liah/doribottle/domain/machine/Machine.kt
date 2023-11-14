@@ -4,10 +4,12 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.service.machine.dto.MachineDto
 import jakarta.persistence.*
 import org.slf4j.LoggerFactory
+import java.util.*
 
 @Entity
 @Table(
@@ -20,9 +22,9 @@ class Machine(
     type: MachineType,
     address: Address,
     capacity: Int
-) : PrimaryKeyEntity() {
+) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
-    val no: String = no
+    var no: String = no
 
     @Column(nullable = false)
     var name: String = name
@@ -47,6 +49,11 @@ class Machine(
     @Column(nullable = false)
     var state: MachineState = NORMAL
         protected set
+
+    override fun delete() {
+        this.no = "Deleted ${UUID.randomUUID()}"
+        super.delete()
+    }
 
     fun update(
         name: String,

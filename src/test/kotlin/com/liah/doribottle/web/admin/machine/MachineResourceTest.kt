@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
+import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
@@ -185,6 +186,20 @@ class MachineResourceTest : BaseControllerTest() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("기기 삭제")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun delete() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+
+        mockMvc.perform(
+            delete("$endPoint/${machine.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
     }

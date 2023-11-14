@@ -55,6 +55,7 @@ class MachineResource(
                 type = request.type,
                 state = request.state,
                 addressKeyword = request.addressKeyword,
+                deleted = false,
                 pageable = pageable
             )
 
@@ -92,5 +93,13 @@ class MachineResource(
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state
         )
+    }
+
+    @Operation(summary = "기기 삭제")
+    @DeleteMapping("/{id}")
+    fun delete(
+        @PathVariable id: UUID
+    ) {
+        machineService.delete(id)
     }
 }
