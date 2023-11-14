@@ -68,6 +68,7 @@ class MachineService(
         type: MachineType? = null,
         state: MachineState? = null,
         addressKeyword: String? = null,
+        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<MachineDto> {
         return machineQueryRepository.getAll(
@@ -76,6 +77,7 @@ class MachineService(
             type = type,
             state = state,
             addressKeyword = addressKeyword,
+            deleted = deleted,
             pageable = pageable
         ).map { it.toDto() }
     }
@@ -98,6 +100,15 @@ class MachineService(
             cupAmounts = cupAmounts,
             state = state
         )
+    }
+
+    fun delete(
+        id: UUID
+    ) {
+        val machine = machineRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+
+        machine.delete()
     }
 
     // TODO: Remove
