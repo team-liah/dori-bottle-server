@@ -190,6 +190,22 @@ class MachineResourceTest : BaseControllerTest() {
             .andExpect(status().isOk)
     }
 
+    @DisplayName("자판기 정보 패치 POST")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun patchPost() {
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), 100))
+        val body = MachinePatchRequest("updated",  null, null, 10, null)
+
+        mockMvc.perform(
+            post("$endPoint/${machine.id}/patch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("기기 삭제")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
