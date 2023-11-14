@@ -20,21 +20,23 @@ class MachineQueryRepository(
         type: MachineType? = null,
         state: MachineState? = null,
         addressKeyword: String? = null,
+        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<Machine> {
         return queryFactory
             .selectFrom(machine)
             .where(
-                noEq(no),
+                noContains(no),
                 nameContains(name),
                 typeEq(type),
                 stateEq(state),
-                addressKeywordContains(addressKeyword)
+                addressKeywordContains(addressKeyword),
+                deletedEq(deleted)
             )
             .toPage(pageable)
     }
 
-    private fun noEq(no: String?) = no?.let { machine.no.eq(it) }
+    private fun noContains(no: String?) = no?.let { machine.no.contains(it) }
     private fun nameContains(name: String?) = name?.let { machine.name.contains(it) }
     private fun typeEq(type: MachineType?) = type?.let { machine.type.eq(it) }
     private fun stateEq(state: MachineState?) = state?.let { machine.state.eq(it) }
@@ -43,4 +45,5 @@ class MachineQueryRepository(
             .or(machine.address.address1.contains(it))
             .or(machine.address.address2.contains(it))
     }
+    private fun deletedEq(deleted: Boolean?) = deleted?.let { machine.deleted.eq(it) }
 }
