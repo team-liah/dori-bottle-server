@@ -25,7 +25,7 @@ abstract class PrimaryKeyEntity : Persistable<UUID> {
         protected set
 
     @LastModifiedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     var lastModifiedDate: Instant = Instant.now()
         protected set
 
