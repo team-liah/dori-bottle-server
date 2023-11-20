@@ -47,6 +47,14 @@ class PaymentResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "결제 카테고리 조회")
+    @GetMapping("/category/{categoryId}")
+    fun getCategory(
+        @PathVariable categoryId: UUID
+    ): PaymentCategorySearchResponse {
+        return paymentService.getCategory(categoryId).toAdminResponse()
+    }
+
     @Operation(summary = "결제 카테고리 수정")
     @PutMapping("/category/{categoryId}")
     fun updateCategory(
