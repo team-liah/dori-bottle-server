@@ -38,6 +38,16 @@ class CupService(
     }
 
     @Transactional(readOnly = true)
+    fun get(
+        id: UUID
+    ): CupDto {
+        val cup = cupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+
+        return cup.toDto()
+    }
+
+    @Transactional(readOnly = true)
     fun getByRfid(
         rfid: String
     ): CupDto {
@@ -50,6 +60,7 @@ class CupService(
     @Transactional(readOnly = true)
     fun getAll(
         status: CupStatus? = null,
+        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<CupDto> {
         return cupQueryRepository.getAll(
@@ -58,36 +69,27 @@ class CupService(
         ).map { it.toDto() }
     }
 
+    fun update(
+        id: UUID,
+        rfid: String,
+        status: CupStatus
+    ) {
+        val cup = cupRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+
+        cup.update(
+            rfid = rfid,
+            status = status
+        )
+    }
+
     fun remove(
         id: UUID
     ) {
         val cup = cupRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        if (cup.verifyOnLoan())
-            throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
 
-        cupRepository.delete(cup)
-    }
-
-    @Transactional(readOnly = true)
-    fun findAllCups(
-        pageable: Pageable
-    ) {
-        // TODO: find all cups
-    }
-
-    @Transactional(readOnly = true)
-    fun findCupsInMachine(
-        machineId: UUID
-    ) {
-        // TODO: find cups in machine
-    }
-
-    @Transactional(readOnly = true)
-    fun findCupsUserHas(
-        userId: Long
-    ) {
-        // TODO: find cups user has
+        cup.delete()
     }
 
     //TODO: Remove
