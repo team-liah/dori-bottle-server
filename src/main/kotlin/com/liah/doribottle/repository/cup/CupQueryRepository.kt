@@ -15,15 +15,18 @@ class CupQueryRepository(
 ) {
     fun getAll(
         status: CupStatus? = null,
+        deleted: Boolean? = null,
         pageable: Pageable
     ): Page<Cup> {
         return queryFactory
             .selectFrom(cup)
             .where(
-                statusEq(status)
+                statusEq(status),
+                deletedEq(deleted)
             )
             .toPage(pageable)
     }
 
     private fun statusEq(status: CupStatus?) = status?.let { cup.status.eq(status) }
+    private fun deletedEq(deleted: Boolean?) = deleted?.let { cup.deleted.eq(it) }
 }

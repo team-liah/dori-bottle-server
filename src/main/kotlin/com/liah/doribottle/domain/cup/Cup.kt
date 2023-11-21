@@ -3,9 +3,11 @@ package com.liah.doribottle.domain.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
+import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.service.cup.dto.CupDto
 import jakarta.persistence.*
+import java.util.*
 
 @Entity
 @Table(
@@ -14,9 +16,9 @@ import jakarta.persistence.*
 )
 class Cup(
     rfid: String
-) : PrimaryKeyEntity() {
+) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
-    val rfid: String = rfid
+    var rfid: String = rfid
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -25,10 +27,19 @@ class Cup(
 
     fun toDto() = CupDto(id, rfid, status, createdDate, lastModifiedDate)
 
-    // TODO: 제거
-    fun changeState(
+    override fun delete() {
+        if (verifyOnLoan())
+            throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
+
+        this.rfid = "Deleted ${UUID.randomUUID()}"
+        super.delete()
+    }
+
+    fun update(
+        rfid: String,
         status: CupStatus
     ) {
+        this.rfid = rfid
         this.status = status
     }
 
@@ -45,6 +56,6 @@ class Cup(
         this.status = LOST
     }
 
-    fun verifyOnLoan() = status == ON_LOAN
-    fun verifyAvailable() = status == AVAILABLE
+    private fun verifyOnLoan() = status == ON_LOAN
+    private fun verifyAvailable() = status == AVAILABLE
 }
