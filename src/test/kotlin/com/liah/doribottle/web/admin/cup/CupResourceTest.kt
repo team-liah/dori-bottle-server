@@ -3,11 +3,13 @@ package com.liah.doribottle.web.admin.cup
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.cup.CupStatus
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
+import com.liah.doribottle.web.admin.cup.vm.CupUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -39,7 +42,7 @@ class CupResourceTest : BaseControllerTest() {
         val body = CupRegisterRequest("A1:A1:A1:A1")
 
         mockMvc.perform(
-            MockMvcRequestBuilders.post(endPoint)
+            post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
@@ -54,7 +57,7 @@ class CupResourceTest : BaseControllerTest() {
         val body = CupRegisterRequest("A1:A1:A1:A1")
 
         mockMvc.perform(
-            MockMvcRequestBuilders.post(endPoint)
+            post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
@@ -71,7 +74,7 @@ class CupResourceTest : BaseControllerTest() {
         val body = CupRegisterRequest("A1:A1:A1:A1")
 
         mockMvc.perform(
-            MockMvcRequestBuilders.post(endPoint)
+            post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
@@ -93,7 +96,7 @@ class CupResourceTest : BaseControllerTest() {
 
         val expectValue = listOf("F1:F1:F1:F1", "E1:E1:E1:E1", "D1:D1:D1:D1")
         mockMvc.perform(
-            MockMvcRequestBuilders.get(endPoint)
+            get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -109,5 +112,50 @@ class CupResourceTest : BaseControllerTest() {
         cupRepository.save(Cup("D1:D1:D1:D1"))
         cupRepository.save(Cup("E1:E1:E1:E1"))
         cupRepository.save(Cup("F1:F1:F1:F1"))
+    }
+
+    @DisplayName("컵 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun get() {
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+        mockMvc.perform(
+            get("${endPoint}/${cup.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("rfid", `is`("A1:A1:A1:A1")))
+            .andExpect(jsonPath("status", `is`(CupStatus.AVAILABLE.name)))
+    }
+
+    @DisplayName("컵 수정")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun update() {
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+        val body = CupUpdateRequest("B1:B1:B1:B1", CupStatus.LOST)
+
+        mockMvc.perform(
+            put("${endPoint}/${cup.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("컵 삭제")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun remove() {
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+
+        mockMvc.perform(
+            delete("${endPoint}/${cup.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
     }
 }
