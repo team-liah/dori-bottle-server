@@ -44,6 +44,6 @@ data class PaymentCategoryDto(
         )
         return PaymentCategorySearchResponse(id, amounts, price, discountRate, discountPrice, discountExpiredDate, expiredDate)
     }
-    fun toAdminResponse() = com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse(id, amounts, price, discountRate, getDiscountPrice(price, discountRate), discountExpiredDate, expiredDate)
+    fun toAdminResponse() = com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse(id, amounts, price, discountRate, getDiscountPrice(price, discountRate), discountExpiredDate, expiredDate, createdDate, lastModifiedDate)
     private fun getDiscountPrice(price: Long, discountRate: Int) = price-(price*discountRate/100)
 }
