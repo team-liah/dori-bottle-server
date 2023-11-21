@@ -66,7 +66,7 @@ class CupResource(
         )
     }
 
-    @Operation(summary = "컵 목록 조회")
+    @Operation(summary = "컵 삭제")
     @DeleteMapping("/{id}")
     fun remove(
         @PathVariable id: UUID
