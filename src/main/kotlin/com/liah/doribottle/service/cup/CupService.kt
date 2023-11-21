@@ -65,6 +65,7 @@ class CupService(
     ): Page<CupDto> {
         return cupQueryRepository.getAll(
             status = status,
+            deleted = deleted,
             pageable = pageable
         ).map { it.toDto() }
     }
