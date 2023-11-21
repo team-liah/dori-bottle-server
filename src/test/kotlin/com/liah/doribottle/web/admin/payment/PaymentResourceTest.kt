@@ -71,6 +71,24 @@ class PaymentResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("content[*].discountPrice", `is`(expectDiscountPriceValue)))
     }
 
+    @DisplayName("결제 카테고리 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getCategory() {
+        val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, null, null))
+
+        mockMvc.perform(
+            get("${endPoint}/category/${category.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("amounts", `is`(category.amounts.toInt())))
+            .andExpect(jsonPath("price", `is`(category.price.toInt())))
+            .andExpect(jsonPath("discountRate", `is`(category.discountRate)))
+            .andExpect(jsonPath("discountPrice", `is`(900)))
+    }
+
     @DisplayName("결제 카테고리 수정")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test

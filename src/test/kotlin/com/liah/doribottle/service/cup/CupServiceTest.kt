@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 
 class CupServiceTest : BaseServiceTest() {
     @Autowired
@@ -46,9 +47,24 @@ class CupServiceTest : BaseServiceTest() {
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_ALREADY_REGISTERED)
     }
 
+    @DisplayName("컵 조회")
+    @Test
+    fun get() {
+        //given
+        val cup = cupRepository.save(Cup(RFID))
+        clear()
+
+        //when
+        val result = cupService.get(cup.id)
+
+        //then
+        assertThat(result.rfid).isEqualTo(RFID)
+        assertThat(result.status).isEqualTo(AVAILABLE)
+    }
+
     @DisplayName("RFID 컵 조회")
     @Test
-    fun getCupByRfid() {
+    fun getByRfid() {
         //given
         cupRepository.save(Cup(RFID))
         clear()
@@ -59,6 +75,24 @@ class CupServiceTest : BaseServiceTest() {
         //then
         assertThat(cup.rfid).isEqualTo(RFID)
         assertThat(cup.status).isEqualTo(AVAILABLE)
+    }
+
+    @DisplayName("컵 수정")
+    @Test
+    fun update() {
+        //given
+        val cup = cupRepository.save(Cup(RFID))
+        val id = cup.id
+        clear()
+
+        //when
+        cupService.update(id, "TEST", LOST)
+        clear()
+
+        //then
+        val findCup = cupRepository.findByIdOrNull(id)
+        assertThat(findCup?.rfid).isEqualTo("TEST")
+        assertThat(findCup?.status).isEqualTo(LOST)
     }
 
     @DisplayName("컵 제거")
@@ -74,8 +108,8 @@ class CupServiceTest : BaseServiceTest() {
         clear()
 
         //then
-        val findCup = cupRepository.findById(id).orElse(null)
-        assertThat(findCup).isNull()
+        val findCup = cupRepository.findByIdOrNull(id)
+        assertThat(findCup?.deleted).isTrue()
     }
 
     @DisplayName("컵 제거 예외")
@@ -84,7 +118,7 @@ class CupServiceTest : BaseServiceTest() {
         //given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
-        cup.changeState(AVAILABLE)
+        cup.update(RFID, AVAILABLE)
         cup.loan()
 
         clear()
