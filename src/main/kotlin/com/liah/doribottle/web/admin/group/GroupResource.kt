@@ -47,6 +47,14 @@ class GroupResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "기관 조회")
+    @GetMapping("/{id}")
+    fun get(
+        @PathVariable id: UUID
+    ): GroupDto {
+        return groupService.get(id)
+    }
+
     @Operation(summary = "기관 수정")
     @PutMapping("/{id}")
     fun update(
