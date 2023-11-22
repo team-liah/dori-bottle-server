@@ -76,6 +76,20 @@ class GroupResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("content[*].name", `is`(expectValue)))
     }
 
+    @DisplayName("기관 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun get() {
+        val group = groupRepository.save(Group("대학1", UNIVERSITY, 10))
+
+        mockMvc.perform(
+            get("$endPoint/${group.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("기관 정보 수정")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
