@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.cup
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.cup.CupService
 import com.liah.doribottle.service.cup.dto.CupDto
+import com.liah.doribottle.web.admin.cup.vm.CupPatchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
 import com.liah.doribottle.web.admin.cup.vm.CupSearchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupUpdateRequest
@@ -63,7 +64,21 @@ class CupResource(
         cupService.update(
             id = id,
             rfid = request.rfid!!,
-            status = request.status!!,
+            status = request.status!!
+        )
+    }
+
+    @Operation(summary = "컵 패치")
+    @PatchMapping("/{id}")
+    fun patch(
+        @PathVariable id: UUID,
+        @RequestBody request: CupPatchRequest
+    ) {
+        val cup = cupService.get(id)
+        cupService.update(
+            id = id,
+            rfid = request.rfid ?: cup.rfid,
+            status = request.status ?: cup.status
         )
     }
 
