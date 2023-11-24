@@ -14,6 +14,7 @@ class CupQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
+        rfid: String? = null,
         status: CupStatus? = null,
         deleted: Boolean? = null,
         pageable: Pageable
@@ -21,12 +22,14 @@ class CupQueryRepository(
         return queryFactory
             .selectFrom(cup)
             .where(
+                rfidContains(rfid),
                 statusEq(status),
                 deletedEq(deleted)
             )
             .toPage(pageable)
     }
 
-    private fun statusEq(status: CupStatus?) = status?.let { cup.status.eq(status) }
+    private fun rfidContains(rfid: String?) = rfid?.let { cup.rfid.contains(it) }
+    private fun statusEq(status: CupStatus?) = status?.let { cup.status.eq(it) }
     private fun deletedEq(deleted: Boolean?) = deleted?.let { cup.deleted.eq(it) }
 }

@@ -37,6 +37,7 @@ class CupResource(
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<CupDto> {
         val result = cupService.getAll(
+            rfid = request.rfid,
             status = request.status,
             deleted = false,
             pageable = pageable
