@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.admin.cup.vm.CupPatchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
 import com.liah.doribottle.web.admin.cup.vm.CupUpdateRequest
 import org.hamcrest.Matchers.`is`
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -138,6 +138,22 @@ class CupResourceTest : BaseControllerTest() {
 
         mockMvc.perform(
             put("${endPoint}/${cup.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("컵 패치")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun patch() {
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+        val body = CupPatchRequest(null, CupStatus.LOST)
+
+        mockMvc.perform(
+            patch("${endPoint}/${cup.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(body.convertAnyToString())
