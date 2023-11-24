@@ -59,11 +59,13 @@ class CupService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        rfid: String? = null,
         status: CupStatus? = null,
         deleted: Boolean? = null,
         pageable: Pageable
     ): Page<CupDto> {
         return cupQueryRepository.getAll(
+            rfid = rfid,
             status = status,
             deleted = deleted,
             pageable = pageable
