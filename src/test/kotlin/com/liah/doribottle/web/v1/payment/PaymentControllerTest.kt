@@ -429,7 +429,7 @@ class PaymentControllerTest : BaseControllerTest() {
 
     @DisplayName("포인트 충전 결제 취소")
     @Test
-    fun cancelPayment() {
+    fun cancel() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
@@ -478,7 +478,7 @@ class PaymentControllerTest : BaseControllerTest() {
 
     @DisplayName("포인트 충전 결제 취소 예외")
     @Test
-    fun cancelPaymentException() {
+    fun cancelException() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
