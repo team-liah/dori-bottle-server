@@ -143,7 +143,7 @@ class PaymentController(
 
     @Operation(summary = "결제 취소")
     @PostMapping("/{id}/cancel")
-    fun cancelPayment(
+    fun cancel(
         @PathVariable id: UUID
     ) {
         val payment = paymentService.get(id)
