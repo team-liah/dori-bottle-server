@@ -36,7 +36,7 @@ class Scheduler(
             runCatching {
                 rentalService.fail(rental.id)
             }.onSuccess {
-                payToLostCup(rental.userId)
+                payToLostCup(rental.user.id)
             }
         }
     }

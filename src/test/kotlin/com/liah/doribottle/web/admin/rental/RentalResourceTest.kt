@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.rental.Rental
+import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
@@ -17,13 +18,18 @@ import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.rental.vm.RentalCupMapRequest
 import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 
 class RentalResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/rental"
@@ -43,6 +49,96 @@ class RentalResourceTest : BaseControllerTest() {
         userRepository.deleteAll()
         machineRepository.deleteAll()
         cupRepository.deleteAll()
+    }
+
+    @DisplayName("대여 내역 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getAll() {
+        //given
+        val userA = userRepository.save(User("010-1111-1111", "Tester A", "010-1111-1111", Role.USER))
+        val userB = userRepository.save(User("010-2222-2222", "Tester B", "010-2222-2222", Role.USER))
+        val userC = userRepository.save(User("010-3333-3333", "Tester C", "010-3333-3333", Role.USER))
+        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), 100)
+        vendingMachine.updateCupAmounts(100)
+        machineRepository.save(vendingMachine)
+        insertRentals(userA, userB, userC, vendingMachine)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("status", "PROCEEDING")
+        params.add("fromMachineId", vendingMachine.id.toString())
+        params.add("page", "0")
+        params.add("size", "5")
+
+        val expectUserId = listOf(userC.id.toString(), userC.id.toString(), userB.id.toString(), userB.id.toString(), userA.id.toString())
+        val expectFromMachineId = listOf(vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString())
+        val expectStatus = listOf(RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString())
+
+        mockMvc.perform(
+            get(endPoint)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].user.id", `is`(expectUserId)))
+            .andExpect(jsonPath("content[*].fromMachine.id", `is`(expectFromMachineId)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
+
+    private fun insertRentals(
+        userA: User,
+        userB: User,
+        userC: User,
+        vendingMachine: Machine
+    ) {
+        val rental1 = Rental(userA, vendingMachine, true, 7)
+        rental1.setRentalCup(cupRepository.save(Cup("B1:B1:B1:B1")))
+        rentalRepository.save(rental1)
+
+        val rental2 = Rental(userA, vendingMachine, true, 7)
+        rental2.setRentalCup(cupRepository.save(Cup("C1:C1:C1:C1")))
+        rentalRepository.save(rental2)
+
+        val rental3 = Rental(userB, vendingMachine, true, 7)
+        rental3.setRentalCup(cupRepository.save(Cup("D1:D1:D1:D1")))
+        rentalRepository.save(rental3)
+
+        val rental4 = Rental(userB, vendingMachine, true, 7)
+        rental4.setRentalCup(cupRepository.save(Cup("E1:E1:E1:E1")))
+        rentalRepository.save(rental4)
+
+        val rental5 = Rental(userC, vendingMachine, true, 7)
+        rental5.setRentalCup(cupRepository.save(Cup("F1:F1:F1:F1")))
+        rentalRepository.save(rental5)
+
+        val rental6 = Rental(userC, vendingMachine, true, 7)
+        rental6.setRentalCup(cupRepository.save(Cup("G1:G1:G1:G1")))
+        rentalRepository.save(rental6)
+    }
+
+    @DisplayName("대여 내역 단건 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun get() {
+        //given
+        val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
+        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), 100)
+        vendingMachine.updateCupAmounts(100)
+        machineRepository.save(vendingMachine)
+        val rental = Rental(user, vendingMachine, true, 7)
+        rental.setRentalCup(cupRepository.save(Cup("B1:B1:B1:B1")))
+        rentalRepository.save(rental)
+
+        mockMvc.perform(
+            get("${endPoint}/${rental.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("user.id", `is`(user.id.toString())))
+            .andExpect(jsonPath("fromMachine.id", `is`(vendingMachine.id.toString())))
+            .andExpect(jsonPath("status", `is`(rental.status.name)))
     }
 
     @DisplayName("대여 컵 매핑")
