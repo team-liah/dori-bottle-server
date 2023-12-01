@@ -92,7 +92,7 @@ class PaymentResource(
 
     @Operation(summary = "결제 카테고리 목록 조회")
     @GetMapping("/category")
-    fun getCategories(
+    fun getAllCategories(
         @ParameterObject request: PaymentCategorySearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<PaymentCategorySearchResponse> {
