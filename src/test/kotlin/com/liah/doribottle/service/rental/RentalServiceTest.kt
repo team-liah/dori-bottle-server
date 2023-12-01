@@ -469,7 +469,7 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(result.totalElements).isEqualTo(6)
         assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
-            .extracting("userId")
+            .extracting("user.id")
             .containsExactly(user.id, user.id, user.id)
         assertThat(result)
             .extracting("status")
