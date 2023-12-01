@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
 import com.liah.doribottle.extension.generateRandomString
 import com.liah.doribottle.service.user.dto.UserDetailDto
 import com.liah.doribottle.service.user.dto.UserDto
+import com.liah.doribottle.service.user.dto.UserSimpleDto
 import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.FetchType.LAZY
@@ -226,4 +227,5 @@ class User(
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
     fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }
