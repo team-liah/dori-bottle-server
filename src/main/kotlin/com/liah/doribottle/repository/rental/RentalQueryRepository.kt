@@ -27,13 +27,14 @@ class RentalQueryRepository(
     ): Page<Rental> {
         return queryFactory
             .selectFrom(rental)
+            .innerJoin(rental.user).fetchJoin()
             .innerJoin(rental.fromMachine).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
             .where(
-                userEq(userId),
-                cupEq(cupId),
-                fromMachineEq(fromMachineId),
-                toMachineEq(toMachineId),
+                userIdEq(userId),
+                cupIdEq(cupId),
+                fromMachineIdEq(fromMachineId),
+                toMachineIdEq(toMachineId),
                 statusEq(status),
                 expired(expired)
             )
@@ -47,7 +48,7 @@ class RentalQueryRepository(
         return queryFactory
             .selectFrom(rental)
             .where(
-                cupEq(cupId)
+                cupIdEq(cupId)
             )
             .where(rental.cup.isNotNull)
             .orderBy(rental.createdDate.desc())
@@ -60,7 +61,7 @@ class RentalQueryRepository(
         return queryFactory
             .selectFrom(rental)
             .where(
-                userEq(userId),
+                userIdEq(userId),
                 statusEq(PROCEEDING)
             )
             .where(rental.cup.isNotNull)
@@ -78,11 +79,11 @@ class RentalQueryRepository(
             .fetchFirst() != null
     }
 
-    private fun userEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
+    private fun userIdEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
     private fun noEq(no: String?) = no?.let { rental.no.eq(it) }
-    private fun cupEq(cupId: UUID?) = cupId?.let { rental.cup.id.eq(it) }
-    private fun fromMachineEq(fromMachineId: UUID?) = fromMachineId?.let { rental.fromMachine.id.eq(it) }
-    private fun toMachineEq(toMachineId: UUID?) = toMachineId?.let { rental.toMachine.id.eq(it) }
+    private fun cupIdEq(cupId: UUID?) = cupId?.let { rental.cup.id.eq(it) }
+    private fun fromMachineIdEq(fromMachineId: UUID?) = fromMachineId?.let { rental.fromMachine.id.eq(it) }
+    private fun toMachineIdEq(toMachineId: UUID?) = toMachineId?.let { rental.toMachine.id.eq(it) }
     private fun statusEq(status: RentalStatus?) = status?.let { rental.status.eq(it) }
     private fun expired(expired: Boolean?) = expired?.let {
         val now = Instant.now()
