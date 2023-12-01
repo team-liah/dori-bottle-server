@@ -17,6 +17,7 @@ class RentalQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
+        no: String? = null,
         userId: UUID? = null,
         cupId: UUID? = null,
         fromMachineId: UUID? = null,
@@ -31,6 +32,7 @@ class RentalQueryRepository(
             .innerJoin(rental.fromMachine).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
             .where(
+                noContains(no),
                 userIdEq(userId),
                 cupIdEq(cupId),
                 fromMachineIdEq(fromMachineId),
@@ -79,8 +81,9 @@ class RentalQueryRepository(
             .fetchFirst() != null
     }
 
-    private fun userIdEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
     private fun noEq(no: String?) = no?.let { rental.no.eq(it) }
+    private fun noContains(no: String?) = no?.let { rental.no.contains(it) }
+    private fun userIdEq(userId: UUID?) = userId?.let { rental.user.id.eq(it) }
     private fun cupIdEq(cupId: UUID?) = cupId?.let { rental.cup.id.eq(it) }
     private fun fromMachineIdEq(fromMachineId: UUID?) = fromMachineId?.let { rental.fromMachine.id.eq(it) }
     private fun toMachineIdEq(toMachineId: UUID?) = toMachineId?.let { rental.toMachine.id.eq(it) }

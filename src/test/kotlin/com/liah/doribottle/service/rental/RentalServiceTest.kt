@@ -476,6 +476,29 @@ class RentalServiceTest : BaseServiceTest() {
             .containsExactly(PROCEEDING, PROCEEDING, PROCEEDING)
     }
 
+    @DisplayName("대여 내역 단건 조회")
+    @Test
+    fun get() {
+        //given
+        val cup = cupRepository.save(Cup("G1:G1:G1:G1"))
+        val rental = Rental(user, vendingMachine, true, 0)
+        rental.setRentalCup(cup)
+        rentalRepository.save(rental)
+        clear()
+
+
+        //when
+        val result = rentalService.get(rental.id)
+
+        //then
+        assertThat(result.id).isEqualTo(rental.id)
+        assertThat(result.user.id).isEqualTo(user.id)
+        assertThat(result.cupId).isEqualTo(cup.id)
+        assertThat(result.status).isEqualTo(PROCEEDING)
+        assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
+        assertThat(result.withIce).isTrue()
+    }
+
     @DisplayName("만료 임박 리마인드")
     @Test
     fun remindExpiredDateBetween() {
