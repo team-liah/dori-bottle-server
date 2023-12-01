@@ -62,6 +62,15 @@ class InquiryService(
         ).map { it.toDto() }
     }
 
+    fun get(
+        id: UUID
+    ): InquiryDto {
+        val inquiry = inquiryRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)
+
+        return inquiry.toDto()
+    }
+
     fun succeed(
         id: UUID,
         answer: String?

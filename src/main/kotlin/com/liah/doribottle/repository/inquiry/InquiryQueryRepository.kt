@@ -24,6 +24,7 @@ class InquiryQueryRepository(
     ): Page<Inquiry> {
         return queryFactory
             .selectFrom(inquiry)
+            .innerJoin(inquiry.user).fetchJoin()
             .where(
                 userEq(userId),
                 typeEq(type),
