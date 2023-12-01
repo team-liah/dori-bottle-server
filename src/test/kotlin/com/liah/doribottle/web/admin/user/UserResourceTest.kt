@@ -46,7 +46,7 @@ class UserResourceTest : BaseControllerTest() {
     }
 
     @DisplayName("유저 조회")
-    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun get() {
         val userEntity = User("010-5638-3316", "Tester", "010-5638-3316", Role.USER)
@@ -67,7 +67,7 @@ class UserResourceTest : BaseControllerTest() {
     }
 
     @DisplayName("유저 목록 조회")
-    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAll() {
         insertUsers()
@@ -89,7 +89,7 @@ class UserResourceTest : BaseControllerTest() {
     }
 
     @DisplayName("유저 목록 조회 TC2")
-    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAllTc2() {
         insertUsers()
