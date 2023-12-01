@@ -115,6 +115,7 @@ class RentalService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        no: String? = null,
         userId: UUID? = null,
         cupId: UUID? = null,
         fromMachineId: UUID? = null,
@@ -124,6 +125,7 @@ class RentalService(
         pageable: Pageable
     ): Page<RentalDto> {
         return rentalQueryRepository.getAll(
+            no = no,
             userId = userId,
             cupId = cupId,
             fromMachineId = fromMachineId,
@@ -132,6 +134,16 @@ class RentalService(
             expired = expired,
             pageable = pageable
         ).map { it.toDto() }
+    }
+
+    @Transactional(readOnly = true)
+    fun get(
+        id: UUID
+    ): RentalDto {
+        val rental = rentalRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+
+        return rental.toDto()
     }
 
     @Transactional(readOnly = true)
