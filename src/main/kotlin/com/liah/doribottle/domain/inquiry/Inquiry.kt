@@ -40,5 +40,5 @@ class Inquiry(
         this.status = SUCCEEDED
     }
 
-    fun toDto() = InquiryDto(id, user.id, type, bankAccount?.toDto(), content, answer, status, createdDate, lastModifiedDate)
+    fun toDto() = InquiryDto(id, user.toSimpleDto(), type, bankAccount?.toDto(), content, answer, status, createdDate, lastModifiedDate)
 }

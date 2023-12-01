@@ -2,6 +2,8 @@ package com.liah.doribottle.service.rental.dto
 
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.service.machine.dto.MachineDto
+import com.liah.doribottle.service.user.dto.UserDto
+import com.liah.doribottle.service.user.dto.UserSimpleDto
 import com.liah.doribottle.web.v1.rental.vm.RentalMachineInfo
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
 import java.time.Instant
@@ -10,7 +12,7 @@ import java.util.*
 data class RentalDto(
     val id: UUID,
     val no: String,
-    val userId: UUID,
+    val user: UserSimpleDto,
     val cupId: UUID?,
     val fromMachine: MachineDto,
     val toMachine: MachineDto?,
@@ -25,7 +27,7 @@ data class RentalDto(
     fun toUserResponse() = RentalSearchResponse(
         id = id,
         no = no,
-        userId = userId,
+        userId = user.id,
         cupId = cupId,
         fromMachine = RentalMachineInfo(
             id = fromMachine.id,

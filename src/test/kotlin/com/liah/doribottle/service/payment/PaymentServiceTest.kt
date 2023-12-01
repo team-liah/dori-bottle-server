@@ -111,7 +111,7 @@ class PaymentServiceTest : BaseServiceTest() {
         val result = paymentService.get(payment.id)
 
         //then
-        assertThat(result.userId).isEqualTo(user.id)
+        assertThat(result.user.id).isEqualTo(user.id)
         assertThat(result.price).isEqualTo(3000)
         assertThat(result.type).isEqualTo(SAVE_POINT)
         assertThat(result.card.issuerProvider).isEqualTo(HYUNDAI)
@@ -139,7 +139,7 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(result.totalElements).isEqualTo(6)
         assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
-            .extracting("userId")
+            .extracting("user.id")
             .containsExactly(user.id, user.id, user.id)
         assertThat(result)
             .extracting("type")

@@ -23,6 +23,7 @@ class PaymentQueryRepository(
     ): Page<Payment> {
         return queryFactory
             .selectFrom(payment)
+            .innerJoin(payment.user).fetchJoin()
             .leftJoin(payment.point).fetchJoin()
             .where(
                 userIdEq(userId),

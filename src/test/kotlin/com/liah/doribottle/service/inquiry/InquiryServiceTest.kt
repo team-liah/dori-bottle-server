@@ -62,7 +62,7 @@ class InquiryServiceTest : BaseServiceTest() {
 
         //then
         assertThat(result)
-            .extracting("userId")
+            .extracting("user.id")
             .containsExactly(user.id, user.id, user.id)
         assertThat(result)
             .extracting("content")
@@ -85,6 +85,28 @@ class InquiryServiceTest : BaseServiceTest() {
         inquiryRepository.save(Inquiry(user, REFUND, bankAccount.toEmbeddable(), "4"))
         inquiryRepository.save(Inquiry(user, REFUND, bankAccount.toEmbeddable(), "5"))
         inquiryRepository.save(Inquiry(user, REFUND, bankAccount.toEmbeddable(), "6"))
+    }
+
+    @DisplayName("문의 단건 조회")
+    @Test
+    fun get() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val inquiry = inquiryRepository.save(Inquiry(user, REFUND, BankAccount("국민", "943202-00-120364", "김동준"), "test"))
+        clear()
+
+        //when
+        val result = inquiryService.get(inquiry.id)
+
+        //then
+        assertThat(result.user.id).isEqualTo(user.id)
+        assertThat(result.type).isEqualTo(REFUND)
+        assertThat(result.bankAccount?.bank).isEqualTo("국민")
+        assertThat(result.bankAccount?.accountNumber).isEqualTo("943202-00-120364")
+        assertThat(result.bankAccount?.accountHolder).isEqualTo("김동준")
+        assertThat(result.content).isEqualTo("test")
+        assertThat(result.answer).isNull()
+        assertThat(result.status).isEqualTo(PROCEEDING)
     }
 
     @DisplayName("문의 답변")

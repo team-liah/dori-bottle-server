@@ -3,6 +3,7 @@ package com.liah.doribottle.config.security
 import com.liah.doribottle.domain.user.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -11,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
+@EnableMethodSecurity
 @EnableWebSecurity
 class SecurityConfig(
     private val tokenProvider: TokenProvider
@@ -33,7 +35,6 @@ class SecurityConfig(
                 .requestMatchers("/api/v1/account/dummy-auth", "/api/v1/account/dummy-data").permitAll() //TODO: Remove
                 .requestMatchers("/api/v1/me").authenticated()
                 .requestMatchers("/api/v1/account/register").hasRole(Role.GUEST.name)
-                .requestMatchers("/admin/api/admin/**").hasRole(Role.ADMIN.name)
                 .requestMatchers("/admin/**").hasAnyRole(Role.ADMIN.name, Role.MACHINE_ADMIN.name)
                 .anyRequest().hasRole(Role.USER.name)
             }

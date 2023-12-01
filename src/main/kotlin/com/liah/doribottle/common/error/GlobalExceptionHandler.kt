@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.validation.BindException
@@ -93,6 +94,13 @@ class GlobalExceptionHandler {
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
             .body(response)
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    protected fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        log.error("AccessDeniedException", e)
+        val response = ErrorResponse.of(ErrorCode.ACCESS_DENIED)
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
     }
 
     /**

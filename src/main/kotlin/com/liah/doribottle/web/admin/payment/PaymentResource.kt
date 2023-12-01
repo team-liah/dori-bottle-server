@@ -1,24 +1,81 @@
 package com.liah.doribottle.web.admin.payment
 
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.payment.PaymentService
+import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.dto.PaymentDto
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse
+import com.liah.doribottle.web.admin.payment.vm.PaymentSearchRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @RequestMapping("/admin/api/payment")
 class PaymentResource(
-    private val paymentService: PaymentService
+    private val paymentService: PaymentService,
+    private val tossPaymentsService: TossPaymentsService
 ) {
+    @Operation(summary = "유저 결제내역 조회")
+    @GetMapping
+    fun getAll(
+        @ParameterObject request: PaymentSearchRequest,
+        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
+    ): CustomPage<PaymentDto> {
+        val result = paymentService.getAll(
+            userId = request.userId,
+            type = request.type,
+            statuses = request.status?.let { setOf(it) },
+            pageable
+        )
+
+        return CustomPage.of(result)
+    }
+
+    @Operation(summary = "유저 결제내역 단건 조회")
+    @GetMapping("/{id}")
+    fun get(
+        @PathVariable id: UUID
+    ): PaymentDto {
+        return paymentService.get(id)
+    }
+
+    @Operation(summary = "유저 결제 취소 처리")
+    @PostMapping("/{id}/cancel")
+    fun cancel(
+        @PathVariable id: UUID
+    ) {
+        val payment = paymentService.get(id)
+        val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+
+        runCatching {
+            tossPaymentsService.cancelPayment(
+                paymentKey = paymentResult.paymentKey,
+                cancelReason = "포인트 적립 취소 (관리자)"
+            )
+        }.onSuccess { result ->
+            paymentService.updateResult(
+                id = id,
+                result = result,
+                pointId = payment.point?.id
+            )
+        }.onFailure {
+            throw PaymentCancelException()
+        }
+    }
+
     @Operation(summary = "결제 카테고리 등록")
     @PostMapping("/category")
     fun registerCategory(
@@ -35,7 +92,7 @@ class PaymentResource(
 
     @Operation(summary = "결제 카테고리 목록 조회")
     @GetMapping("/category")
-    fun getCategories(
+    fun getAllCategories(
         @ParameterObject request: PaymentCategorySearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<PaymentCategorySearchResponse> {
