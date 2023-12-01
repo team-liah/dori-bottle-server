@@ -16,6 +16,8 @@ import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
+import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
 import org.assertj.core.api.Assertions.assertThat
@@ -23,7 +25,12 @@ import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.given
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
@@ -33,6 +40,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 class PaymentResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/payment"
@@ -45,6 +53,9 @@ class PaymentResourceTest : BaseControllerTest() {
     private lateinit var userRepository: UserRepository
     @Autowired
     private lateinit var pointRepository: PointRepository
+
+    @MockBean
+    private lateinit var mockTossPaymentsService: TossPaymentsService
 
     @AfterEach
     internal fun destroy() {
@@ -131,20 +142,80 @@ class PaymentResourceTest : BaseControllerTest() {
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         val payment = Payment(user, 1000, PaymentType.SAVE_POINT, card)
         val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
-        val result = PaymentResult("dummyPaymentKey1", Instant.now(), null, null)
+        val result = PaymentResult("dummyPaymentKey", Instant.now(), null, null)
         payment.updateResult(result, point)
         paymentRepository.save(payment)
 
-//        mockMvc.perform(
-//            get("${endPoint}/${payment.id}")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON)
-//        )
-//            .andExpect(status().isOk)
-//            .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
-//            .andExpect(jsonPath("content[*].price", `is`(expectPrice)))
-//            .andExpect(jsonPath("content[*].type", `is`(expectType)))
-//            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+        mockMvc.perform(
+            get("${endPoint}/${payment.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("user.id", `is`(user.id.toString())))
+            .andExpect(jsonPath("price", `is`(payment.price.toInt())))
+            .andExpect(jsonPath("type", `is`(payment.type.name)))
+            .andExpect(jsonPath("status", `is`(payment.status.name)))
+    }
+
+    @DisplayName("포인트 충전 결제 취소")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun cancel() {
+        //given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
+        val payment = Payment(user, 3000, PaymentType.SAVE_POINT, card)
+        val paymentKey = "dummyPaymentKey"
+        val cancelKey = "dummyCancelKey"
+        payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
+        paymentRepository.save(payment)
+
+        given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)")))
+            .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
+
+        //when, then
+        mockMvc.perform(
+            post("${endPoint}/${payment.id}/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+
+        verify(mockTossPaymentsService, times(1))
+            .cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)"))
+
+        val findPayment = paymentRepository.findAll().firstOrNull()
+        val findPoint = pointRepository.findAll().firstOrNull()
+
+        assertThat(findPayment?.user?.id).isEqualTo(user.id)
+        assertThat(findPayment?.price).isEqualTo(3000)
+        assertThat(findPayment?.type).isEqualTo(PaymentType.SAVE_POINT)
+        assertThat(findPayment?.card?.issuerProvider).isEqualTo(CardProvider.HYUNDAI)
+        assertThat(findPayment?.card?.acquirerProvider).isEqualTo(CardProvider.HYUNDAI)
+        assertThat(findPayment?.card?.number).isEqualTo("1234")
+        assertThat(findPayment?.card?.cardType).isEqualTo(CardType.CREDIT)
+        assertThat(findPayment?.card?.cardOwnerType).isEqualTo(CardOwnerType.PERSONAL)
+        assertThat(findPayment?.status).isEqualTo(PaymentStatus.CANCELED)
+        assertThat(findPayment?.result?.paymentKey).isEqualTo(paymentKey)
+        assertThat(findPayment?.result?.cancelKey).isEqualTo(cancelKey)
+        assertThat(findPayment?.point?.id).isEqualTo(findPoint?.id!!)
+
+        assertThat(findPoint.remainAmounts).isEqualTo(0)
+    }
+
+    @DisplayName("포인트 충전 결제 취소 예외")
+    @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
+    @Test
+    fun cancelException() {
+        //given, when, then
+        mockMvc.perform(
+            post("${endPoint}/${UUID.randomUUID()}/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isForbidden)
     }
 
     @DisplayName("결제 카테고리 등록")
