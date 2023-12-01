@@ -1,14 +1,26 @@
 package com.liah.doribottle.web.admin.payment
 
 import com.liah.doribottle.config.security.WithMockDoriUser
-import com.liah.doribottle.domain.payment.PaymentCategory
+import com.liah.doribottle.domain.payment.*
+import com.liah.doribottle.domain.payment.card.Card
+import com.liah.doribottle.domain.payment.card.CardOwnerType
+import com.liah.doribottle.domain.payment.card.CardProvider
+import com.liah.doribottle.domain.payment.card.CardType
+import com.liah.doribottle.domain.point.Point
+import com.liah.doribottle.domain.point.PointEventType
+import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.payment.PaymentCategoryRepository
+import com.liah.doribottle.repository.payment.PaymentRepository
+import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +38,114 @@ class PaymentResourceTest : BaseControllerTest() {
     private val endPoint = "/admin/api/payment"
 
     @Autowired
+    private lateinit var paymentRepository: PaymentRepository
+    @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
+    @Autowired
+    private lateinit var userRepository: UserRepository
+    @Autowired
+    private lateinit var pointRepository: PointRepository
+
+    @AfterEach
+    internal fun destroy() {
+        paymentRepository.deleteAll()
+        pointRepository.deleteAll()
+        paymentCategoryRepository.deleteAll()
+        userRepository.deleteAll()
+    }
+
+    @DisplayName("유저 결제 내역 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getAll() {
+        val userA = userRepository.save(User("010-1111-1111", "A", "010-1111-1111", Role.USER))
+        val userB = userRepository.save(User("010-2222-2222", "B", "010-2222-2222", Role.USER))
+        val userC = userRepository.save(User("010-3333-3333", "C", "010-3333-3333", Role.USER))
+        insertPayments(userA, userB, userC)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("page", "0")
+        params.add("size", "4")
+        params.add("type", PaymentType.SAVE_POINT.name)
+
+        val expectUserId = listOf(userC.id.toString(), userB.id.toString(), userB.id.toString(), userA.id.toString())
+        val expectPrice = listOf(6000, 4000, 3000, 1000)
+        val expectType = listOf(PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name)
+        val expectStatus = listOf(PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name, PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name)
+
+        mockMvc.perform(
+            get(endPoint)
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].user.id", `is`(expectUserId)))
+            .andExpect(jsonPath("content[*].price", `is`(expectPrice)))
+            .andExpect(jsonPath("content[*].type", `is`(expectType)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
+
+    private fun insertPayments(userA: User, userB: User, userC: User) {
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        val payment1 = Payment(userA, 1000, PaymentType.SAVE_POINT, card)
+        val point1 = pointRepository.save(Point(userA.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+        val result1 = PaymentResult("dummyPaymentKey1", Instant.now(), null, null)
+        payment1.updateResult(result1, point1)
+        paymentRepository.save(payment1)
+
+        val payment2 = Payment(userA, 2000, PaymentType.LOST_CUP, card)
+        val result2 = PaymentResult("dummyPaymentKey2", Instant.now(), null, null)
+        payment2.updateResult(result2, null)
+        paymentRepository.save(payment2)
+
+        val payment3 = Payment(userB, 3000, PaymentType.SAVE_POINT, card)
+        val point3 = pointRepository.save(Point(userB.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
+        val result3 = PaymentResult("dummyPaymentKey3", Instant.now(), null, "dummyCancelKey3")
+        payment3.updateResult(result3, point3)
+        paymentRepository.save(payment3)
+
+        val payment4 = Payment(userB, 4000, PaymentType.SAVE_POINT, card)
+        val point4 = pointRepository.save(Point(userB.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 40))
+        val result4 = PaymentResult("dummyPaymentKey4", Instant.now(), null, null)
+        payment4.updateResult(result4, point4)
+        paymentRepository.save(payment4)
+
+        val payment5 = Payment(userC, 5000, PaymentType.LOST_CUP, card)
+        val result5 = PaymentResult("dummyPaymentKey5", Instant.now(), null, null)
+        payment5.updateResult(result5, null)
+        paymentRepository.save(payment5)
+
+        val payment6 = Payment(userC, 6000, PaymentType.SAVE_POINT, card)
+        val point6 = pointRepository.save(Point(userC.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 60))
+        val result6 = PaymentResult("dummyPaymentKey6", Instant.now(), null, "dummyCancelKey6")
+        payment6.updateResult(result6, point6)
+        paymentRepository.save(payment6)
+    }
+
+    @DisplayName("유저 결제 내역 단건 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun get() {
+        val user = userRepository.save(User("010-1111-1111", "A", "010-1111-1111", Role.USER))
+        val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
+        val payment = Payment(user, 1000, PaymentType.SAVE_POINT, card)
+        val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
+        val result = PaymentResult("dummyPaymentKey1", Instant.now(), null, null)
+        payment.updateResult(result, point)
+        paymentRepository.save(payment)
+
+//        mockMvc.perform(
+//            get("${endPoint}/${payment.id}")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .accept(MediaType.APPLICATION_JSON)
+//        )
+//            .andExpect(status().isOk)
+//            .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
+//            .andExpect(jsonPath("content[*].price", `is`(expectPrice)))
+//            .andExpect(jsonPath("content[*].type", `is`(expectType)))
+//            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
 
     @DisplayName("결제 카테고리 등록")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
