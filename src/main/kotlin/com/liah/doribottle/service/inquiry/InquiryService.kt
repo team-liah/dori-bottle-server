@@ -62,6 +62,7 @@ class InquiryService(
         ).map { it.toDto() }
     }
 
+    @Transactional(readOnly = true)
     fun get(
         id: UUID
     ): InquiryDto {
