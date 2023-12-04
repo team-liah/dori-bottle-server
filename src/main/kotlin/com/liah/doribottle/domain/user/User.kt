@@ -225,7 +225,7 @@ class User(
         this.active = false
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, use, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, use, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
     fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }
