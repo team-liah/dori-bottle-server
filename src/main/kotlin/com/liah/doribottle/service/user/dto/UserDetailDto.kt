@@ -18,6 +18,8 @@ data class UserDetailDto(
     val birthDate: String?,
     val gender: Gender?,
     val role: Role,
+    val active: Boolean,
+    val use: Boolean,
     val registeredDate: Instant?,
     val group: GroupDto?,
     val penalties: List<PenaltyDto>,
