@@ -63,7 +63,7 @@ class UserService(
     fun update(
         id: UUID,
         name: String,
-        birthDate: String,
+        birthDate: String?,
         gender: Gender?,
         description: String?,
         groupId: UUID?

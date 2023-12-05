@@ -11,6 +11,7 @@ import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
+import com.liah.doribottle.web.admin.user.vm.UserUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -119,6 +120,23 @@ class UserResourceTest : BaseControllerTest() {
         userRepository.save(User("010-0000-0004", "Tester 4", "010-0000-0004", Role.USER))
         userRepository.save(User("010-0000-0005", "Tester 5", "010-0000-0005", Role.USER))
         userRepository.save(User("010-0000-0006", "Tester 6", "010-0000-0006", Role.USER))
+    }
+
+    @DisplayName("유저 수정")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun update() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+
+        val body = UserUpdateRequest(group.id, "메모")
+
+        mockMvc.perform(
+            put("${endPoint}/${user.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
     }
 
     @DisplayName("유저 페널티 부여")

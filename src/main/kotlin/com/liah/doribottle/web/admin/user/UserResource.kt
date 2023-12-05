@@ -55,7 +55,7 @@ class UserResource(
         userService.update(
             id = id,
             name = user.name,
-            birthDate = user.birthDate!!,
+            birthDate = user.birthDate,
             gender = user.gender,
             description = request.description,
             groupId = request.groupId
