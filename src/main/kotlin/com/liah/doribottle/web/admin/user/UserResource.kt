@@ -46,6 +46,7 @@ class UserResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "유저 수정")
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
@@ -84,6 +85,18 @@ class UserResource(
         userService.removePenalty(
             id = id,
             penaltyId = penaltyId
+        )
+    }
+
+    @Operation(summary = "유저 블락 사유 제거")
+    @DeleteMapping("/{id}/block-cause/{blockCauseId}")
+    fun unblock(
+        @PathVariable id: UUID,
+        @PathVariable blockCauseId: UUID
+    ) {
+        userService.unblock(
+            id = id,
+            blockedCauseIds = setOf(blockCauseId)
         )
     }
 }
