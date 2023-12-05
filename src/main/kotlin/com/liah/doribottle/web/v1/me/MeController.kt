@@ -33,11 +33,13 @@ class MeController(
     fun updateProfile(
         @Valid @RequestBody request: ProfileUpdateRequest
     ) {
+        val currentUser = userService.get(currentUserId()!!)
         userService.update(
-            id = currentUserId()!!,
+            id = currentUser.id,
             name = request.name!!,
             birthDate = request.birthDate!!,
-            gender = request.gender
+            gender = request.gender,
+            groupId = currentUser.group?.id
         )
     }
 

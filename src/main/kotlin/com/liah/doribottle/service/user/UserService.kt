@@ -13,6 +13,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.PenaltyType
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.sqs.AwsSqsSender
@@ -30,6 +31,7 @@ import java.util.*
 class UserService(
     private val userRepository: UserRepository,
     private val userQueryRepository: UserQueryRepository,
+    private val groupRepository: GroupRepository,
     private val awsSqsSender: AwsSqsSender
 ) {
     @Transactional(readOnly = true)
@@ -62,12 +64,18 @@ class UserService(
         id: UUID,
         name: String,
         birthDate: String,
-        gender: Gender?
+        gender: Gender?,
+        groupId: UUID?
     ) {
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val group = groupId?.let {
+            groupRepository.findByIdOrNull(groupId)
+                ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        }
 
         user.update(name, birthDate, gender)
+        user.updateGroup(group)
     }
 
     fun registerInvitationCode(
