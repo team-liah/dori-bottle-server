@@ -46,7 +46,7 @@ class AccountService(
         if (user.role == Role.USER)
             throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
 
-        user.update(name, birthDate, gender)
+        user.update(name, birthDate, gender, user.description)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
         user.register()
 
