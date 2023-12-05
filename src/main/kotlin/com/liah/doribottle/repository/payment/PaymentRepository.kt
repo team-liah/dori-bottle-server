@@ -10,19 +10,20 @@ import java.util.*
 @Repository
 interface PaymentRepository : JpaRepository<Payment, UUID> {
     @Query(value =
-        "select date(convert_tz(p.approved_date, '+00:00', '+09:00')) date, " +
+        "select date_format(convert_tz(p.approved_date, '+00:00', '+09:00'), :groupFormat) date, " +
                 "sum(if(p.status = 'SUCCEEDED', p.price, 0)) totalAmount, " +
                 "sum(if(p.status = 'SUCCEEDED' and p.type = 'SAVE_POINT', p.price, 0)) savePointAmount, " +
                 "sum(if(p.status = 'SUCCEEDED' and p.type = 'LOST_CUP', p.price, 0)) lostCupAmount, " +
-                "sum(if(p.status = 'SUCCEEDED' and p.type = 'UNBLOCK_ACCOUNT', p.price, 0)) unblockAccountAmount, " +
-                "sum(if(p.status = 'CANCELED', p.price, 0)) cancelAmount " +
+                "sum(if(p.status = 'SUCCEEDED' and p.type = 'UNBLOCK_ACCOUNT', p.price, 0)) unblockAccountAmount " +
         "from payment p " +
         "where convert_tz(p.approved_date, '+00:00', '+09:00') >= str_to_date(:startDate, '%Y%m%d') " +
-        "  and convert_tz(p.approved_date, '+00:00', '+09:00') <= str_to_date(:endDate, '%Y%m%d') " +
-        "group by date",
+        "  and convert_tz(p.approved_date, '+00:00', '+09:00') < str_to_date(:endDate, '%Y%m%d') " +
+        "group by date " +
+        "order by date",
         nativeQuery = true
     )
     fun findStatisticByApprovedDate(
+        @Param("groupFormat") groupFormat: String,
         @Param("startDate") startDate: String,
         @Param("endDate") endDate: String
     ): List<PaymentStatisticDao>
