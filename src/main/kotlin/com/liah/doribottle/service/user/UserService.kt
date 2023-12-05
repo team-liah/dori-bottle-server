@@ -65,6 +65,7 @@ class UserService(
         name: String,
         birthDate: String,
         gender: Gender?,
+        description: String?,
         groupId: UUID?
     ) {
         val user = userRepository.findByIdOrNull(id)
@@ -74,7 +75,7 @@ class UserService(
                 ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
         }
 
-        user.update(name, birthDate, gender)
+        user.update(name, birthDate, gender, description)
         user.updateGroup(group)
     }
 

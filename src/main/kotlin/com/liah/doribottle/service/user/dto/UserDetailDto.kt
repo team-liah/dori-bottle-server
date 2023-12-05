@@ -21,6 +21,7 @@ data class UserDetailDto(
     val active: Boolean,
     val use: Boolean,
     val registeredDate: Instant?,
+    val description: String?,
     val group: GroupDto?,
     val penalties: List<PenaltyDto>,
     val blocked: Boolean,

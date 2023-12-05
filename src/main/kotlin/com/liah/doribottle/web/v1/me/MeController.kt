@@ -39,6 +39,7 @@ class MeController(
             name = request.name!!,
             birthDate = request.birthDate!!,
             gender = request.gender,
+            description = currentUser.description,
             groupId = currentUser.group?.id
         )
     }
