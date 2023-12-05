@@ -102,6 +102,10 @@ class User(
     var registeredDate: Instant? = null
         protected set
 
+    @Column
+    var description: String? = null
+        protected set
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "group_id")
     var group: Group? = null
@@ -133,11 +137,13 @@ class User(
     fun update(
         name: String,
         birthDate: String?,
-        gender: Gender?
+        gender: Gender?,
+        description: String?
     ) {
         this.name = name
         this.birthDate = birthDate
         this.gender = gender
+        this.description = description
     }
 
     fun register() {
@@ -226,6 +232,6 @@ class User(
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, use, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, use, registeredDate, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, use, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
     fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }
