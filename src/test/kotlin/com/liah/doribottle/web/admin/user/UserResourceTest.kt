@@ -3,6 +3,7 @@ package com.liah.doribottle.web.admin.user
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
+import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
@@ -11,6 +12,7 @@ import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
+import com.liah.doribottle.web.admin.user.vm.UserUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -121,6 +123,23 @@ class UserResourceTest : BaseControllerTest() {
         userRepository.save(User("010-0000-0006", "Tester 6", "010-0000-0006", Role.USER))
     }
 
+    @DisplayName("유저 수정")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun update() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+
+        val body = UserUpdateRequest(group.id, "메모")
+
+        mockMvc.perform(
+            put("${endPoint}/${user.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("유저 페널티 부여")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
@@ -146,13 +165,28 @@ class UserResourceTest : BaseControllerTest() {
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         val penaltyId = user.penalties.first().id
         userRepository.save(user)
-        val body = UserPenaltyImposeRequest(DAMAGED_CUP, null)
 
         mockMvc.perform(
             delete("${endPoint}/${user.id}/penalty/${penaltyId}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("유저 블락 사유 제거")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun unblock() {
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+        userRepository.save(user)
+        val blockCauseId = user.blockedCauses.first().id
+
+        mockMvc.perform(
+            delete("${endPoint}/${user.id}/block-cause/${blockCauseId}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
     }

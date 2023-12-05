@@ -178,16 +178,19 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 업데이트")
     @Test
     fun update() {
+        val group = groupRepository.save(Group("리아", COMPANY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         clear()
 
-        userService.update(user.id, "Updated Name", "19970224", MALE)
+        userService.update(user.id, "Updated Name", "19970224", MALE, "메모", group.id)
         clear()
 
         val findUser = userRepository.findByIdOrNull(user.id)
         assertThat(findUser?.name).isEqualTo("Updated Name")
         assertThat(findUser?.birthDate).isEqualTo("19970224")
         assertThat(findUser?.gender).isEqualTo(MALE)
+        assertThat(findUser?.description).isEqualTo("메모")
+        assertThat(findUser?.group?.id).isEqualTo(group.id)
     }
 
     @DisplayName("초대코드 등록")

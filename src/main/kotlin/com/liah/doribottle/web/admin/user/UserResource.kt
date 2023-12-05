@@ -5,6 +5,7 @@ import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.service.user.dto.UserDto
 import com.liah.doribottle.web.admin.user.vm.UserPenaltyImposeRequest
 import com.liah.doribottle.web.admin.user.vm.UserSearchRequest
+import com.liah.doribottle.web.admin.user.vm.UserUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -45,6 +46,23 @@ class UserResource(
         return CustomPage.of(result)
     }
 
+    @Operation(summary = "유저 수정")
+    @PutMapping("/{id}")
+    fun update(
+        @PathVariable id: UUID,
+        @RequestBody request: UserUpdateRequest
+    ) {
+        val user = userService.get(id)
+        userService.update(
+            id = id,
+            name = user.name,
+            birthDate = user.birthDate,
+            gender = user.gender,
+            description = request.description,
+            groupId = request.groupId
+        )
+    }
+
     @Operation(summary = "유저 페널티 부과")
     @PostMapping("/{id}/penalty")
     fun imposePenalty(
@@ -67,6 +85,18 @@ class UserResource(
         userService.removePenalty(
             id = id,
             penaltyId = penaltyId
+        )
+    }
+
+    @Operation(summary = "유저 블락 사유 제거")
+    @DeleteMapping("/{id}/block-cause/{blockCauseId}")
+    fun unblock(
+        @PathVariable id: UUID,
+        @PathVariable blockCauseId: UUID
+    ) {
+        userService.unblock(
+            id = id,
+            blockedCauseIds = setOf(blockCauseId)
         )
     }
 }
