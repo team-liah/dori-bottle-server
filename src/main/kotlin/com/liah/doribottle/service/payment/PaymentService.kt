@@ -23,6 +23,8 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.Month
+import java.time.Year
 import java.util.*
 
 @Service
@@ -80,6 +82,37 @@ class PaymentService(
             toApprovedDate = toApprovedDate,
             pageable = pageable
         ).map { it.toDto() }
+    }
+
+    // TODO: Test
+    @Transactional(readOnly = true)
+    fun getStatistic(
+        year: Year,
+        month: Month?
+    ): List<PaymentStatisticDto> {
+        return paymentRepository.findStatisticByApprovedDate(
+            if (month == null) "%Y-%m" else "%Y-%m-%d",
+            calculateStartDate(year, month),
+            calculateEndDate(year, month)
+        ).map { PaymentStatisticDto.fromDao(it) }
+    }
+
+    private fun calculateStartDate(
+        year: Year,
+        month: Month?
+    ): String {
+        return month?.let { "${year.value}${String.format("%02d", it.value)}01" } ?: "${year.value}0101"
+    }
+
+    private fun calculateEndDate(
+        year: Year,
+        month: Month?
+    ): String {
+        return if (month == null || month == Month.DECEMBER) {
+            "${year.plusYears(1).value}0101"
+        } else {
+            "${year.value}${String.format("%02d", month.plus(1).value)}01"
+        }
     }
 
     fun updateResult(

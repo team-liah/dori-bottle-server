@@ -7,6 +7,7 @@ import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentDto
+import com.liah.doribottle.service.payment.dto.PaymentStatisticDto
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchRequest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategorySearchResponse
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import java.time.Month
+import java.time.Year
 import java.util.*
 
 @RestController
@@ -52,6 +55,15 @@ class PaymentResource(
         @PathVariable id: UUID
     ): PaymentDto {
         return paymentService.get(id)
+    }
+
+    // TODO: Test
+    @GetMapping("/statistic")
+    fun getStatistic(
+        @RequestParam(value = "year") year: Year,
+        @RequestParam(value = "month", required = false) month: Month?
+    ): List<PaymentStatisticDto> {
+        return paymentService.getStatistic(year, month)
     }
 
     @Operation(summary = "유저 결제 취소 처리")
