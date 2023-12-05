@@ -68,12 +68,16 @@ class PaymentService(
         userId: UUID? = null,
         type: PaymentType? = null,
         statuses: Set<PaymentStatus>? = null,
+        fromApprovedDate: Instant? = null,
+        toApprovedDate: Instant? = null,
         pageable: Pageable
     ): Page<PaymentDto> {
         return paymentQueryRepository.getAll(
             userId = userId,
             type = type,
             statuses = statuses,
+            fromApprovedDate = fromApprovedDate,
+            toApprovedDate = toApprovedDate,
             pageable = pageable
         ).map { it.toDto() }
     }

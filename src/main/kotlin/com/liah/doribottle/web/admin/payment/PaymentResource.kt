@@ -38,7 +38,9 @@ class PaymentResource(
             userId = request.userId,
             type = request.type,
             statuses = request.status?.let { setOf(it) },
-            pageable
+            fromApprovedDate = request.fromApprovedDate,
+            toApprovedDate = request.toApprovedDate,
+            pageable = pageable
         )
 
         return CustomPage.of(result)
