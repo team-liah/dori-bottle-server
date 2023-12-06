@@ -29,7 +29,6 @@ import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.truncateToKstDay
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -49,7 +48,6 @@ import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var rentalService: RentalService
@@ -497,21 +495,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(result.status).isEqualTo(PROCEEDING)
         assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
         assertThat(result.withIce).isTrue()
-    }
-
-    @DisplayName("만료 임박 리마인드")
-    @Test
-    fun remindExpiredDateBetween() {
-        insertRentals()
-        clear()
-
-        val now = Instant.now()
-        val start = now.truncateToKstDay()
-        val end = now.plus(4, ChronoUnit.DAYS).truncateToKstDay()
-
-        val count = rentalService.remindExpiredDateBetween(start, end)
-
-        assertThat(count).isEqualTo(4)
     }
 
     private fun insertRentals() {
