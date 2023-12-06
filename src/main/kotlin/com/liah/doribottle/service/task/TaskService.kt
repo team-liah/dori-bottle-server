@@ -35,4 +35,12 @@ class TaskService(
     ) {
         taskRepository.deleteById(id)
     }
+
+    fun delete(
+        type: TaskType,
+        targetId: UUID
+    ) {
+        val task = taskRepository.findByTypeAndTargetId(type, targetId)
+        task?.let { taskRepository.delete(it) }
+    }
 }
