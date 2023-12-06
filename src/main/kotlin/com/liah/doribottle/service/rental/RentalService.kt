@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
 import com.liah.doribottle.repository.cup.CupRepository
@@ -17,11 +18,13 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.rental.dto.RentalDto
+import com.liah.doribottle.service.task.TaskService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -33,7 +36,8 @@ class RentalService(
     private val cupRepository: CupRepository,
     private val machineRepository: MachineRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
-    private val pointService: PointService
+    private val pointService: PointService,
+    private val taskService: TaskService
 ) {
     fun rent(
         userId: UUID,
@@ -75,6 +79,13 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
 
         rental.setRentalCup(cup)
+
+        registerTasks(rental)
+    }
+
+    private fun registerTasks(rental: Rental) {
+        taskService.register(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id)
+        taskService.register(rental.expiredDate.minus(1, ChronoUnit.HOURS), TaskType.RENTAL_REMIND, rental.id)
     }
 
     fun `return`(
@@ -89,6 +100,13 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.`return`(toMachine)
+
+        clearTasks(rental)
+    }
+
+    private fun clearTasks(rental: Rental) {
+        taskService.delete(TaskType.RENTAL_OVERDUE, rental.id)
+        taskService.delete(TaskType.RENTAL_REMIND, rental.id)
     }
 
     fun fail(
