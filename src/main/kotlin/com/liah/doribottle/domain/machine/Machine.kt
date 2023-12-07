@@ -3,6 +3,7 @@ package com.liah.doribottle.domain.machine
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
+import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
@@ -21,6 +22,7 @@ class Machine(
     name: String,
     type: MachineType,
     address: Address,
+    location: Location,
     capacity: Int
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
@@ -35,6 +37,10 @@ class Machine(
 
     @Embedded
     var address: Address = address
+        protected set
+
+    @Embedded
+    var location: Location = location
         protected set
 
     @Column(nullable = false)
@@ -58,12 +64,14 @@ class Machine(
     fun update(
         name: String,
         address: Address,
+        location: Location,
         capacity: Int,
         cupAmounts: Int,
         state: MachineState
     ) {
         this.name = name
         this.address = address
+        this.location = location
         this.capacity = capacity
         this.state = state
         updateCupAmounts(cupAmounts)
@@ -90,5 +98,5 @@ class Machine(
         }
     }
 
-    fun toDto() = MachineDto(id, no, name, type, address.toDto(), capacity, cupAmounts, state, createdDate, lastModifiedDate)
+    fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, createdDate, lastModifiedDate)
 }

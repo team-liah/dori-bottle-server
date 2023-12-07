@@ -5,6 +5,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.Address
+import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.cup.CupStatus
 import com.liah.doribottle.domain.cup.CupStatus.ON_LOAN
@@ -81,10 +82,10 @@ class RentalServiceTest : BaseServiceTest() {
 
         cup = cupRepository.save(Cup(CUP_RFID))
 
-        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address("12345", "test"),100))
+        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100))
         vendingMachine.increaseCupAmounts(10)
 
-        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address("12345", "test"),100))
+        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100))
         collectionMachine.increaseCupAmounts(0)
     }
 
