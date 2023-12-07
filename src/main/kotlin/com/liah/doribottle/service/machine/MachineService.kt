@@ -11,6 +11,7 @@ import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
 import com.liah.doribottle.service.machine.dto.MachineDto
+import com.liah.doribottle.service.machine.dto.MachineSimpleDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -83,6 +84,11 @@ class MachineService(
             deleted = deleted,
             pageable = pageable
         ).map { it.toDto() }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAll(): List<MachineSimpleDto> {
+        return machineQueryRepository.getAll(deleted = false)
     }
 
     fun update(

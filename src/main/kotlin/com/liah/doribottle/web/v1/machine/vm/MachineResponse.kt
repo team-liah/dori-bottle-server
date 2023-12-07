@@ -1,14 +1,12 @@
-package com.liah.doribottle.service.machine.dto
+package com.liah.doribottle.web.v1.machine.vm
 
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
-import com.liah.doribottle.web.v1.machine.vm.MachineResponse
-import java.time.Instant
 import java.util.*
 
-data class MachineDto(
+data class MachineResponse(
     val id: UUID,
     val no: String,
     val name: String,
@@ -17,9 +15,5 @@ data class MachineDto(
     val location: LocationDto,
     val capacity: Int,
     val cupAmounts: Int,
-    val state: MachineState,
-    val createdDate: Instant,
-    val lastModifiedDate: Instant
-) {
-    fun toResponse() = MachineResponse(id, no, name, type, address, location, capacity, cupAmounts, state)
-}
+    val state: MachineState
+)

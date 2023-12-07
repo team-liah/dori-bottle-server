@@ -149,6 +149,26 @@ class MachineServiceTest : BaseServiceTest() {
             .containsExactly("0000001", "0000002", "0000003")
     }
 
+    @DisplayName("자판기 목록 조회 - 페이징")
+    @Test
+    fun getAllNotUsePaging() {
+        //given
+        insertMachines()
+        clear()
+
+        val result = machineService.getAll()
+
+        assertThat(result)
+            .extracting("type")
+            .containsExactly(VENDING, VENDING, VENDING, VENDING, COLLECTION, VENDING)
+        assertThat(result)
+            .extracting("location.latitude")
+            .containsExactly(37.508855, 37.508955, 37.508355, 37.508455, 37.518855, 37.503855)
+        assertThat(result)
+            .extracting("location.longitude")
+            .containsExactly(127.059479, 127.052479, 127.051479, 127.053479, 127.029479, 127.059179)
+    }
+
     fun insertMachines() {
         machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
         machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479), 100))
