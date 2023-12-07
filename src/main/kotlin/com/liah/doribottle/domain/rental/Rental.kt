@@ -25,7 +25,7 @@ class Rental(
     user: User,
     fromMachine: Machine,
     withIce: Boolean,
-    dayLimit: Long
+    hourLimit: Long
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     val no: String = generateRandomString(8)
@@ -61,7 +61,7 @@ class Rental(
         protected set
 
     @Column(nullable = false)
-    var expiredDate: Instant = Instant.now().plus(dayLimit, ChronoUnit.DAYS)
+    var expiredDate: Instant = Instant.now().plus(hourLimit, ChronoUnit.HOURS)
         protected set
 
     @Enumerated(EnumType.STRING)
