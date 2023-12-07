@@ -1,45 +1,76 @@
 package com.liah.doribottle.schedule
 
 import com.liah.doribottle.constant.LOST_CUP_PRICE
+import com.liah.doribottle.domain.notification.NotificationIndividual
+import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.payment.PaymentType
-import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
-import com.liah.doribottle.extension.truncateToKstDay
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentMethodDto
 import com.liah.doribottle.service.rental.RentalService
+import com.liah.doribottle.service.task.TaskService
+import com.liah.doribottle.service.task.dto.TaskDto
 import com.liah.doribottle.service.user.UserService
-import org.springframework.data.domain.Pageable
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Component
 class Scheduler(
+    private val taskService: TaskService,
     private val rentalService: RentalService,
     private val paymentService: PaymentService,
     private val userService: UserService,
     private val tossPaymentsService: TossPaymentsService
 ) {
+    @SchedulerLock(
+        name = "scheduledTask",
+        lockAtLeastFor = "PT60S",
+        lockAtMostFor = "PT60S"
+    )
     @Scheduled(fixedDelay = 60000)
-    fun payToLostCupTask() {
-        val expiredRentals = rentalService.getAll(
-            status = RentalStatus.PROCEEDING,
-            expired = true,
-            pageable = Pageable.unpaged()
-        ).content
-
-        expiredRentals.forEach { rental ->
+    fun scheduledTask() {
+        val tasks = taskService.getAllForExecute()
+        tasks.forEach { task ->
+            taskService.delete(task.id)
             runCatching {
-                rentalService.fail(rental.id)
-            }.onSuccess {
-                payToLostCup(rental.user.id)
+                when (task.type) {
+                    TaskType.RENTAL_OVERDUE -> { overdueRental(task) }
+                    TaskType.RENTAL_REMIND -> { remindRental(task) }
+                }
             }
         }
     }
+
+    /**
+     * TASK START
+     */
+
+    private fun overdueRental(task: TaskDto) {
+        val rental = rentalService.get(task.targetId)
+        rentalService.fail(rental.id)
+        payToLostCup(rental.user.id)
+    }
+
+    private fun remindRental(task: TaskDto) {
+        val rental = rentalService.get(task.targetId)
+        Events.notify(
+            NotificationIndividual(
+                userId = rental.user.id,
+                type = NotificationType.NEAR_EXPIRATION,
+                targetId = rental.id,
+                rental.no
+            )
+        )
+    }
+
+    /**
+     * TASK END
+     */
 
     private fun payToLostCup(userId: UUID) {
         val paymentMethod = runCatching {
@@ -93,17 +124,5 @@ class Scheduler(
                 blockedCauseDescription = null
             )
         }
-    }
-
-    /**
-     * KST 기준 매일 오전 9시 리마인드 알림 생성
-     */
-    @Scheduled(cron = "0 0 0 * * ?")
-    fun remindNearExpirationEveryDay() {
-        val now = Instant.now()
-        val start = now.truncateToKstDay()
-        val end = now.plus(4, ChronoUnit.DAYS).truncateToKstDay()
-
-        rentalService.remindExpiredDateBetween(start, end)
     }
 }
