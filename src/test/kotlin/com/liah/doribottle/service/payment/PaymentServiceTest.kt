@@ -133,7 +133,7 @@ class PaymentServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val result = paymentService.getAll(user.id, null, setOf(PROCEEDING), Pageable.ofSize(3))
+        val result = paymentService.getAll(user.id, null, setOf(PROCEEDING), null, null, Pageable.ofSize(3))
 
         //then
         assertThat(result.totalElements).isEqualTo(6)

@@ -135,7 +135,7 @@ class PaymentController(
             userId = currentUserId()!!,
             type = type,
             statuses = setOf(PaymentStatus.SUCCEEDED, PaymentStatus.CANCELED),
-            pageable
+            pageable = pageable
         ).map { it.toSearchResponse() }
 
         return CustomPage.of(result)
