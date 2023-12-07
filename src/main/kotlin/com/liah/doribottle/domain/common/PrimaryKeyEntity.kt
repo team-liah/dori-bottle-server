@@ -40,7 +40,6 @@ abstract class PrimaryKeyEntity : Persistable<UUID> {
     @Column
     var lastModifiedBy: UUID? = currentUserId()
 
-
     @Transient
     private var _isNew = true
 
