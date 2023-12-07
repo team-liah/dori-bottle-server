@@ -14,6 +14,7 @@ import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.service.task.TaskService
 import com.liah.doribottle.service.task.dto.TaskDto
 import com.liah.doribottle.service.user.UserService
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
@@ -26,17 +27,22 @@ class Scheduler(
     private val userService: UserService,
     private val tossPaymentsService: TossPaymentsService
 ) {
+    @SchedulerLock(
+        name = "scheduledTask",
+        lockAtLeastFor = "PT60S",
+        lockAtMostFor = "PT60S"
+    )
     @Scheduled(fixedDelay = 60000)
     fun scheduledTask() {
         val tasks = taskService.getAllForExecute()
         tasks.forEach { task ->
+            taskService.delete(task.id)
             runCatching {
                 when (task.type) {
                     TaskType.RENTAL_OVERDUE -> { overdueRental(task) }
                     TaskType.RENTAL_REMIND -> { remindRental(task) }
                 }
             }
-            taskService.delete(task.id)
         }
     }
 
