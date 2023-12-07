@@ -31,6 +31,7 @@ class MachineResource(
             name = request.name!!,
             type = request.type!!,
             address = request.address!!,
+            location = request.location!!,
             capacity = request.capacity!!
         )
     }
@@ -72,6 +73,7 @@ class MachineResource(
             id = id,
             name = request.name!!,
             address = request.address!!,
+            location = request.location!!,
             capacity = request.capacity!!,
             cupAmounts = request.cupAmounts!!,
             state = request.state!!
@@ -89,6 +91,7 @@ class MachineResource(
             id = id,
             name = request.name ?: machine.name,
             address = request.address ?: machine.address,
+            location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state
@@ -106,6 +109,7 @@ class MachineResource(
             id = id,
             name = request.name ?: machine.name,
             address = request.address ?: machine.address,
+            location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state

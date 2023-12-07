@@ -3,6 +3,7 @@ package com.liah.doribottle.service.machine
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
+import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState.MALFUNCTION
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
@@ -11,6 +12,7 @@ import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.common.AddressDto
+import com.liah.doribottle.service.common.LocationDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -30,9 +32,10 @@ class MachineServiceTest : BaseServiceTest() {
     fun register() {
         //given
         val address = AddressDto("12345", "삼성로", null)
+        val location = LocationDto(37.508855, 127.059479)
 
         //when
-        val id = machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address, 100)
+        val id = machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100)
         clear()
 
         //then
@@ -41,6 +44,7 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(machine?.name).isEqualTo(MACHINE_NAME)
         assertThat(machine?.type).isEqualTo(VENDING)
         assertThat(machine?.address?.toDto()).isEqualTo(address)
+        assertThat(machine?.location?.toDto()).isEqualTo(location)
         assertThat(machine?.capacity).isEqualTo(100)
         assertThat(machine?.cupAmounts).isEqualTo(0)
         assertThat(machine?.state).isEqualTo(NORMAL)
@@ -51,12 +55,13 @@ class MachineServiceTest : BaseServiceTest() {
     fun registerException() {
         //given
         val address = Address("12345", "삼성로", null)
-        machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        val location = Location(37.508855, 127.059479)
+        machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
         clear()
 
         //when, then
         val exception = assertThrows<BusinessException> {
-            machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address.toDto(), 100)
+            machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address.toDto(), location.toDto(), 100)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.MACHINE_ALREADY_REGISTERED)
     }
@@ -66,7 +71,8 @@ class MachineServiceTest : BaseServiceTest() {
     fun get() {
         //given
         val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        val location = Location(37.508855, 127.059479)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
         clear()
 
         //when
@@ -77,6 +83,7 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(machineDto.name).isEqualTo(MACHINE_NAME)
         assertThat(machineDto.type).isEqualTo(VENDING)
         assertThat(machineDto.address).isEqualTo(address.toDto())
+        assertThat(machineDto.location).isEqualTo(location.toDto())
         assertThat(machineDto.capacity).isEqualTo(100)
         assertThat(machineDto.cupAmounts).isEqualTo(0)
         assertThat(machineDto.state).isEqualTo(NORMAL)
@@ -142,13 +149,33 @@ class MachineServiceTest : BaseServiceTest() {
             .containsExactly("0000001", "0000002", "0000003")
     }
 
+    @DisplayName("자판기 목록 조회 - 페이징")
+    @Test
+    fun getAllNotUsePaging() {
+        //given
+        insertMachines()
+        clear()
+
+        val result = machineService.getAll()
+
+        assertThat(result)
+            .extracting("type")
+            .containsExactly(VENDING, VENDING, VENDING, VENDING, COLLECTION, VENDING)
+        assertThat(result)
+            .extracting("location.latitude")
+            .containsExactly(37.508855, 37.508955, 37.508355, 37.508455, 37.518855, 37.503855)
+        assertThat(result)
+            .extracting("location.longitude")
+            .containsExactly(127.059479, 127.052479, 127.051479, 127.053479, 127.029479, 127.059179)
+    }
+
     fun insertMachines() {
-        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), 100))
-        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), 100))
-        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), 100))
-        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), 100))
-        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), 100))
-        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), 100))
+        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479), 100))
+        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), Location(37.508355, 127.051479), 100))
+        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), Location(37.508455, 127.053479), 100))
+        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), Location(37.518855, 127.029479), 100))
+        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), Location(37.503855, 127.059179), 100))
     }
 
     @DisplayName("자판기 정보 수정")
@@ -156,12 +183,14 @@ class MachineServiceTest : BaseServiceTest() {
     fun update() {
         //given
         val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        val location = Location(37.508855, 127.059479)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
         clear()
 
         //when
         val newAddress = AddressDto("00000", "마장로", null)
-        machineService.update(machine.id, "new name", newAddress, 200, 10, MALFUNCTION)
+        val newLocation = LocationDto(37.508855, 127.029479)
+        machineService.update(machine.id, "new name", newAddress, newLocation, 200, 10, MALFUNCTION)
         clear()
 
         //then
@@ -172,6 +201,8 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(findMachine?.address?.zipCode).isEqualTo("00000")
         assertThat(findMachine?.address?.address1).isEqualTo("마장로")
         assertThat(findMachine?.address?.address2).isNull()
+        assertThat(findMachine?.location?.latitude).isEqualTo(37.508855)
+        assertThat(findMachine?.location?.longitude).isEqualTo(127.029479)
         assertThat(findMachine?.capacity).isEqualTo(200)
         assertThat(findMachine?.cupAmounts).isEqualTo(10)
         assertThat(findMachine?.state).isEqualTo(MALFUNCTION)
@@ -182,7 +213,8 @@ class MachineServiceTest : BaseServiceTest() {
     fun delete() {
         //given
         val address = Address("12345", "삼성로", null)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, 100))
+        val location = Location(37.508855, 127.059479)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
         clear()
 
         //when

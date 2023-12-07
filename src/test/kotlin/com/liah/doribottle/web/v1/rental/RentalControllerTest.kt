@@ -2,6 +2,7 @@ package com.liah.doribottle.web.v1.rental
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.Address
+import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
@@ -69,10 +70,10 @@ class RentalControllerTest : BaseControllerTest() {
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
 
-        val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), 100)
+        val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100)
         machineEntity.updateCupAmounts(100)
         vendingMachine = machineRepository.save(machineEntity)
-        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), 100))
+        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100))
 
         cup = cupRepository.save(Cup(CUP_RFID))
     }
