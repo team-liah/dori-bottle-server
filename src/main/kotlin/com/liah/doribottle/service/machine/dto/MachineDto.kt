@@ -3,6 +3,7 @@ package com.liah.doribottle.service.machine.dto
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.AddressDto
+import com.liah.doribottle.service.common.LocationDto
 import java.time.Instant
 import java.util.*
 
@@ -12,6 +13,7 @@ data class MachineDto(
     val name: String,
     val type: MachineType,
     val address: AddressDto,
+    val location: LocationDto,
     val capacity: Int,
     val cupAmounts: Int,
     val state: MachineState,

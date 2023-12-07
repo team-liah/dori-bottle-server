@@ -9,6 +9,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
+import com.liah.doribottle.service.common.LocationDto
 import com.liah.doribottle.service.machine.dto.MachineDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -28,6 +29,7 @@ class MachineService(
         name: String,
         type: MachineType,
         address: AddressDto,
+        location: LocationDto,
         capacity: Int
     ): UUID {
         verifyDuplicatedNo(no)
@@ -38,6 +40,7 @@ class MachineService(
                 name = name,
                 type = type,
                 address = address.toEmbeddable(),
+                location = location.toEmbeddable(),
                 capacity = capacity
             )
         )
@@ -86,6 +89,7 @@ class MachineService(
         id: UUID,
         name: String,
         address: AddressDto,
+        location: LocationDto,
         capacity: Int,
         cupAmounts: Int,
         state: MachineState
@@ -96,6 +100,7 @@ class MachineService(
         machine.update(
             name = name,
             address = address.toEmbeddable(),
+            location = location.toEmbeddable(),
             capacity = capacity,
             cupAmounts = cupAmounts,
             state = state
@@ -118,12 +123,12 @@ class MachineService(
     ) {
         val vending = machineRepository.findByNo(no)
         if (vending == null) {
-            register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), 100)
+            register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508855, 127.059479), 100)
         }
 
         val collection = machineRepository.findByNo(no2)
         if (collection == null) {
-            register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), 100)
+            register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508276, 127.055314), 100)
         }
     }
 }
