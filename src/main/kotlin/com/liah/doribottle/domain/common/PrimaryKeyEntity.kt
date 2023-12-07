@@ -1,9 +1,12 @@
 package com.liah.doribottle.domain.common
 
 import com.github.f4b6a3.ulid.UlidCreator
+import com.liah.doribottle.extension.currentUserId
 import jakarta.persistence.*
 import org.hibernate.proxy.HibernateProxy
+import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedBy
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.domain.Persistable
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -28,6 +31,15 @@ abstract class PrimaryKeyEntity : Persistable<UUID> {
     @Column(nullable = false)
     var lastModifiedDate: Instant = Instant.now()
         protected set
+
+    @CreatedBy
+    @Column
+    var createdBy: UUID? = currentUserId()
+
+    @LastModifiedBy
+    @Column
+    var lastModifiedBy: UUID? = currentUserId()
+
 
     @Transient
     private var _isNew = true
