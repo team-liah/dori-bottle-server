@@ -26,10 +26,10 @@ import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
-import com.liah.doribottle.extension.truncateToKstDay
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -37,6 +37,7 @@ import com.liah.doribottle.repository.point.PointEventRepository
 import com.liah.doribottle.repository.point.PointHistoryRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalRepository
+import com.liah.doribottle.repository.task.TaskRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -61,6 +62,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var machineRepository: MachineRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+    @Autowired private lateinit var taskRepository: TaskRepository
 
     @Autowired private lateinit var cacheManager: CacheManager
 
@@ -363,9 +365,21 @@ class RentalServiceTest : BaseServiceTest() {
         //then
         val findCup = cupRepository.findByIdOrNull(cup.id)
         val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findCup?.status).isEqualTo(ON_LOAN)
+
         assertThat(findMachine?.cupAmounts).isEqualTo(9)
+
+        assertThat(findTasks)
+            .extracting("executeDate")
+            .containsExactly(rental.expiredDate, rental.expiredDate.minus(1, ChronoUnit.HOURS))
+        assertThat(findTasks)
+            .extracting("type")
+            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
+        assertThat(findTasks)
+            .extracting("targetId")
+            .containsExactly(rental.id, rental.id)
     }
 
     @DisplayName("컵 반납")
@@ -383,6 +397,7 @@ class RentalServiceTest : BaseServiceTest() {
         val findRental = rentalRepository.findByIdOrNull(rental.id)
         val findCup = cupRepository.findByIdOrNull(cup.id)
         val findToMachine = machineRepository.findByIdOrNull(collectionMachine.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findRental?.toMachine).isEqualTo(findToMachine)
         assertThat(findRental?.status).isEqualTo(RentalStatus.SUCCEEDED)
@@ -391,6 +406,8 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findCup?.status).isEqualTo(CupStatus.RETURNED)
 
         assertThat(findToMachine?.cupAmounts).isEqualTo(1)
+
+        assertThat(findTasks).isEmpty()
     }
 
     @DisplayName("컵 반납 예외")
@@ -497,21 +514,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(result.status).isEqualTo(PROCEEDING)
         assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
         assertThat(result.withIce).isTrue()
-    }
-
-    @DisplayName("만료 임박 리마인드")
-    @Test
-    fun remindExpiredDateBetween() {
-        insertRentals()
-        clear()
-
-        val now = Instant.now()
-        val start = now.truncateToKstDay()
-        val end = now.plus(4, ChronoUnit.DAYS).truncateToKstDay()
-
-        val count = rentalService.remindExpiredDateBetween(start, end)
-
-        assertThat(count).isEqualTo(4)
     }
 
     private fun insertRentals() {
