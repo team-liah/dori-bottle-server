@@ -3,6 +3,7 @@ package com.liah.doribottle.config.security
 import com.liah.doribottle.domain.user.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -31,6 +32,7 @@ class SecurityConfig(
                 .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                 .requestMatchers("/actuator/health/liveness", "/actuator/health/readiness").permitAll()
                 .requestMatchers("/api/v1/account/auth/send-sms", "/api/v1/account/auth", "/api/v1/account/refresh-auth", "/api/v1/account/logout").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/machine/**").permitAll()
                 .requestMatchers("/admin/api/account/auth", "/admin/api/account/refresh-auth", "/admin/api/account/logout").permitAll()
                 .requestMatchers("/api/v1/account/dummy-auth", "/api/v1/account/dummy-data").permitAll() //TODO: Remove
                 .requestMatchers("/api/v1/me").authenticated()
