@@ -54,7 +54,10 @@ dependencies {
 
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	testImplementation("org.testcontainers:testcontainers:1.18.3")
+
+	// testcontainers
+	testImplementation("org.testcontainers:testcontainers:1.19.3")
+	testImplementation("org.testcontainers:mariadb:1.19.3")
 
 	// ulid-creator
 	implementation("com.github.f4b6a3:ulid-creator:5.2.0")

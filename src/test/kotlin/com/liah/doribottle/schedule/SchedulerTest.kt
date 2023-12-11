@@ -1,7 +1,7 @@
 package com.liah.doribottle.schedule
 
 import com.liah.doribottle.common.error.exception.BillingExecuteException
-import com.liah.doribottle.config.RedisTestContainerConfig
+import com.liah.doribottle.config.TestcontainersConfig
 import com.liah.doribottle.constant.LOST_CUP_PRICE
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.Location
@@ -50,7 +50,7 @@ import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
 import java.util.*
 
-@Import(RedisTestContainerConfig::class)
+@Import(TestcontainersConfig::class)
 @SpringBootTest
 class SchedulerTest {
     @Autowired private lateinit var scheduler: Scheduler

@@ -1,6 +1,7 @@
 package com.liah.doribottle.repository.point
 
 import com.liah.doribottle.config.TestConfig
+import com.liah.doribottle.config.TestcontainersConfig
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointSaveType.PAY
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.stereotype.Repository
 
-@Import(TestConfig::class)
+@Import(TestConfig::class, TestcontainersConfig::class)
 @DataJpaTest(includeFilters = [ComponentScan.Filter(type = FilterType.ANNOTATION, classes = [Repository::class])])
 class PointQueryRepositoryTest {
     @PersistenceContext private lateinit var entityManager: EntityManager
