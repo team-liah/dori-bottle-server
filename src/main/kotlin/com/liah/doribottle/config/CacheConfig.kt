@@ -9,26 +9,36 @@ import org.springframework.data.redis.cache.RedisCacheManager.RedisCacheManagerB
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
+import java.time.Duration
 
 
 @EnableCaching
 @Configuration
 class CacheConfig {
     @Bean
+    fun cacheConfiguration(): RedisCacheConfiguration {
+        return RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofDays(1))
+            .disableCachingNullValues()
+            .serializeKeysWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
+            )
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
+            )
+    }
+
+    @Bean
     fun redisCacheManagerBuilderCustomizer(): RedisCacheManagerBuilderCustomizer {
         return RedisCacheManagerBuilderCustomizer { builder: RedisCacheManagerBuilder ->
             builder
                 .withCacheConfiguration(
                     "pointSum",
-                    RedisCacheConfiguration.defaultCacheConfig()
-                        .computePrefixWith { cacheName -> "cache :: $cacheName" }
-                        .disableCachingNullValues()
-                        .serializeKeysWith(
-                            RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
-                        )
-                        .serializeValuesWith(
-                            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
-                        )
+                    cacheConfiguration()
+                )
+                .withCacheConfiguration(
+                    "aclCache",
+                    RedisCacheConfiguration.defaultCacheConfig().disableCachingNullValues()
                 )
         }
     }

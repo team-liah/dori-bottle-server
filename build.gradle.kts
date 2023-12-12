@@ -46,6 +46,11 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
+	// security
+	implementation("org.springframework.security:spring-security-acl")
+	implementation("org.springframework.security:spring-security-config")
+	implementation("org.springframework:spring-context-support")
+
 	// aws
 	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1"))
