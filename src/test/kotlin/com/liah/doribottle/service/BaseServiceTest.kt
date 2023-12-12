@@ -1,13 +1,13 @@
 package com.liah.doribottle.service
 
-import com.liah.doribottle.config.RedisTestContainerConfig
+import com.liah.doribottle.config.TestcontainersConfig
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
 
-@Import(RedisTestContainerConfig::class)
+@Import(TestcontainersConfig::class)
 @SpringBootTest
 @Transactional
 class BaseServiceTest {

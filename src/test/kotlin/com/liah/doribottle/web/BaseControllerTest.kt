@@ -1,6 +1,6 @@
 package com.liah.doribottle.web
 
-import com.liah.doribottle.config.RedisTestContainerConfig
+import com.liah.doribottle.config.TestcontainersConfig
 import com.liah.doribottle.config.security.TokenProvider
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.domain.user.Role
@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.util.*
 
-@Import(RedisTestContainerConfig::class)
+@Import(TestcontainersConfig::class)
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BaseControllerTest {
