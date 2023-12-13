@@ -9,7 +9,6 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.acls.AclPermissionEvaluator
 import org.springframework.security.acls.domain.*
 import org.springframework.security.acls.jdbc.BasicLookupStrategy
-import org.springframework.security.acls.jdbc.JdbcMutableAclService
 import org.springframework.security.acls.jdbc.LookupStrategy
 import org.springframework.security.acls.model.PermissionGrantingStrategy
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -29,8 +28,8 @@ class AclContext(
     }
 
     @Bean
-    fun aclService(): JdbcMutableAclService {
-        val aclService = JdbcMutableAclService(dataSource, lookupStrategy(), aclCache())
+    fun aclService(): CustomJdbcMutableService {
+        val aclService = CustomJdbcMutableService(dataSource, lookupStrategy(), aclCache())
         aclService.setClassIdentityQuery("SELECT @@IDENTITY")
         aclService.setSidIdentityQuery("SELECT @@IDENTITY")
         aclService.setAclClassIdSupported(true)
