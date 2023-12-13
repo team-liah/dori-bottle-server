@@ -13,7 +13,7 @@ class CustomJdbcMutableService(
     lookupStrategy: LookupStrategy,
     aclCache: AclCache
 ) : JdbcMutableAclService(dataSource, lookupStrategy, aclCache) {
-    private val selectObjectIdIdentity: String = "select distinct " +
+    private val selectObjectIdIdentityByAclSid: String = "select distinct " +
             "acl_object_identity.object_id_identity " +
             "from acl_object_identity " +
             "inner join acl_entry on acl_entry.acl_object_identity = acl_object_identity.id " +
@@ -24,7 +24,7 @@ class CustomJdbcMutableService(
             "and acl_sid.principal = ? " +
             "and acl_entry.granting = true"
 
-    private val selectObjectIdIdentityIn: String = "select distinct " +
+    private val selectObjectIdIdentityByAclSidIn: String = "select distinct " +
             "acl_object_identity.object_id_identity " +
             "from acl_object_identity " +
             "inner join acl_entry on acl_entry.acl_object_identity = acl_object_identity.id " +
@@ -34,15 +34,20 @@ class CustomJdbcMutableService(
             "and acl_sid.sid in (%s) " +
             "and acl_entry.granting = true"
 
-    fun getObjectIdIdentities(type: String, sid: Sid): List<String> {
+    private val deleteAllEntry: String = "delete from acl_entry"
+    private val deleteAllObjectIdentity: String = "delete from acl_object_identity"
+    private val deleteAllSid: String = "delete from acl_sid"
+    private val deleteAllClass: String = "delete from acl_class"
+
+    fun getObjectIdIdentitiesBySid(type: String, sid: Sid): List<String> {
         return when (sid) {
-            is PrincipalSid -> findObjectIdIdentities(type, sid.principal, true)
-            is GrantedAuthoritySid -> findObjectIdIdentities(type, sid.grantedAuthority, false)
+            is PrincipalSid -> findObjectIdIdentitiesBySid(type, sid.principal, true)
+            is GrantedAuthoritySid -> findObjectIdIdentitiesBySid(type, sid.grantedAuthority, false)
             else -> emptyList()
         }
     }
 
-    fun getObjectIdIdentitiesIn(type: String, vararg sids: Sid): List<String> {
+    fun getObjectIdIdentitiesBySidIn(type: String, vararg sids: Sid): List<String> {
         val sidNames = sids.mapNotNull { sid ->
             when (sid) {
                 is PrincipalSid -> sid.principal
@@ -51,12 +56,19 @@ class CustomJdbcMutableService(
             }
         }
         if (sidNames.isEmpty()) return emptyList()
-        return findObjectIdIdentitiesIn(type, sidNames)
+        return findObjectIdIdentitiesBySidIn(type, sidNames)
     }
 
-    private fun findObjectIdIdentities(type: String, sidName: String, sidIsPrincipal: Boolean): List<String> {
+//    fun deleteAll() {
+//        this.jdbcOperations.update(this.deleteAllEntry)
+//        this.jdbcOperations.update(this.deleteAllObjectIdentity)
+//        this.jdbcOperations.update(this.deleteAllSid)
+//        this.jdbcOperations.update(this.deleteAllClass)
+//    }
+
+    private fun findObjectIdIdentitiesBySid(type: String, sidName: String, sidIsPrincipal: Boolean): List<String> {
         return this.jdbcOperations.queryForList(
-            this.selectObjectIdIdentity,
+            this.selectObjectIdIdentityByAclSid,
             String::class.java,
             type,
             sidName,
@@ -64,10 +76,10 @@ class CustomJdbcMutableService(
         )
     }
 
-    private fun findObjectIdIdentitiesIn(type: String, sidNames: List<String>): List<String> {
+    private fun findObjectIdIdentitiesBySidIn(type: String, sidNames: List<String>): List<String> {
         val inSql = (1..sidNames.size).joinToString(", ") { "?" }
         return this.jdbcOperations.queryForList(
-            String.format(this.selectObjectIdIdentityIn, inSql),
+            String.format(this.selectObjectIdIdentityByAclSidIn, inSql),
             String::class.java,
             type,
             *sidNames.toTypedArray()

@@ -26,6 +26,8 @@ class AclManager(
     }
 
     fun getAuthorizedACL(aclEntity: AclEntity, principal: UUID?, vararg authorities: String): List<UUID> {
+        if (authorities.isEmpty()) return emptyList()
+
         val oi = aclEntity.toOi()
         val principalSid = principal?.let { PrincipalSid(it.toString()) }
         val grantedAuthoritySids = authorities.map { GrantedAuthoritySid(it) }.toTypedArray()
@@ -35,28 +37,46 @@ class AclManager(
             listOf(principalSid, *grantedAuthoritySids)
         }.toTypedArray()
 
-        return aclService.getObjectIdIdentitiesIn(oi.type, *sids)
+        return aclService.getObjectIdIdentitiesBySidIn(oi.type, *sids)
             .map { UUID.fromString(it) }
     }
 
     fun addPermissionForUsers(aclEntity: AclEntity, permission: Permission, vararg principals: UUID) {
+        if (principals.isEmpty()) return
+
         val sids = principals.map { PrincipalSid(it.toString()) }.toTypedArray()
         addPermissionForSids(aclEntity, permission, *sids)
     }
 
     fun addPermissionForAuthorities(aclEntity: AclEntity, permission: Permission, vararg authorities: String) {
+        if (authorities.isEmpty()) return
+
         val sids = authorities.map { GrantedAuthoritySid(it) }.toTypedArray()
         addPermissionForSids(aclEntity, permission, *sids)
     }
 
     fun removePermissionForUsers(aclEntity: AclEntity, permission: Permission, vararg principals: UUID) {
+        if (principals.isEmpty()) return
+
         val sids = principals.map { PrincipalSid(it.toString()) }.toTypedArray()
         removePermissionForSids(aclEntity, permission, *sids)
     }
 
     fun removePermissionForAuthorities(aclEntity: AclEntity, permission: Permission, vararg authorities: String) {
+        if (authorities.isEmpty()) return
+
         val sids = authorities.map { GrantedAuthoritySid(it) }.toTypedArray()
         removePermissionForSids(aclEntity, permission, *sids)
+    }
+
+    fun removePermissionAllUsers(aclEntity: AclEntity, permission: Permission) {
+        val acl = getOrCreateAcl(aclEntity.toOi())
+        revokePermissionForAllSids<PrincipalSid>(acl, permission)
+    }
+
+    fun removePermissionAllAuthorities(aclEntity: AclEntity, permission: Permission) {
+        val acl = getOrCreateAcl(aclEntity.toOi())
+        revokePermissionForAllSids<GrantedAuthoritySid>(acl, permission)
     }
 
     private fun addPermissionForSids(aclEntity: AclEntity, permission: Permission, vararg sids: Sid) {
@@ -78,17 +98,24 @@ class AclManager(
     }
 
     private fun grantPermissionForSids(acl: MutableAcl, permission: Permission, vararg sids: Sid) {
-        if (sids.isEmpty()) return
         sids.forEach { sid -> acl.insertAce(acl.entries.size, permission, sid, true) }
         aclService.updateAcl(acl)
     }
 
     private fun revokePermissionForSids(acl: MutableAcl, permission: Permission, vararg sids: Sid) {
-        if (sids.isEmpty()) return
         sids.forEach { sid ->
             val aclIndex = acl.entries.indexOfFirst { it.permission == permission && it.sid == sid }
             if (aclIndex > -1) {
                 acl.deleteAce(aclIndex)
+            }
+        }
+        aclService.updateAcl(acl)
+    }
+
+    private inline fun <reified T : Sid> revokePermissionForAllSids(acl: MutableAcl, permission: Permission) {
+        acl.entries.forEachIndexed { index, ace ->
+            if (ace.permission == permission && ace.sid is T) {
+                acl.deleteAce(index)
             }
         }
         aclService.updateAcl(acl)
