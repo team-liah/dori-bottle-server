@@ -12,12 +12,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class MachineQueryRepository(
     private val queryFactory: JPAQueryFactory
 ) {
     fun getAll(
+        ids: List<UUID>? = null,
         no: String? = null,
         name: String? = null,
         type: MachineType? = null,
@@ -29,6 +31,7 @@ class MachineQueryRepository(
         return queryFactory
             .selectFrom(machine)
             .where(
+                idsIn(ids),
                 noContains(no),
                 nameContains(name),
                 typeEq(type),
@@ -40,6 +43,12 @@ class MachineQueryRepository(
     }
 
     fun getAll(
+        ids: List<UUID>? = null,
+        no: String? = null,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
         deleted: Boolean? = null
     ): List<MachineSimpleDto> {
         return queryFactory
@@ -56,11 +65,18 @@ class MachineQueryRepository(
             )
             .from(machine)
             .where(
+                idsIn(ids),
+                noContains(no),
+                nameContains(name),
+                typeEq(type),
+                stateEq(state),
+                addressKeywordContains(addressKeyword),
                 deletedEq(deleted)
             )
             .fetch()
     }
 
+    private fun idsIn(ids: List<UUID>?) = ids?.let { machine.id.`in`(it) }
     private fun noContains(no: String?) = no?.let { machine.no.contains(it) }
     private fun nameContains(name: String?) = name?.let { machine.name.contains(it) }
     private fun typeEq(type: MachineType?) = type?.let { machine.type.eq(it) }

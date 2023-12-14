@@ -2,10 +2,7 @@ package com.liah.doribottle.domain.machine
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.domain.common.Address
-import com.liah.doribottle.domain.common.Location
-import com.liah.doribottle.domain.common.PrimaryKeyEntity
-import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.domain.common.*
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.service.machine.dto.MachineDto
 import jakarta.persistence.*
@@ -24,7 +21,7 @@ class Machine(
     address: Address,
     location: Location,
     capacity: Int
-) : SoftDeleteEntity() {
+) : AclEntity, SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var no: String = no
 

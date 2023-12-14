@@ -11,6 +11,8 @@ fun currentUserId() = getPrincipal()?.id
 
 fun currentUserLoginId() = getPrincipal()?.loginId
 
+fun currentUserAuthorities() = getPrincipal()?.authorities?.map { it.authority } ?: emptyList()
+
 private fun getPrincipal(): DoriUser? {
     val principal = SecurityContextHolder.getContext().authentication?.principal
     return if (principal is DoriUser?) {

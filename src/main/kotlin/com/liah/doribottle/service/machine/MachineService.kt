@@ -3,9 +3,11 @@ package com.liah.doribottle.service.machine
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.config.security.acl.AclManager
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
+import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.service.common.AddressDto
@@ -15,15 +17,18 @@ import com.liah.doribottle.service.machine.dto.MachineSimpleDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.acls.domain.BasePermission
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import kotlin.reflect.jvm.jvmName
 
 @Service
 @Transactional
 class MachineService(
     private val machineRepository: MachineRepository,
-    private val machineQueryRepository: MachineQueryRepository
+    private val machineQueryRepository: MachineQueryRepository,
+    private val aclManager: AclManager
 ) {
     fun register(
         no: String,
@@ -31,7 +36,9 @@ class MachineService(
         type: MachineType,
         address: AddressDto,
         location: LocationDto,
-        capacity: Int
+        capacity: Int,
+        managerIds: Set<UUID> = emptySet(),
+        groupCodes: Set<String> = emptySet()
     ): UUID {
         verifyDuplicatedNo(no)
 
@@ -45,6 +52,10 @@ class MachineService(
                 capacity = capacity
             )
         )
+
+        aclManager.addPermissionForPrincipals(machine, BasePermission.READ, *managerIds.toTypedArray())
+        aclManager.addPermissionForAuthorities(machine, BasePermission.READ, *groupCodes.toTypedArray())
+        aclManager.addAllPermissionsForRoles(machine, Role.ADMIN, Role.SYSTEM)
 
         return machine.id
     }
@@ -67,6 +78,7 @@ class MachineService(
 
     @Transactional(readOnly = true)
     fun getAll(
+        ids: List<UUID>? = null,
         no: String? = null,
         name: String? = null,
         type: MachineType? = null,
@@ -76,6 +88,7 @@ class MachineService(
         pageable: Pageable
     ): Page<MachineDto> {
         return machineQueryRepository.getAll(
+            ids = ids,
             no = no,
             name = name,
             type = type,
@@ -87,8 +100,37 @@ class MachineService(
     }
 
     @Transactional(readOnly = true)
-    fun getAll(): List<MachineSimpleDto> {
-        return machineQueryRepository.getAll(deleted = false)
+    fun getAllSimple(
+        ids: List<UUID>? = null,
+        no: String? = null,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
+        deleted: Boolean? = null
+    ): List<MachineSimpleDto> {
+        return machineQueryRepository.getAll(
+            ids = ids,
+            no = no,
+            name = name,
+            type = type,
+            state = state,
+            addressKeyword = addressKeyword,
+            deleted = deleted
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getAccessibleIds(
+        principal: UUID? = null,
+        authorities: List<String> = emptyList()
+    ): List<UUID> {
+        return aclManager.getAuthorizedObjectIds(
+            type = Machine::class.jvmName,
+            permission = BasePermission.READ,
+            principal = principal,
+            *authorities.toTypedArray()
+        )
     }
 
     fun update(
@@ -98,7 +140,9 @@ class MachineService(
         location: LocationDto,
         capacity: Int,
         cupAmounts: Int,
-        state: MachineState
+        state: MachineState,
+        managerIds: Set<UUID> = emptySet(),
+        managementGroupCodes: Set<String> = emptySet()
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
@@ -111,6 +155,28 @@ class MachineService(
             cupAmounts = cupAmounts,
             state = state
         )
+
+        updateManagers(machine, managerIds)
+        updateManagementGroups(machine, managementGroupCodes)
+    }
+
+    private fun updateManagers(machine: Machine, managerIds: Set<UUID>) {
+        val originManagerIds = aclManager.getHasPermissionPrincipals(machine, BasePermission.READ).toSet()
+        val addManagerIds = managerIds - originManagerIds
+        val removeManagerIds = originManagerIds - managerIds
+        aclManager.addPermissionForPrincipals(machine, BasePermission.READ, *addManagerIds.toTypedArray())
+        aclManager.removePermissionForPrincipals(machine, BasePermission.READ, *removeManagerIds.toTypedArray())
+    }
+
+    private fun updateManagementGroups(machine: Machine, managementGroupCodes: Set<String>) {
+        val originManagementGroupCodes = aclManager
+            .getHasPermissionAuthorities(machine, BasePermission.READ)
+            .filter { it.startsWith("GROUP_") }
+            .toSet()
+        val addManagementGroupCodes = managementGroupCodes - originManagementGroupCodes
+        val removeManagementGroupCodes = originManagementGroupCodes - managementGroupCodes
+        aclManager.addPermissionForAuthorities(machine, BasePermission.READ, *addManagementGroupCodes.toTypedArray())
+        aclManager.removePermissionForAuthorities(machine, BasePermission.READ, *removeManagementGroupCodes.toTypedArray())
     }
 
     fun delete(
@@ -120,6 +186,8 @@ class MachineService(
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         machine.delete()
+
+        aclManager.removeObjectIdentity(machine)
     }
 
     // TODO: Remove

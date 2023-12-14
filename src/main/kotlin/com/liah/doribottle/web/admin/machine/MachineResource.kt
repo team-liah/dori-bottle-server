@@ -1,6 +1,8 @@
 package com.liah.doribottle.web.admin.machine
 
 import com.liah.doribottle.common.pageable.CustomPage
+import com.liah.doribottle.extension.currentUserAuthorities
+import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.service.machine.dto.MachineDto
 import com.liah.doribottle.web.admin.machine.vm.MachinePatchRequest
@@ -13,6 +15,7 @@ import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -21,6 +24,7 @@ import java.util.*
 class MachineResource(
     private val machineService: MachineService
 ) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "기기 등록")
     @PostMapping
     fun register(
@@ -36,6 +40,7 @@ class MachineResource(
         )
     }
 
+    @PreAuthorize("hasPermission(#id, 'com.liah.doribottle.domain.machine.Machine', 'READ')")
     @Operation(summary = "기기 조회")
     @GetMapping("/{id}")
     fun get(
@@ -50,7 +55,9 @@ class MachineResource(
         @ParameterObject request: MachineSearchRequest,
         @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
     ): CustomPage<MachineDto> {
+        val accessibleIds = machineService.getAccessibleIds(currentUserId(), currentUserAuthorities())
         val result = machineService.getAll(
+                ids = accessibleIds,
                 no = request.no,
                 name = request.name,
                 type = request.type,
@@ -63,6 +70,7 @@ class MachineResource(
         return CustomPage.of(result)
     }
 
+    @PreAuthorize("hasPermission(#id, 'com.liah.doribottle.domain.machine.Machine', 'WRITE')")
     @Operation(summary = "기기 수정")
     @PutMapping("/{id}")
     fun update(
@@ -80,6 +88,7 @@ class MachineResource(
         )
     }
 
+    @PreAuthorize("hasPermission(#id, 'com.liah.doribottle.domain.machine.Machine', 'WRITE')")
     @Operation(summary = "기기 패치")
     @PatchMapping("/{id}")
     fun patch(
@@ -98,6 +107,7 @@ class MachineResource(
         )
     }
 
+    @PreAuthorize("hasPermission(#id, 'com.liah.doribottle.domain.machine.Machine', 'WRITE')")
     @Operation(summary = "기기 패치 - POST")
     @PostMapping("/{id}/patch")
     fun patchPost(
@@ -116,6 +126,7 @@ class MachineResource(
         )
     }
 
+    @PreAuthorize("hasPermission(#id, 'com.liah.doribottle.domain.machine.Machine', 'DELETE')")
     @Operation(summary = "기기 삭제")
     @DeleteMapping("/{id}")
     fun delete(

@@ -1,5 +1,6 @@
 package com.liah.doribottle.web.v1.machine
 
+import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.service.machine.MachineService
 import com.liah.doribottle.web.v1.machine.vm.MachineResponse
 import com.liah.doribottle.web.v1.machine.vm.MachineSimpleResponse
@@ -18,8 +19,10 @@ class MachineController(
     @Operation(summary = "기기 전체 조회")
     @GetMapping("/all")
     fun getAll(): List<MachineSimpleResponse> {
-        return machineService.getAll()
-            .map { it.toResponse() }
+        return machineService.getAllSimple(
+            state = MachineState.NORMAL,
+            deleted = false
+        ).map { it.toResponse() }
     }
 
     @Operation(summary = "기기 조회")

@@ -8,7 +8,8 @@ enum class Role(
     USER("ROLE_USER","일반 유저"),
     INSTITUTION("ROLE_INSTITUTION", "기관"),
     MACHINE_ADMIN("ROLE_MACHINE_ADMIN", "자판기 관리자"),
-    ADMIN("ROLE_ADMIN", "관리자");
+    ADMIN("ROLE_ADMIN", "관리자"),
+    SYSTEM("ROLE_SYSTEM", "시스템");
 
     fun validateAdmin(): Role {
         return if (this != GUEST && this != USER) this
