@@ -95,5 +95,5 @@ class Machine(
         }
     }
 
-    fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, createdDate, lastModifiedDate)
+    fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, deleted, createdDate, lastModifiedDate)
 }

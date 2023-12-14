@@ -15,5 +15,6 @@ data class MachineResponse(
     val location: LocationDto,
     val capacity: Int,
     val cupAmounts: Int,
-    val state: MachineState
+    val state: MachineState,
+    val deleted: Boolean
 )
