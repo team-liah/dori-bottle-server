@@ -51,8 +51,8 @@ class TokenProvider(
         val body = accessTokenClaims(accessToken)
 
         val id = UUID.fromString(body.subject)
-        val loginId = getValueFromBody(body, "loginId")
-        val name = getValueFromBody(body, "name")
+        val loginId = getValueFromBody(body, "loginId")!!
+        val name = getValueFromBody(body, "name")!!
         val role = (Role::key findBy getValueFromBody(body, "role"))!!
         val groupCode = getValueFromBody(body, "groupCode")
         return DoriUser(id, loginId, name, role, groupCode)
@@ -67,13 +67,19 @@ class TokenProvider(
     fun extractUserLoginIdFromAccessToken(accessToken: String): String {
         val body = accessTokenClaims(accessToken)
 
-        return getValueFromBody(body, "loginId")
+        return getValueFromBody(body, "loginId")!!
     }
 
     fun extractUserRoleFromAccessToken(accessToken: String): String {
         val body = accessTokenClaims(accessToken)
 
-        return getValueFromBody(body, "role")
+        return getValueFromBody(body, "role")!!
+    }
+
+    fun extractGroupCodeFromAccessToken(accessToken: String): String? {
+        val body = accessTokenClaims(accessToken)
+
+        return getValueFromBody(body, "groupCode")
     }
 
     private fun accessTokenClaims(accessToken: String) = Jwts.parserBuilder()
@@ -82,7 +88,7 @@ class TokenProvider(
         .parseClaimsJws(accessToken)
         .body
 
-    private fun getValueFromBody(body: Claims, key: String) = body.get(key, String::class.java)
+    private fun getValueFromBody(body: Claims, key: String) = body[key]?.toString()
 
     fun validateAccessToken(authToken: String): Boolean {
         try {

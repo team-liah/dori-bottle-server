@@ -7,6 +7,8 @@ import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentMethodType
@@ -19,6 +21,7 @@ import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.LoginIdChange
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -45,6 +48,7 @@ import java.util.*
 class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
+    @Autowired private lateinit var groupRepository: GroupRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var loginIdChangeRepository: LoginIdChangeRepository
@@ -120,6 +124,31 @@ class AccountServiceTest : BaseServiceTest() {
         assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.extractGroupCodeFromAccessToken(authDto.accessToken)).isNull()
+        assertThat(authDto.refreshToken).isNotNull
+    }
+
+    @DisplayName("인증 TC2")
+    @Test
+    fun authTc2() {
+        //given
+        val group = groupRepository.save(Group("Test", GroupType.COMPANY, 10))
+        val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
+        val loginPassword = "123456"
+        val encryptedPassword = passwordEncoder.encode(loginPassword)
+        saveUser.updatePassword(encryptedPassword)
+        saveUser.updateGroup(group)
+        clear()
+
+        //when
+        val authDto = accountService.auth(loginId, loginPassword)
+        clear()
+
+        //then
+        assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
+        assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
+        assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
+        assertThat(tokenProvider.extractGroupCodeFromAccessToken(authDto.accessToken)).isEqualTo(group.code)
         assertThat(authDto.refreshToken).isNotNull
     }
 
