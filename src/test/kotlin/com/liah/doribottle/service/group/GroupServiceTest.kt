@@ -35,6 +35,7 @@ class GroupServiceTest : BaseServiceTest() {
 
         //then
         val findGroup = groupRepository.findByIdOrNull(id)
+        assertThat(findGroup?.code).startsWith("GROUP_")
         assertThat(findGroup?.name).isEqualTo("서울대학교")
         assertThat(findGroup?.type).isEqualTo(UNIVERSITY)
         assertThat(findGroup?.discountRate).isEqualTo(30)
@@ -82,7 +83,18 @@ class GroupServiceTest : BaseServiceTest() {
             .containsExactly(10, 10, 10)
     }
 
-    @DisplayName("기관 목록 조회")
+    @DisplayName("기관 조회 By code")
+    @Test
+    fun findByCode() {
+        val group = groupRepository.save(Group("서울대학교", UNIVERSITY, 30))
+        clear()
+
+        val result = groupService.findByCode(group.code)
+
+        assertThat(result?.id).isEqualTo(group.id)
+    }
+
+    @DisplayName("기관 조회 By userId")
     @Test
     fun findByUserId() {
         val user1 = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))

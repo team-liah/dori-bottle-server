@@ -6,6 +6,7 @@ import java.util.*
 
 data class GroupDto(
     val id: UUID,
+    val code: String,
     val name: String,
     val type: GroupType,
     val discountRate: Int,

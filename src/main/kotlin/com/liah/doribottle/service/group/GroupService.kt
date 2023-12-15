@@ -61,6 +61,13 @@ class GroupService(
     }
 
     @Transactional(readOnly = true)
+    fun findByCode(
+        code: String
+    ): GroupDto? {
+        return groupRepository.findByCode(code)?.toDto()
+    }
+
+    @Transactional(readOnly = true)
     fun findByUserId(
         userId: UUID
     ): GroupDto? {
