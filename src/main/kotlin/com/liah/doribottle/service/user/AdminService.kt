@@ -5,6 +5,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.user.dto.AdminDto
@@ -21,6 +22,7 @@ import java.util.*
 class AdminService(
     private val adminRepository: AdminRepository,
     private val adminQueryRepository: AdminQueryRepository,
+    private val groupRepository: GroupRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
     fun register(
@@ -30,9 +32,15 @@ class AdminService(
         role: Role,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        groupId: UUID?
     ): UUID {
         verifyDuplicatedLoginId(loginId)
+
+        val group = groupId?.let {
+            groupRepository.findByIdOrNull(groupId)
+                ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        }
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         val admin = adminRepository.save(
@@ -43,7 +51,8 @@ class AdminService(
                 role = role,
                 email = email,
                 phoneNumber = phoneNumber,
-                description = description
+                description = description,
+                group = group
             )
         )
 
@@ -90,10 +99,15 @@ class AdminService(
         role: Role,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        groupId: UUID?
     ) {
         val admin = adminRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val group = groupId?.let {
+            groupRepository.findByIdOrNull(groupId)
+                ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+        }
 
         admin.update(
             loginId = loginId,
@@ -103,6 +117,7 @@ class AdminService(
             phoneNumber = phoneNumber,
             description = description
         )
+        admin.updateGroup(group)
     }
 
     fun updatePassword(
@@ -136,12 +151,12 @@ class AdminService(
     ) {
         val admin = adminRepository.findByLoginId(adminLoginId)
         if (admin == null) {
-            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN, null, null, null)
+            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN, null, null, null, null)
         }
 
         val machine = adminRepository.findByLoginId(machineLoginId)
         if (machine == null) {
-            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN, null, null, null)
+            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN, null, null, null, null)
         }
     }
 }

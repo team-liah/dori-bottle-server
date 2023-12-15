@@ -1,9 +1,11 @@
 package com.liah.doribottle.domain.user
 
 import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.service.user.dto.AdminSimpleDto
 import jakarta.persistence.*
+import jakarta.persistence.FetchType.LAZY
 import java.util.*
 
 @Entity
@@ -18,7 +20,8 @@ class Admin(
     role: Role,
     email: String?,
     phoneNumber: String?,
-    description: String?
+    description: String?,
+    group: Group?
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -51,6 +54,11 @@ class Admin(
     var description: String? = description
         protected set
 
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "group_id")
+    var group: Group? = group
+        protected set
+
     override fun delete() {
         this.loginId = "Deleted ${UUID.randomUUID()}"
         super.delete()
@@ -76,6 +84,12 @@ class Admin(
         loginPassword: String
     ) {
         this.loginPassword = loginPassword
+    }
+
+    fun updateGroup(
+        group: Group?
+    ) {
+        this.group = group
     }
 
     fun toDto() = AdminDto(id, loginId, name, role, email, phoneNumber, description, deleted, createdDate, lastModifiedDate)

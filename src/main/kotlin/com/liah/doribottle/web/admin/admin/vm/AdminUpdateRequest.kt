@@ -2,6 +2,7 @@ package com.liah.doribottle.web.admin.admin.vm
 
 import com.liah.doribottle.domain.user.Role
 import jakarta.validation.constraints.NotNull
+import java.util.*
 
 data class AdminUpdateRequest(
     @field:NotNull
@@ -12,5 +13,6 @@ data class AdminUpdateRequest(
     val role: Role?,
     val email: String?,
     val phoneNumber: String?,
-    val description: String?
+    val description: String?,
+    val groupId: UUID?
 )

@@ -35,7 +35,8 @@ class AdminResource(
             role = request.role!!,
             email = request.email,
             phoneNumber = request.phoneNumber,
-            description = request.description
+            description = request.description,
+            groupId = request.groupId
         )
     }
 
@@ -77,7 +78,8 @@ class AdminResource(
             role = request.role!!,
             email = request.email,
             phoneNumber = request.phoneNumber,
-            description = request.description
+            description = request.description,
+            groupId = request.groupId
         )
     }
 

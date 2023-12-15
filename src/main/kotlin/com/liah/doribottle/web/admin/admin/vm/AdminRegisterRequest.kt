@@ -2,6 +2,7 @@ package com.liah.doribottle.web.admin.admin.vm
 
 import com.liah.doribottle.domain.user.Role
 import jakarta.validation.constraints.NotNull
+import java.util.*
 
 data class AdminRegisterRequest(
     @field:NotNull
@@ -14,5 +15,6 @@ data class AdminRegisterRequest(
     val role: Role?,
     val email: String?,
     val phoneNumber: String?,
-    val description: String?
+    val description: String?,
+    val groupId: UUID?
 )
