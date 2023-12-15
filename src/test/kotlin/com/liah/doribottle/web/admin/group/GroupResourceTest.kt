@@ -1,12 +1,10 @@
 package com.liah.doribottle.web.admin.group
 
-import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.group.GroupType.UNIVERSITY
 import com.liah.doribottle.domain.user.Role
-import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
@@ -118,54 +116,6 @@ class GroupResourceTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-    }
-
-    @DisplayName("유저 추가")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun addUser() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
-        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-
-        mockMvc.perform(
-            post("$endPoint/${group.id}/user/${user.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-    }
-
-    @DisplayName("유저 제거")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun removeUser() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
-        val userEntity = User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER)
-        userEntity.updateGroup(group)
-        val user = userRepository.save(userEntity)
-
-        mockMvc.perform(
-            delete("$endPoint/${group.id}/user/${user.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isOk)
-    }
-
-    @DisplayName("유저 제거 예외")
-    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
-    @Test
-    fun removeUserException() {
-        val group = groupRepository.save(Group("대학1", UNIVERSITY, 30))
-        val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
-
-        mockMvc.perform(
-            delete("$endPoint/${group.id}/user/${user.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("message", `is`(ErrorCode.GROUP_NOT_MEMBER.message)))
     }
 
     private fun insertGroups() {

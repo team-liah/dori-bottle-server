@@ -1,12 +1,12 @@
 package com.liah.doribottle.service.group
 
-import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.repository.group.GroupQueryRepository
 import com.liah.doribottle.repository.group.GroupRepository
+import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.group.dto.GroupDto
 import org.springframework.data.domain.Page
@@ -20,8 +20,9 @@ import java.util.*
 @Transactional
 class GroupService(
     private val groupRepository: GroupRepository,
+    private val groupQueryRepository: GroupQueryRepository,
     private val userRepository: UserRepository,
-    private val groupQueryRepository: GroupQueryRepository
+    private val adminRepository: AdminRepository
 ) {
     fun register(
         name: String,
@@ -90,34 +91,11 @@ class GroupService(
         val group = groupRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
         val groupUsers = userRepository.findAllByGroupId(id)
+        val groupAdmins = adminRepository.findAllByGroupId(id)
 
         groupUsers.forEach { it.updateGroup(null) }
+        groupAdmins.forEach { it.updateGroup(null) }
 
         groupRepository.delete(group)
-    }
-
-    fun addUser(
-        id: UUID,
-        userId: UUID
-    ) {
-        val group = groupRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-
-        user.updateGroup(group)
-    }
-
-    fun removeUser(
-        id: UUID,
-        userId: UUID
-    ) {
-        val group = groupRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        if (user.group?.id != group.id) throw BusinessException(ErrorCode.GROUP_NOT_MEMBER)
-
-        user.updateGroup(null)
     }
 }

@@ -8,4 +8,5 @@ import java.util.*
 @Repository
 interface AdminRepository : JpaRepository<Admin, UUID> {
     fun findByLoginId(loginId: String): Admin?
+    fun findAllByGroupId(groupId: UUID): List<Admin>
 }
