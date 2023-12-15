@@ -93,7 +93,8 @@ class AccountService(
             id = user.id,
             loginId = user.loginId,
             name = user.name,
-            role = user.role
+            role = user.role,
+            groupCode = user.group?.code
         )
         val refreshToken = tokenProvider.generateRefreshToken(
             userId = user.id.toString()
@@ -116,7 +117,8 @@ class AccountService(
             id = user.id,
             loginId = user.loginId,
             name = user.name,
-            role = user.role
+            role = user.role,
+            groupCode = user.group?.code
         )
         val newRefreshToken = refresh(
             origin = validRefreshToken.refreshToken!!,
@@ -261,7 +263,8 @@ class AccountService(
             user.id,
             user.loginId,
             user.name,
-            user.role
+            user.role,
+            user.group?.code
         )
         val refreshToken = tokenProvider.generateRefreshToken(
             user.id.toString()

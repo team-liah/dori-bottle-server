@@ -9,5 +9,6 @@ data class DoriUser(
     val id: UUID,
     val loginId: String,
     val name: String,
-    val role: Role
-) : User(id.toString(), "", mutableListOf(SimpleGrantedAuthority(role.key)))
+    val role: Role,
+    val groupCode: String?
+) : User(id.toString(), "", groupCode?.let { mutableListOf(SimpleGrantedAuthority(role.key), SimpleGrantedAuthority(it)) } ?: mutableListOf(SimpleGrantedAuthority(role.key)))

@@ -184,7 +184,7 @@ class AccountControllerTest : BaseControllerTest() {
         //given
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.name)
 
         //when, then
         mockMvc.perform(
@@ -203,7 +203,7 @@ class AccountControllerTest : BaseControllerTest() {
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get("$endPoint/pre-auth")
@@ -222,7 +222,7 @@ class AccountControllerTest : BaseControllerTest() {
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.FIVE_PENALTIES, null)
         userRepository.save(user)
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get("$endPoint/pre-auth")
@@ -239,7 +239,7 @@ class AccountControllerTest : BaseControllerTest() {
     @Test
     fun getPreAuthTokenExceptionTc3() {
         userRepository.save(User("010-1234-1234", "Tester", "010-1234-1234", Role.USER))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get("$endPoint/pre-auth")
@@ -302,7 +302,7 @@ class AccountControllerTest : BaseControllerTest() {
         val point2 = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
         val point3 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
 
         //when, then
@@ -348,7 +348,7 @@ class AccountControllerTest : BaseControllerTest() {
         userRepository.save(user)
         val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
 
         //when, then
@@ -390,7 +390,7 @@ class AccountControllerTest : BaseControllerTest() {
         userRepository.save(user)
         val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = DeactivateRequest(null)
 
         //when, then
@@ -423,7 +423,7 @@ class AccountControllerTest : BaseControllerTest() {
     fun sendLoginIdChangeSms() {
         //given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1234-1234")
@@ -451,7 +451,7 @@ class AccountControllerTest : BaseControllerTest() {
         //given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val anotherUser = userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1111-1111")
@@ -476,7 +476,7 @@ class AccountControllerTest : BaseControllerTest() {
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val body = LoginIdChangeRequest(authCode)
 
@@ -499,7 +499,7 @@ class AccountControllerTest : BaseControllerTest() {
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val body = LoginIdChangeRequest("000000")
 

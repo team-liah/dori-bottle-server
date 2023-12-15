@@ -23,22 +23,23 @@ class TokenProvider(
     fun preAuthAccessToken(doriUser: DoriUser): String {
         val now = Date()
         val expiredDate = Date(now.time + preAuthExpiredMs)
-        return generateAccessToken(doriUser.id, doriUser.loginId, doriUser.name, doriUser.role, now, expiredDate)
+        return generateAccessToken(doriUser.id, doriUser.loginId, doriUser.name, doriUser.role, doriUser.groupCode, now, expiredDate)
     }
 
-    fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role): String {
+    fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role, groupCode: String?): String {
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
-        return generateAccessToken(id, loginId, name, role, now, expiredDate)
+        return generateAccessToken(id, loginId, name, role, groupCode, now, expiredDate)
     }
 
-    private fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role, issueDate: Date, expiredDate: Date): String {
+    private fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role, groupCode: String?, issueDate: Date, expiredDate: Date): String {
         return Jwts.builder()
             .setClaims(mapOf(
                 "sub" to id.toString(),
                 "loginId" to loginId,
                 "name" to name,
-                "role" to role.key
+                "role" to role.key,
+                "groupCode" to groupCode
             ))
             .setIssuedAt(issueDate)
             .setExpiration(expiredDate)
@@ -53,7 +54,8 @@ class TokenProvider(
         val loginId = getValueFromBody(body, "loginId")
         val name = getValueFromBody(body, "name")
         val role = (Role::key findBy getValueFromBody(body, "role"))!!
-        return DoriUser(id, loginId, name, role)
+        val groupCode = getValueFromBody(body, "groupCode")
+        return DoriUser(id, loginId, name, role, groupCode)
     }
 
     fun extractUserIdFromAccessToken(accessToken: String): UUID {

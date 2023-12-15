@@ -180,7 +180,7 @@ class AccountServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
-        val doriUser = DoriUser(user.id, user.loginId, user.name, user.role)
+        val doriUser = DoriUser(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when
         val accessToken = accountService.preAuth(doriUser)
@@ -202,7 +202,7 @@ class AccountServiceTest : BaseServiceTest() {
             userRepository.save(user)
             clear()
 
-            val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER)
+            val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER, null)
             accountService.preAuth(doriUser)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP)

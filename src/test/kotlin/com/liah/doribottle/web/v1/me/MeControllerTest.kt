@@ -72,7 +72,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("현재 로그인 유저 조회")
     @Test
     fun get() {
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get(endPoint)
@@ -92,7 +92,7 @@ class MeControllerTest : BaseControllerTest() {
     @Test
     fun getTc2() {
         alertRepository.save(Alert(user.id.toString(), 7))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get(endPoint)
@@ -111,7 +111,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("프로필 조회")
     @Test
     fun getProfile() {
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get("${endPoint}/profile")
@@ -141,7 +141,7 @@ class MeControllerTest : BaseControllerTest() {
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         mockMvc.perform(
             get("${endPoint}/profile")
@@ -170,7 +170,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("프로필 업데이트")
     @Test
     fun updateProfile() {
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = ProfileUpdateRequest("Updated Name", MALE, "19970224")
 
         mockMvc.perform(
@@ -188,7 +188,7 @@ class MeControllerTest : BaseControllerTest() {
     fun registerInvitationCode() {
         //given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
         inviter.register()
@@ -219,7 +219,7 @@ class MeControllerTest : BaseControllerTest() {
     fun registerInvitationCodeTc2() {
         //given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
         inviter.register()
@@ -253,7 +253,7 @@ class MeControllerTest : BaseControllerTest() {
     fun registerInvitationCodeTc3() {
         //given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val inviter = User("010-0001-0001", "Inviter", "010-0001-0001", Role.USER)
         inviter.register()

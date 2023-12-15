@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository
@@ -30,7 +29,7 @@ class JwtFilter(
             val authenticationToken = UsernamePasswordAuthenticationToken(
                 doriUser,
                 null,
-                listOf(SimpleGrantedAuthority(doriUser.role.key))
+                doriUser.authorities
             )
 
             authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)

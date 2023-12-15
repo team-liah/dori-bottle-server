@@ -30,7 +30,8 @@ class AdminAccountService(
             id = admin.id,
             loginId = admin.loginId,
             name = admin.name,
-            role = admin.role
+            role = admin.role,
+            groupCode = null //TODO: Add groupCode
         )
         val refreshToken = tokenProvider.generateRefreshToken(
             userId = admin.id.toString()
@@ -59,7 +60,8 @@ class AdminAccountService(
             id = admin.id,
             loginId = admin.loginId,
             name = admin.name,
-            role = admin.role
+            role = admin.role,
+            groupCode = null //TODO: Add groupCode
         )
         val newRefreshToken = refresh(
             origin = validRefreshToken.refreshToken!!,

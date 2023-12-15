@@ -47,7 +47,7 @@ class NotificationControllerTest : BaseControllerTest() {
     @Test
     fun getAll() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         insertNotifications(user.id)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()

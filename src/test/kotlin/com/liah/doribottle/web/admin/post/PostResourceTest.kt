@@ -44,7 +44,7 @@ class PostResourceTest : BaseControllerTest() {
     fun register() {
         //given
         val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
-        val cookie = createAccessTokenCookie(admin.id, admin.loginId, admin.name, admin.role)
+        val cookie = createAccessTokenCookie(admin.id, admin.loginId, admin.name, admin.role, null)
         val body = PostRegisterOrUpdateRequest(NOTICE, "공지글", "공지글 내용")
 
         mockMvc.perform(

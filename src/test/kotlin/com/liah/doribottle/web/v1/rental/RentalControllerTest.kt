@@ -93,7 +93,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun rent() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = RentRequest(vendingMachine.no, true)
 
         mockMvc.perform(
@@ -111,7 +111,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun rentExceptionLackOfPoint() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = RentRequest(vendingMachine.no, true)
 
         mockMvc.perform(
@@ -132,7 +132,7 @@ class RentalControllerTest : BaseControllerTest() {
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = RentRequest(vendingMachine.no, true)
 
         mockMvc.perform(
@@ -153,7 +153,7 @@ class RentalControllerTest : BaseControllerTest() {
         val user = userRepository.save(User("010-0001-0001", "Tester 2", "010-0001-0001", Role.USER))
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = RentRequest(vendingMachine.no, true)
 
         mockMvc.perform(
@@ -171,7 +171,7 @@ class RentalControllerTest : BaseControllerTest() {
     @DisplayName("얼읍컵 대여 - Unauthorized")
     @Test
     fun rentExceptionFromGuest() {
-        val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.name, guest.role)
+        val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.name, guest.role, guest.group?.code)
         val body = RentRequest(vendingMachine.no, true)
 
         mockMvc.perform(
@@ -190,7 +190,7 @@ class RentalControllerTest : BaseControllerTest() {
     fun getAll() {
         insertRentals()
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("status", "PROCEEDING")
         params.add("page", "0")

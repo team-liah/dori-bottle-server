@@ -120,7 +120,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = PayToSavePointRequest(category.id)
 
         //when, then
@@ -171,7 +171,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = PayToSavePointRequest(category.id)
 
         //when, then
@@ -218,7 +218,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willThrow(BillingExecuteException())
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = PayToSavePointRequest(category.id)
 
         //when, then
@@ -271,7 +271,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -320,7 +320,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willThrow(BillingExecuteException())
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -366,7 +366,7 @@ class PaymentControllerTest : BaseControllerTest() {
     fun getAll() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         insertPayments(user)
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("page", "0")
@@ -444,7 +444,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -492,7 +492,7 @@ class PaymentControllerTest : BaseControllerTest() {
         given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willThrow(PaymentCancelException())
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -511,7 +511,7 @@ class PaymentControllerTest : BaseControllerTest() {
     fun registerMethod() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
         val body = PaymentMethodRegisterRequest(TOSS_PAYMENTS, "dummyAuthKey")
 
         given(mockTossPaymentsService.issueBillingKey("dummyAuthKey", user.id))
@@ -535,7 +535,7 @@ class PaymentControllerTest : BaseControllerTest() {
     fun getAllMethods() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         insertMethods(user)
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("page", "0")
@@ -576,7 +576,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method1 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
         val method2 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -599,7 +599,7 @@ class PaymentControllerTest : BaseControllerTest() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -621,7 +621,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
         val anotherMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -650,7 +650,7 @@ class PaymentControllerTest : BaseControllerTest() {
         rental.setRentalCup(cup)
         rentalRepository.save(rental)
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         //when, then
         mockMvc.perform(
@@ -722,7 +722,7 @@ class PaymentControllerTest : BaseControllerTest() {
         userRepository.save(user)
         insertCategories()
 
-        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role, user.group?.code)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
         params.add("page", "0")
