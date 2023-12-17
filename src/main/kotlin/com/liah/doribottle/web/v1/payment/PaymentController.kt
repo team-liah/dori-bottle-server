@@ -7,6 +7,7 @@ import com.liah.doribottle.domain.payment.PaymentStatus
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
+import com.liah.doribottle.extension.currentUserGroupCode
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.group.GroupService
 import com.liah.doribottle.service.payment.PaymentService
@@ -38,7 +39,7 @@ class PaymentController(
         @Valid @RequestBody request: PayToSavePointRequest
     ): UUID {
         val currentUserId = currentUserId()!!
-        val currentUserGroup = groupService.findByUserId(currentUserId)
+        val currentUserGroup = currentUserGroupCode()?.let { groupService.findByCode(it) }
         val category = paymentService.getCategory(request.categoryId!!)
         val price = category.getFinalPrice(currentUserGroup?.discountRate)
         val method = paymentService.getDefaultMethod(currentUserId)
@@ -229,7 +230,7 @@ class PaymentController(
     fun getAllCategories(
         @ParameterObject @PageableDefault(sort = ["amounts"], direction = Sort.Direction.ASC) pageable: Pageable
     ): CustomPage<PaymentCategorySearchResponse> {
-        val currentUserGroup = groupService.findByUserId(currentUserId()!!)
+        val currentUserGroup = currentUserGroupCode()?.let { groupService.findByCode(it) }
         val result = paymentService.getAllCategories(
             expired = false,
             pageable = pageable

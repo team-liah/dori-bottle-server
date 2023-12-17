@@ -11,6 +11,8 @@ fun currentUserId() = getPrincipal()?.id
 
 fun currentUserLoginId() = getPrincipal()?.loginId
 
+fun currentUserGroupCode() = getPrincipal()?.groupCode
+
 fun currentUserAuthorities() = getPrincipal()?.authorities?.map { it.authority } ?: emptyList()
 
 private fun getPrincipal(): DoriUser? {
