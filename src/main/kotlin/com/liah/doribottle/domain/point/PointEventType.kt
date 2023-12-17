@@ -11,5 +11,7 @@ enum class PointEventType(
 
     USE_CUP("컵 사용"),
 
+    CANCEL_USE("사용 취소"),
+
     DISAPPEAR("소멸")
 }

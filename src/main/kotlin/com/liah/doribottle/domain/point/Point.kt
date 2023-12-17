@@ -1,8 +1,9 @@
 package com.liah.doribottle.domain.point
 
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
-import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
-import com.liah.doribottle.domain.point.PointEventType.USE_CUP
+import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.service.point.dto.PointDto
 import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
@@ -42,24 +43,32 @@ class Point(
     val events: List<PointEvent> get() = mutableEvents
 
     init {
-        mutableEvents.add(PointEvent(this, eventType, saveAmounts))
+        mutableEvents.add(PointEvent(this, eventType, saveAmounts, null))
     }
 
-    fun use(amounts: Long): Long {
+    fun use(amounts: Long, targetId: UUID): Long {
         val remain = remainAmounts - amounts
         return if (remain >= 0) {
-            mutableEvents.add(PointEvent(this, USE_CUP, -amounts))
+            mutableEvents.add(PointEvent(this, USE_CUP, -amounts, targetId))
             remainAmounts = remain
             0
         } else {
-            mutableEvents.add(PointEvent(this, USE_CUP, -remainAmounts))
+            mutableEvents.add(PointEvent(this, USE_CUP, -remainAmounts, targetId))
             remainAmounts = 0
             -remain
         }
     }
 
+    fun cancel(eventId: UUID) {
+        val event = mutableEvents.find { it.id == eventId }
+            ?: throw NotFoundException(ErrorCode.POINT_EVENT_NOT_FOUNT)
+        val cancelAmounts = -1 * event.amounts
+        mutableEvents.add(PointEvent(this, CANCEL_USE, cancelAmounts, null))
+        remainAmounts -= cancelAmounts
+    }
+
     fun expire() {
-        mutableEvents.add(PointEvent(this, CANCEL_SAVE, -remainAmounts))
+        mutableEvents.add(PointEvent(this, CANCEL_SAVE, -remainAmounts, null))
         remainAmounts = 0
     }
 
