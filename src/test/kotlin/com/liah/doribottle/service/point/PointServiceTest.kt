@@ -30,6 +30,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import java.util.*
 
 class PointServiceTest : BaseServiceTest() {
     @Autowired private lateinit var pointService: PointService
@@ -128,11 +129,12 @@ class PointServiceTest : BaseServiceTest() {
         //given
         val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        val targetId = UUID.randomUUID()
         given(mockPointQueryRepository.getAllRemainByUserId(user.id))
             .willReturn(listOf(rewardPoint, payPoint))
 
         //when
-        pointService.use(user.id, 15)
+        pointService.use(user.id, 15, targetId)
         clear()
 
         //then
@@ -155,12 +157,18 @@ class PointServiceTest : BaseServiceTest() {
         assertThat(findRewardPointEvents)
             .extracting("amounts")
             .containsExactly(10L, -10L)
+        assertThat(findRewardPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId)
         assertThat(findPayPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPayPointEvents)
             .extracting("amounts")
             .containsExactly(10L, -5L)
+        assertThat(findPayPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId)
 
         assertThat(findPointHistories)
             .extracting("eventType")
@@ -177,11 +185,12 @@ class PointServiceTest : BaseServiceTest() {
     fun useException() {
         val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        val targetId = UUID.randomUUID()
         given(mockPointQueryRepository.getAllRemainByUserId(user.id))
             .willReturn(listOf(rewardPoint, payPoint))
 
         val exception = assertThrows<BusinessException> {
-            pointService.use(user.id, 25)
+            pointService.use(user.id, 25, targetId)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
     }

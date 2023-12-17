@@ -61,6 +61,7 @@ enum class ErrorCode(
 
     // Point
     POINT_NOT_FOUNT(404, "I001", "Point entity not found."),
+    POINT_EVENT_NOT_FOUNT(404, "I002", "Point event entity not found."),
 
     // Inquiry
     INQUIRY_NOT_FOUNT(404, "J001", "Inquiry entity not found."),

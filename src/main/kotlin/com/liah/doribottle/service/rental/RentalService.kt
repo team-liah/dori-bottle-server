@@ -52,7 +52,7 @@ class RentalService(
         verifyCanRent(user)
 
         val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 24))
-        pointService.use(user.id, rental.cost)
+        pointService.use(user.id, rental.cost, rental.id)
 
         if (!user.use) {
             user.use()
@@ -125,6 +125,10 @@ class RentalService(
                 rental.no
             )
         )
+    }
+
+    fun cancel() {
+
     }
 
     @Transactional(readOnly = true)

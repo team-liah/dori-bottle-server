@@ -82,12 +82,13 @@ class PointService(
     @CacheEvict(value = ["pointSum"], key = "#userId")
     fun use(
         userId: UUID,
-        useAmounts: Long
+        useAmounts: Long,
+        targetId: UUID
     ) {
         val points = pointQueryRepository.getAllRemainByUserId(userId)
         var remainAmounts = useAmounts
         points.forEach { point ->
-            remainAmounts = point.use(remainAmounts)
+            remainAmounts = point.use(remainAmounts, targetId)
             if (remainAmounts == 0L) {
                 pointHistoryRepository.save(PointHistory(userId, PointEventType.USE_CUP, -useAmounts))
                 return
@@ -95,6 +96,14 @@ class PointService(
         }
 
         throw BusinessException(ErrorCode.LACK_OF_POINT)
+    }
+
+    @CacheEvict(value = ["pointSum"], key = "#userId")
+    fun cancel(
+        userId: UUID,
+        targetId: UUID
+    ) {
+
     }
 
     @Cacheable(value = ["pointSum"], key = "#userId")
