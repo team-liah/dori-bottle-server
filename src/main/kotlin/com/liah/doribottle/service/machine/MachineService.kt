@@ -8,10 +8,13 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.machine.MachineQueryRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
+import com.liah.doribottle.service.machine.dto.MachineDetailDto
 import com.liah.doribottle.service.machine.dto.MachineDto
 import com.liah.doribottle.service.machine.dto.MachineSimpleDto
 import org.springframework.data.domain.Page
@@ -28,6 +31,8 @@ import kotlin.reflect.jvm.jvmName
 class MachineService(
     private val machineRepository: MachineRepository,
     private val machineQueryRepository: MachineQueryRepository,
+    private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
     private val aclManager: AclManager
 ) {
     fun register(
@@ -74,6 +79,21 @@ class MachineService(
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         return machine.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getDetail(
+        id: UUID
+    ): MachineDetailDto {
+        val machine = machineRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+
+        val managerIds = aclManager.getHasPermissionPrincipals(machine, BasePermission.READ)
+        val managementGroupCodes = aclManager.getHasPermissionAuthorities(machine, BasePermission.READ)
+        val managers = userRepository.findAllById(managerIds)
+        val managementGroups = groupRepository.findAllByCodeIn(managementGroupCodes)
+
+        return machine.toDetailDto(managers, managementGroups)
     }
 
     @Transactional(readOnly = true)
