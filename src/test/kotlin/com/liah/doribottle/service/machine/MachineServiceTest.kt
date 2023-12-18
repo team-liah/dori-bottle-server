@@ -6,13 +6,18 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.config.security.acl.AclManager
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.Location
+import com.liah.doribottle.domain.group.Group
+import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState.MALFUNCTION
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
+import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
@@ -28,9 +33,13 @@ import java.util.*
 
 class MachineServiceTest : BaseServiceTest() {
     @Autowired
+    private lateinit var machineService: MachineService
+    @Autowired
     private lateinit var machineRepository: MachineRepository
     @Autowired
-    private lateinit var machineService: MachineService
+    private lateinit var userRepository: UserRepository
+    @Autowired
+    private lateinit var groupRepository: GroupRepository
     @Autowired
     private lateinit var aclManager: AclManager
 
@@ -139,6 +148,49 @@ class MachineServiceTest : BaseServiceTest() {
         assertThat(machineDto.capacity).isEqualTo(100)
         assertThat(machineDto.cupAmounts).isEqualTo(0)
         assertThat(machineDto.state).isEqualTo(NORMAL)
+    }
+
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @DisplayName("자판기 상세 조회")
+    @Test
+    fun getDetail() {
+        //given
+        val address = Address("12345", "삼성로", null)
+        val location = Location(37.508855, 127.059479)
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
+        val users = userRepository.saveAll(listOf(
+            User("010-1111-1111", "Tester 1", "010-1111-1111", Role.USER),
+            User("010-2222-2222", "Tester 2", "010-2222-2222", Role.USER)
+        ))
+        val groups = groupRepository.saveAll(listOf(
+            Group("대학1", GroupType.UNIVERSITY, 10),
+            Group("대학2", GroupType.UNIVERSITY, 10),
+            Group("대학3", GroupType.UNIVERSITY, 10)
+        ))
+        val managerIds = users.map { it.id }
+        val managementGroupCodes = groups.map { it.code }
+        aclManager.addPermissionForPrincipals(machine, BasePermission.READ, *managerIds.toTypedArray())
+        aclManager.addPermissionForAuthorities(machine, BasePermission.READ, *managementGroupCodes.toTypedArray())
+        clear()
+
+        //when
+        val machineDetailDto = machineService.getDetail(machine.id)
+
+        //then
+        assertThat(machineDetailDto.no).isEqualTo(MACHINE_NO)
+        assertThat(machineDetailDto.name).isEqualTo(MACHINE_NAME)
+        assertThat(machineDetailDto.type).isEqualTo(VENDING)
+        assertThat(machineDetailDto.address).isEqualTo(address.toDto())
+        assertThat(machineDetailDto.location).isEqualTo(location.toDto())
+        assertThat(machineDetailDto.capacity).isEqualTo(100)
+        assertThat(machineDetailDto.cupAmounts).isEqualTo(0)
+        assertThat(machineDetailDto.state).isEqualTo(NORMAL)
+        assertThat(machineDetailDto.managers)
+            .extracting("name")
+            .containsExactlyInAnyOrder("Tester 1", "Tester 2")
+        assertThat(machineDetailDto.managementGroups)
+            .extracting("name")
+            .containsExactlyInAnyOrder("대학1", "대학2", "대학3")
     }
 
     @DisplayName("자판기 목록 조회")
