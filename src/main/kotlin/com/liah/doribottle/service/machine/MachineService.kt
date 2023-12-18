@@ -43,7 +43,7 @@ class MachineService(
         location: LocationDto,
         capacity: Int,
         managerIds: Set<UUID> = emptySet(),
-        groupCodes: Set<String> = emptySet()
+        managementGroupCodes: Set<String> = emptySet()
     ): UUID {
         verifyDuplicatedNo(no)
 
@@ -59,7 +59,7 @@ class MachineService(
         )
 
         aclManager.addPermissionForPrincipals(machine, BasePermission.READ, *managerIds.toTypedArray())
-        aclManager.addPermissionForAuthorities(machine, BasePermission.READ, *groupCodes.toTypedArray())
+        aclManager.addPermissionForAuthorities(machine, BasePermission.READ, *managementGroupCodes.toTypedArray())
         aclManager.addAllPermissionsForRoles(machine, Role.ADMIN, Role.SYSTEM)
 
         return machine.id

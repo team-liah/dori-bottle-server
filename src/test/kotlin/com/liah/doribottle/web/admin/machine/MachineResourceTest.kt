@@ -49,7 +49,7 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, emptySet(), emptySet())
 
         mockMvc.perform(
             post(endPoint)
@@ -64,7 +64,7 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
     @Test
     fun registerException() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, emptySet(), emptySet())
 
         mockMvc.perform(
             post(endPoint)
@@ -81,7 +81,7 @@ class MachineResourceTest : BaseControllerTest() {
     @Test
     fun registerExceptionTc2() {
         machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100)
+        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, emptySet(), emptySet())
 
         mockMvc.perform(
             post(endPoint)
@@ -204,7 +204,7 @@ class MachineResourceTest : BaseControllerTest() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
         aclManager.addPermissionForAuthorities(machine, BasePermission.WRITE, Role.ADMIN.key)
 
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL, emptySet(), emptySet())
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -221,7 +221,7 @@ class MachineResourceTest : BaseControllerTest() {
     fun updateExceptionTc2() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
 
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, -1, NORMAL)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, -1, NORMAL, emptySet(), emptySet())
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -239,7 +239,7 @@ class MachineResourceTest : BaseControllerTest() {
     fun updateExceptionTc3() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
 
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL)
+        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL, emptySet(), emptySet())
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
@@ -259,7 +259,7 @@ class MachineResourceTest : BaseControllerTest() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
         aclManager.addPermissionForAuthorities(machine, BasePermission.WRITE, Role.ADMIN.key)
 
-        val body = MachinePatchRequest("updated",  null, null, null, 10, null)
+        val body = MachinePatchRequest("updated",  null, null, null, 10, null, emptySet(), emptySet())
 
         mockMvc.perform(
             patch("$endPoint/${machine.id}")
@@ -278,7 +278,7 @@ class MachineResourceTest : BaseControllerTest() {
         val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
         aclManager.addPermissionForAuthorities(machine, BasePermission.WRITE, Role.ADMIN.key)
 
-        val body = MachinePatchRequest("updated",  null, null, null, 10, null)
+        val body = MachinePatchRequest("updated",  null, null, null, 10, null, emptySet(), emptySet())
 
         mockMvc.perform(
             post("$endPoint/${machine.id}/patch")

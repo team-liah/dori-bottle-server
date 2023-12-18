@@ -4,6 +4,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
 import jakarta.validation.constraints.NotNull
+import java.util.*
 
 data class MachineRegisterRequest(
     @field:NotNull
@@ -17,5 +18,9 @@ data class MachineRegisterRequest(
     @field:NotNull
     val location: LocationDto?,
     @field:NotNull
-    val capacity: Int?
+    val capacity: Int?,
+    @field:NotNull
+    val managerIds: Set<UUID>?,
+    @field:NotNull
+    val managementGroupCodes: Set<String>?
 )

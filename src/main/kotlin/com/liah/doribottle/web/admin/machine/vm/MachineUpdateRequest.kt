@@ -5,6 +5,7 @@ import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
+import java.util.*
 
 data class MachineUpdateRequest(
     @field:NotNull
@@ -20,5 +21,9 @@ data class MachineUpdateRequest(
     @field:NotNull
     val cupAmounts: Int?,
     @field:NotNull
-    val state: MachineState?
+    val state: MachineState?,
+    @field:NotNull
+    val managerIds: Set<UUID>?,
+    @field:NotNull
+    val managementGroupCodes: Set<String>?
 )

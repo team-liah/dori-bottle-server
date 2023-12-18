@@ -4,6 +4,7 @@ import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.extension.currentUserAuthorities
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.machine.MachineService
+import com.liah.doribottle.service.machine.dto.MachineDetailDto
 import com.liah.doribottle.service.machine.dto.MachineDto
 import com.liah.doribottle.web.admin.machine.vm.MachinePatchRequest
 import com.liah.doribottle.web.admin.machine.vm.MachineRegisterRequest
@@ -36,7 +37,9 @@ class MachineResource(
             type = request.type!!,
             address = request.address!!,
             location = request.location!!,
-            capacity = request.capacity!!
+            capacity = request.capacity!!,
+            managerIds = request.managerIds!!,
+            managementGroupCodes = request.managementGroupCodes!!
         )
     }
 
@@ -45,8 +48,8 @@ class MachineResource(
     @GetMapping("/{id}")
     fun get(
         @PathVariable id: UUID
-    ): MachineDto {
-        return machineService.get(id)
+    ): MachineDetailDto {
+        return machineService.getDetail(id)
     }
 
     @Operation(summary = "기기 목록 조회")
@@ -84,7 +87,9 @@ class MachineResource(
             location = request.location!!,
             capacity = request.capacity!!,
             cupAmounts = request.cupAmounts!!,
-            state = request.state!!
+            state = request.state!!,
+            managerIds = request.managerIds!!,
+            managementGroupCodes = request.managementGroupCodes!!
         )
     }
 
@@ -95,7 +100,7 @@ class MachineResource(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MachinePatchRequest
     ) {
-        val machine = machineService.get(id)
+        val machine = machineService.getDetail(id)
         machineService.update(
             id = id,
             name = request.name ?: machine.name,
@@ -103,7 +108,9 @@ class MachineResource(
             location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
-            state = request.state ?: machine.state
+            state = request.state ?: machine.state,
+            managerIds = request.managerIds ?: machine.managers.map { it.id }.toSet(),
+            managementGroupCodes = request.managementGroupCodes ?: machine.managementGroups.map { it.code }.toSet()
         )
     }
 
@@ -114,7 +121,7 @@ class MachineResource(
         @PathVariable id: UUID,
         @Valid @RequestBody request: MachinePatchRequest
     ) {
-        val machine = machineService.get(id)
+        val machine = machineService.getDetail(id)
         machineService.update(
             id = id,
             name = request.name ?: machine.name,
@@ -122,7 +129,9 @@ class MachineResource(
             location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
-            state = request.state ?: machine.state
+            state = request.state ?: machine.state,
+            managerIds = request.managerIds ?: machine.managers.map { it.id }.toSet(),
+            managementGroupCodes = request.managementGroupCodes ?: machine.managementGroups.map { it.code }.toSet()
         )
     }
 

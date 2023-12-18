@@ -4,6 +4,7 @@ import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
 import jakarta.validation.constraints.Min
+import java.util.*
 
 data class MachinePatchRequest(
     val name: String?,
@@ -13,5 +14,7 @@ data class MachinePatchRequest(
     val capacity: Int?,
     @field:Min(0)
     val cupAmounts: Int?,
-    val state: MachineState?
+    val state: MachineState?,
+    val managerIds: Set<UUID>?,
+    val managementGroupCodes: Set<String>?
 )
