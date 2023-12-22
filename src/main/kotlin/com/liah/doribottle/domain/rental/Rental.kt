@@ -1,5 +1,7 @@
 package com.liah.doribottle.domain.rental
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
@@ -99,10 +101,18 @@ class Rental(
     }
 
     fun fail() {
-        if (this.status == SUCCEEDED) throw IllegalArgumentException("Cup return has already been succeeded.")
+        if (this.status == SUCCEEDED)
+            throw IllegalArgumentException("Cup return has already been succeeded.")
 
         this.status = FAILED
         cup?.lost()
+    }
+
+    fun cancel() {
+        if (this.status != PROCEEDING && toMachine == null)
+            throw BusinessException(ErrorCode.RENTAL_CANCEL_NOT_ALLOWED)
+
+        this.status = CANCELED
     }
 
     fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup?.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
