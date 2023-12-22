@@ -183,4 +183,20 @@ class RentalResourceTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
     }
+
+    @DisplayName("대여 취소")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun cancel() {
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
+
+        mockMvc.perform(
+            post("${endPoint}/${rental.id}/cancel")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+    }
 }
