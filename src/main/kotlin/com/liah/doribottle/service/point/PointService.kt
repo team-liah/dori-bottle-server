@@ -7,14 +7,11 @@ import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType
-import com.liah.doribottle.domain.point.PointEventType.CANCEL_SAVE
+import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointHistory
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.event.Events
-import com.liah.doribottle.repository.point.PointHistoryQueryRepository
-import com.liah.doribottle.repository.point.PointHistoryRepository
-import com.liah.doribottle.repository.point.PointQueryRepository
-import com.liah.doribottle.repository.point.PointRepository
+import com.liah.doribottle.repository.point.*
 import com.liah.doribottle.service.point.dto.PointDto
 import com.liah.doribottle.service.point.dto.PointHistoryDto
 import org.springframework.cache.annotation.CacheEvict
@@ -31,6 +28,7 @@ import java.util.*
 class PointService(
     private val pointRepository: PointRepository,
     private val pointQueryRepository: PointQueryRepository,
+    private val pointEventRepository: PointEventRepository,
     private val pointHistoryRepository: PointHistoryRepository,
     private val pointHistoryQueryRepository: PointHistoryQueryRepository
 ) {
@@ -90,7 +88,7 @@ class PointService(
         points.forEach { point ->
             remainAmounts = point.use(remainAmounts, targetId)
             if (remainAmounts == 0L) {
-                pointHistoryRepository.save(PointHistory(userId, PointEventType.USE_CUP, -useAmounts))
+                pointHistoryRepository.save(PointHistory(userId, USE_CUP, -useAmounts))
                 return
             }
         }
@@ -103,7 +101,9 @@ class PointService(
         userId: UUID,
         targetId: UUID
     ) {
-
+        val events = pointEventRepository.findAllByTargetId(targetId)
+        val cancelAmounts = events.sumOf { it.cancel() }
+        pointHistoryRepository.save(PointHistory(userId, CANCEL_USE, cancelAmounts))
     }
 
     @Cacheable(value = ["pointSum"], key = "#userId")
