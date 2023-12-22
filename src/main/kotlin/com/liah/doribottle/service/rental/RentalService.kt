@@ -127,6 +127,20 @@ class RentalService(
         )
     }
 
+    fun cancel(
+        id: UUID
+    ) {
+        val rental = rentalRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+
+        rental.cancel()
+
+        pointService.cancel(
+            userId = rental.user.id,
+            targetId = rental.id
+        )
+    }
+
     @Transactional(readOnly = true)
     fun getAll(
         no: String? = null,

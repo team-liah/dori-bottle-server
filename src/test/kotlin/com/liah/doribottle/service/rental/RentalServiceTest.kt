@@ -476,6 +476,54 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(exception.message).isEqualTo("Cup return has already been succeeded.")
     }
 
+    @DisplayName("컵 대여 취소")
+    @Test
+    fun cancel() {
+        //given
+        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        point.use(2, rental.id)
+        clear()
+
+        //when
+        rentalService.cancel(rental.id)
+        clear()
+
+        //then
+        val findRental = rentalRepository.findByIdOrNull(rental.id)
+        val findPoint = pointRepository.findByIdOrNull(point.id)
+        val findPointEvents = pointEventRepository.findAllByPointId(point.id)
+
+        assertThat(findRental?.status).isEqualTo(RentalStatus.CANCELED)
+
+        assertThat(findPoint?.remainAmounts).isEqualTo(10)
+
+        assertThat(findPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP, CANCEL_USE)
+        assertThat(findPointEvents)
+            .extracting("amounts")
+            .containsExactly(10L, -2L, 2L)
+        assertThat(findPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, rental.id, null)
+    }
+
+    @DisplayName("컵 대여 취소 예외")
+    @Test
+    fun cancelException() {
+        //given
+        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        rental.confirm(cup)
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            rentalService.cancel(rental.id)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.RENTAL_CANCEL_NOT_ALLOWED)
+    }
+
     @DisplayName("대여 내역 조회")
     @Test
     fun getAll() {
