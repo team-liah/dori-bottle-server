@@ -1,7 +1,5 @@
 package com.liah.doribottle.domain.point
 
-import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.service.point.dto.PointDto
@@ -59,12 +57,11 @@ class Point(
         }
     }
 
-    fun cancel(eventId: UUID) {
-        val event = mutableEvents.find { it.id == eventId }
-            ?: throw NotFoundException(ErrorCode.POINT_EVENT_NOT_FOUNT)
+    fun cancel(event: PointEvent): Long {
         val cancelAmounts = -1 * event.amounts
         mutableEvents.add(PointEvent(this, CANCEL_USE, cancelAmounts, null))
-        remainAmounts -= cancelAmounts
+        remainAmounts += cancelAmounts
+        return cancelAmounts
     }
 
     fun expire() {

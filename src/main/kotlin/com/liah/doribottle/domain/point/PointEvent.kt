@@ -29,7 +29,7 @@ class PointEvent(
 
     val targetId: UUID? = targetId
 
-    fun cancel() {
-        this.point.cancel(this.id)
+    fun cancel(): Long {
+        return point.cancel(this)
     }
 }

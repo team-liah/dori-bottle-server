@@ -8,4 +8,5 @@ import java.util.*
 @Repository
 interface PointEventRepository : JpaRepository<PointEvent, UUID> {
     fun findAllByPointId(pointId: UUID): List<PointEvent>
+    fun findAllByTargetId(targetId: UUID): List<PointEvent>
 }
