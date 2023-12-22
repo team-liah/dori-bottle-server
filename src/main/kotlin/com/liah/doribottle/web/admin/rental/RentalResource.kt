@@ -70,4 +70,12 @@ class RentalResource(
             cupRfid = request.cupRfid!!
         )
     }
+
+    @Operation(summary = "대여 취소")
+    @PostMapping("/{id}/cancel")
+    fun cancel(
+        @PathVariable id: UUID
+    ) {
+        rentalService.cancel(id)
+    }
 }
