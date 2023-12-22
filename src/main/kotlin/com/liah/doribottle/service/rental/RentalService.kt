@@ -69,7 +69,7 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
 
-    fun updateRentalCup(
+    fun confirm(
         id: UUID,
         cupRfid: String
     ) {
@@ -78,7 +78,7 @@ class RentalService(
         val cup = cupRepository.findByRfid(cupRfid)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
 
-        rental.setRentalCup(cup)
+        rental.confirm(cup)
 
         registerTasks(rental)
     }
@@ -125,10 +125,6 @@ class RentalService(
                 rental.no
             )
         )
-    }
-
-    fun cancel() {
-
     }
 
     @Transactional(readOnly = true)
