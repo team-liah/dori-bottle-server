@@ -54,7 +54,7 @@ class RentalResource(
         @PathVariable id: UUID,
         @Valid @RequestBody request: RentalCupMapRequest
     ) {
-        rentalService.updateRentalCup(
+        rentalService.confirm(
             id = id,
             cupRfid = request.cupRfid!!
         )

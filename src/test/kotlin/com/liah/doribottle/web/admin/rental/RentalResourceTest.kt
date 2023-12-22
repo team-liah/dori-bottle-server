@@ -66,14 +66,14 @@ class RentalResourceTest : BaseControllerTest() {
         insertRentals(userA, userB, userC, vendingMachine)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
-        params.add("status", "PROCEEDING")
+        params.add("status", "CONFIRMED")
         params.add("fromMachineId", vendingMachine.id.toString())
         params.add("page", "0")
         params.add("size", "5")
 
         val expectUserId = listOf(userC.id.toString(), userC.id.toString(), userB.id.toString(), userB.id.toString(), userA.id.toString())
         val expectFromMachineId = listOf(vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString())
-        val expectStatus = listOf(RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString(), RentalStatus.PROCEEDING.toString())
+        val expectStatus = listOf(RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString())
 
         mockMvc.perform(
             get(endPoint)
@@ -94,27 +94,27 @@ class RentalResourceTest : BaseControllerTest() {
         vendingMachine: Machine
     ) {
         val rental1 = Rental(userA, vendingMachine, true, 7)
-        rental1.setRentalCup(cupRepository.save(Cup("B1:B1:B1:B1")))
+        rental1.confirm(cupRepository.save(Cup("B1:B1:B1:B1")))
         rentalRepository.save(rental1)
 
         val rental2 = Rental(userA, vendingMachine, true, 7)
-        rental2.setRentalCup(cupRepository.save(Cup("C1:C1:C1:C1")))
+        rental2.confirm(cupRepository.save(Cup("C1:C1:C1:C1")))
         rentalRepository.save(rental2)
 
         val rental3 = Rental(userB, vendingMachine, true, 7)
-        rental3.setRentalCup(cupRepository.save(Cup("D1:D1:D1:D1")))
+        rental3.confirm(cupRepository.save(Cup("D1:D1:D1:D1")))
         rentalRepository.save(rental3)
 
         val rental4 = Rental(userB, vendingMachine, true, 7)
-        rental4.setRentalCup(cupRepository.save(Cup("E1:E1:E1:E1")))
+        rental4.confirm(cupRepository.save(Cup("E1:E1:E1:E1")))
         rentalRepository.save(rental4)
 
         val rental5 = Rental(userC, vendingMachine, true, 7)
-        rental5.setRentalCup(cupRepository.save(Cup("F1:F1:F1:F1")))
+        rental5.confirm(cupRepository.save(Cup("F1:F1:F1:F1")))
         rentalRepository.save(rental5)
 
         val rental6 = Rental(userC, vendingMachine, true, 7)
-        rental6.setRentalCup(cupRepository.save(Cup("G1:G1:G1:G1")))
+        rental6.confirm(cupRepository.save(Cup("G1:G1:G1:G1")))
         rentalRepository.save(rental6)
     }
 
@@ -128,7 +128,7 @@ class RentalResourceTest : BaseControllerTest() {
         vendingMachine.updateCupAmounts(100)
         machineRepository.save(vendingMachine)
         val rental = Rental(user, vendingMachine, true, 7)
-        rental.setRentalCup(cupRepository.save(Cup("B1:B1:B1:B1")))
+        rental.confirm(cupRepository.save(Cup("B1:B1:B1:B1")))
         rentalRepository.save(rental)
 
         mockMvc.perform(
@@ -170,7 +170,7 @@ class RentalResourceTest : BaseControllerTest() {
         val collectionMachine = machineRepository.save(Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
         val cup = cupRepository.save(Cup(CUP_RFID))
         val rental = Rental(user, vendingMachine, true, 14)
-        rental.setRentalCup(cup)
+        rental.confirm(cup)
         rentalRepository.save(rental)
         cupRepository.save(cup)
 

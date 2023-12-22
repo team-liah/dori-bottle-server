@@ -69,8 +69,9 @@ class Rental(
     var status: RentalStatus = PROCEEDING
         protected set
 
-    fun setRentalCup(cup: Cup) {
+    fun confirm(cup: Cup) {
         this.cup = cup
+        this.status = CONFIRMED
 
         fromMachine.increaseCupAmounts(-1)
         cup.loan()
@@ -85,7 +86,7 @@ class Rental(
         toMachine.increaseCupAmounts(1)
         this.toMachine = toMachine
 
-        if (this.status == PROCEEDING) {
+        if (this.status == CONFIRMED) {
             succeed()
         }
 

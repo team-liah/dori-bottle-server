@@ -18,7 +18,7 @@ import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.SAVE_PAY
 import com.liah.doribottle.domain.point.PointSaveType.PAY
 import com.liah.doribottle.domain.rental.Rental
-import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.rental.RentalStatus.CONFIRMED
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
@@ -192,13 +192,13 @@ class RentalControllerTest : BaseControllerTest() {
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
-        params.add("status", "PROCEEDING")
+        params.add("status", "CONFIRMED")
         params.add("page", "0")
         params.add("size", "3")
 
         val expectUserId = listOf(user.id.toString(), user.id.toString(), user.id.toString())
         val expectFromMachineId = listOf(vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString())
-        val expectStatus = listOf(PROCEEDING.toString(), PROCEEDING.toString(), PROCEEDING.toString())
+        val expectStatus = listOf(CONFIRMED.toString(), CONFIRMED.toString(), CONFIRMED.toString())
 
         mockMvc.perform(
             get(endPoint)
@@ -215,27 +215,27 @@ class RentalControllerTest : BaseControllerTest() {
 
     private fun insertRentals() {
         val rental1 = Rental(user, vendingMachine, true, 7)
-        rental1.setRentalCup(cupRepository.save(Cup("B1:B1:B1:B1")))
+        rental1.confirm(cupRepository.save(Cup("B1:B1:B1:B1")))
         rentalRepository.save(rental1)
 
         val rental2 = Rental(user, vendingMachine, true, 7)
-        rental2.setRentalCup(cupRepository.save(Cup("C1:C1:C1:C1")))
+        rental2.confirm(cupRepository.save(Cup("C1:C1:C1:C1")))
         rentalRepository.save(rental2)
 
         val rental3 = Rental(user, vendingMachine, true, 7)
-        rental3.setRentalCup(cupRepository.save(Cup("D1:D1:D1:D1")))
+        rental3.confirm(cupRepository.save(Cup("D1:D1:D1:D1")))
         rentalRepository.save(rental3)
 
         val rental4 = Rental(user, vendingMachine, true, 7)
-        rental4.setRentalCup(cupRepository.save(Cup("E1:E1:E1:E1")))
+        rental4.confirm(cupRepository.save(Cup("E1:E1:E1:E1")))
         rentalRepository.save(rental4)
 
         val rental5 = Rental(user, vendingMachine, true, 7)
-        rental5.setRentalCup(cupRepository.save(Cup("F1:F1:F1:F1")))
+        rental5.confirm(cupRepository.save(Cup("F1:F1:F1:F1")))
         rentalRepository.save(rental5)
 
         val rental6 = Rental(user, vendingMachine, true, 7)
-        rental6.setRentalCup(cupRepository.save(Cup("G1:G1:G1:G1")))
+        rental6.confirm(cupRepository.save(Cup("G1:G1:G1:G1")))
         rentalRepository.save(rental6)
     }
 }
