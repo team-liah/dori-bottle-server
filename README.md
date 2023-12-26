@@ -6,25 +6,23 @@ You can find api documentation at click [here](https://api.doribottle-id.co.kr/s
 DoriBottle is a [Spring Boot](https://spring.io/guides/gs/spring-boot) application built using [Gradle](https://spring.io/guides/gs/gradle/). You can build a jar file and run it from the command line.
 
 ### Steps:
-1) Download Redis image and start.
-   ```
-   docker pull redis:latest
-   docker run -p 6379:6379 redis:latest
-   ```
-2) Download Mariadb image and start.
-   ```
-   docker pull mariadb:10.6
-   docker run -e MARIADB_ROOT_PASSWORD=root -e MARIADB_DATABASE=doribottle_local -p 3306:3306 mariadb:10.6
-   ```
-3) Download source code from github repository.
+1) Download source code from github repository.
    ```
    git clone https://github.com/team-liah/dori-bottle-server.git
+   
+   cd dori-bottle-server
+   ```
+2) Create and Start Redis container.
+   ```
+   docker-compose -f docker/redis.yml up -d
+   ```
+3) Create and Start MariaDB container.
+   ```
+   docker-compose -f docker/mariadb.yml up -d 
    ```
 4) Add environment variables.
 5) Build jar file and run it.
    ```
-   cd dori-bottle-server
-   
    ./gradlew
    ./gradlew bootRun
    ```
