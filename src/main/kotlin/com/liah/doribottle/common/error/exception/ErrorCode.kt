@@ -34,6 +34,7 @@ enum class ErrorCode(
     UNBLOCKED_USER(400, "C008", "Unblocked user."),
     LOGIN_ID_NOT_ALLOWED(400, "C009", "LoginId is cannot be changed."),
     BLOCKED_USER_ACCESS_DENIED_LOST_CUP(403, "C010", "BlockedUser is denied access. (Lost cup penalty)"),
+    USER_INACTIVATE_NOT_ALLOWED(400, "C011", "User is can't inactivate."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),

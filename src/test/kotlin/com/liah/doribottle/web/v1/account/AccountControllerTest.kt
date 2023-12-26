@@ -303,7 +303,7 @@ class AccountControllerTest : BaseControllerTest() {
         val point3 = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
+        val body = InactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"), "테스트")
 
         //when, then
         mockMvc.perform(
@@ -326,6 +326,7 @@ class AccountControllerTest : BaseControllerTest() {
         val findInquiry = inquiryRepository.findAll().firstOrNull()
 
         assertThat(findUser?.active).isFalse()
+        assertThat(findUser?.inactivateReason).isEqualTo("테스트")
 
         assertThat(findPoint1?.remainAmounts).isEqualTo(0)
         assertThat(findPoint2?.remainAmounts).isEqualTo(10)
@@ -349,7 +350,7 @@ class AccountControllerTest : BaseControllerTest() {
         val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = DeactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"))
+        val body = InactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"), "테스트")
 
         //when, then
         mockMvc.perform(
@@ -370,6 +371,7 @@ class AccountControllerTest : BaseControllerTest() {
         val findInquiry = inquiryRepository.findAll().firstOrNull()
 
         assertThat(findUser?.active).isFalse()
+        assertThat(findUser?.inactivateReason).isEqualTo("테스트")
 
         assertThat(findPoint?.remainAmounts).isEqualTo(10)
 
@@ -391,7 +393,7 @@ class AccountControllerTest : BaseControllerTest() {
         val point = pointRepository.save(Point(user.id, PointSaveType.REWARD, PointEventType.SAVE_REGISTER_REWARD, 10))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = DeactivateRequest(null)
+        val body = InactivateRequest(null, "테스트")
 
         //when, then
         mockMvc.perform(
@@ -412,6 +414,7 @@ class AccountControllerTest : BaseControllerTest() {
         val findInquiries = inquiryRepository.findAll()
 
         assertThat(findUser?.active).isFalse()
+        assertThat(findUser?.inactivateReason).isEqualTo("테스트")
 
         assertThat(findPoint?.remainAmounts).isEqualTo(10)
 

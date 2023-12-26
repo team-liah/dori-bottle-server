@@ -59,7 +59,8 @@ class RentalQueryRepository(
         userId: UUID
     ): Boolean {
         return queryFactory
-            .selectFrom(rental)
+            .selectOne()
+            .from(rental)
             .where(
                 userIdEq(userId),
                 statusEq(CONFIRMED)
@@ -71,7 +72,8 @@ class RentalQueryRepository(
         no: String
     ): Boolean {
         return queryFactory
-            .selectFrom(rental)
+            .selectOne()
+            .from(rental)
             .where(
                 noEq(no)
             )

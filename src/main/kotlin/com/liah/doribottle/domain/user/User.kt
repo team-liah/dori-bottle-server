@@ -75,6 +75,10 @@ class User(
     var active: Boolean = true
         protected set
 
+    @Column
+    var inactivateReason: String? = null
+        protected set
+
     @Column(nullable = false)
     var blocked: Boolean = false
         protected set
@@ -227,8 +231,9 @@ class User(
         }
     }
 
-    fun inactivate() {
+    fun inactivate(reason: String?) {
         this.active = false
+        this.inactivateReason = reason
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, use, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
