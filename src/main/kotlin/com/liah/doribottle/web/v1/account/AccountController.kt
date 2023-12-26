@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.v1.account
 
 import com.liah.doribottle.common.error.exception.UnauthorizedException
+import com.liah.doribottle.config.properties.AppProperties
 import com.liah.doribottle.constant.ACCESS_TOKEN
 import com.liah.doribottle.constant.REFRESH_TOKEN
 import com.liah.doribottle.domain.inquiry.InquiryType
@@ -14,7 +15,6 @@ import com.liah.doribottle.service.sms.SmsService
 import com.liah.doribottle.web.v1.account.vm.*
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -23,16 +23,18 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/account")
 class AccountController(
+    appProperties: AppProperties,
     private val accountService: AccountService,
     private val smsService: SmsService,
     private val pointService: PointService,
     private val inquiryService: InquiryService,
-    @Value("\${app.auth.jwt.expiredMs}") private val jwtExpiredMs: Long,
-    @Value("\${app.auth.refreshToken.expiredMs}") private val refreshTokenExpiredMs: Long,
 
     // TODO: Remove
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
+    private val jwtExpiredMs = appProperties.auth.jwt.expiredMs
+    private val refreshJwtExpiredMs = appProperties.auth.refreshJwt.expiredMs
+
     @Operation(summary = "인증 SMS 발송 요청")
     @PostMapping("/auth/send-sms")
     fun sendAuthSms(
@@ -62,7 +64,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             name = REFRESH_TOKEN,
             value = result.refreshToken,
-            expiredMs = refreshTokenExpiredMs
+            expiredMs = refreshJwtExpiredMs
         )
 
         return ResponseEntity.ok()
@@ -85,7 +87,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             name = REFRESH_TOKEN,
             value = result.refreshToken,
-            expiredMs = refreshTokenExpiredMs
+            expiredMs = refreshJwtExpiredMs
         )
 
         return ResponseEntity.ok()
@@ -134,7 +136,7 @@ class AccountController(
             val refreshTokenCookie = createCookie(
                 name = REFRESH_TOKEN,
                 value = result.refreshToken,
-                expiredMs = refreshTokenExpiredMs
+                expiredMs = refreshJwtExpiredMs
             )
             ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
@@ -233,7 +235,7 @@ class AccountController(
         val refreshTokenCookie = createCookie(
             name = REFRESH_TOKEN,
             value = result.refreshToken,
-            expiredMs = refreshTokenExpiredMs
+            expiredMs = refreshJwtExpiredMs
         )
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())

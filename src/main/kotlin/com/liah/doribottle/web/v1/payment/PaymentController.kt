@@ -10,7 +10,7 @@ import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.group.GroupService
 import com.liah.doribottle.service.payment.PaymentService
-import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.v1.payment.vm.*
@@ -27,7 +27,7 @@ import java.util.*
 @RequestMapping("/api/v1/payment")
 class PaymentController(
     private val paymentService: PaymentService,
-    private val tossPaymentsService: TossPaymentsService,
+    private val tosspaymentsService: TosspaymentsService,
     private val pointService: PointService,
     private val userService: UserService,
     private val groupService: GroupService
@@ -50,7 +50,7 @@ class PaymentController(
         )
 
         runCatching {
-            tossPaymentsService.executeBilling(
+            tosspaymentsService.executeBilling(
                 billingKey = method.billingKey,
                 userId = currentUserId,
                 price = price,
@@ -98,7 +98,7 @@ class PaymentController(
         )
 
         runCatching {
-            tossPaymentsService.executeBilling(
+            tosspaymentsService.executeBilling(
                 billingKey = method.billingKey,
                 userId = currentUserId,
                 price = price,
@@ -154,7 +154,7 @@ class PaymentController(
         val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         runCatching {
-            tossPaymentsService.cancelPayment(
+            tosspaymentsService.cancelPayment(
                 paymentKey = paymentResult.paymentKey,
                 cancelReason = "포인트 적립 취소"
             )
@@ -175,8 +175,8 @@ class PaymentController(
         @Valid @RequestBody request: PaymentMethodRegisterRequest
     ): UUID {
         val billingInfo = when (request.providerType!!) {
-            PaymentMethodProviderType.TOSS_PAYMENTS -> {
-                tossPaymentsService.issueBillingKey(
+            PaymentMethodProviderType.TOSSPAYMENTS -> {
+                tosspaymentsService.issueBillingKey(
                     authKey = request.authKey!!,
                     userId = currentUserId()!!
                 )

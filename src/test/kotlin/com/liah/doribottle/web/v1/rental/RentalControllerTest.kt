@@ -68,7 +68,7 @@ class RentalControllerTest : BaseControllerTest() {
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
 
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
 
         val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100)
         machineEntity.updateCupAmounts(100)
