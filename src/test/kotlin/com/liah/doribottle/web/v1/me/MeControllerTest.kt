@@ -131,7 +131,7 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
             .andExpect(jsonPath("group.name", `is`(user.group?.name)))
-            .andExpect(jsonPath("penaltyCount", `is`(1)))
+            .andExpect(jsonPath("penalties[*].type", `is`(listOf(DAMAGED_CUP.name))))
     }
 
     @DisplayName("프로필 조회 - TC2")
@@ -161,7 +161,7 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("gender", `is`(user.gender)))
             .andExpect(jsonPath("role", `is`(user.role.name)))
             .andExpect(jsonPath("group", nullValue()))
-            .andExpect(jsonPath("penaltyCount", `is`(0)))
+            .andExpect(jsonPath("penalties", `is`(emptyList<Any>())))
             .andExpect(jsonPath("blocked", `is`(true)))
             .andExpect(jsonPath("blockedCauses[*].clearPrice", `is`(listOf(5000, 5000))))
             .andExpect(jsonPath("blockedCauses[*].type", `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name))))

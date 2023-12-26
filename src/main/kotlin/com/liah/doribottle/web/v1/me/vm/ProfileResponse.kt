@@ -4,6 +4,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
 import com.liah.doribottle.service.user.dto.BlockedCauseDto
+import com.liah.doribottle.service.user.dto.PenaltyDto
 import java.time.Instant
 import java.util.*
 
@@ -20,7 +21,7 @@ data class ProfileResponse(
     val role: Role,
     val registeredDate: Instant?,
     val group: GroupDto?,
-    val penaltyCount: Int,
+    val penalties: List<PenaltyDto>,
     val blocked: Boolean,
     val blockedCauses: List<BlockedCauseDto>
 )
