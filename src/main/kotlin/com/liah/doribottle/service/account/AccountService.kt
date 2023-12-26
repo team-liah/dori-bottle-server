@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
@@ -26,6 +27,7 @@ import java.util.*
 class AccountService(
     private val userRepository: UserRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
+    private val rentalQueryRepository: RentalQueryRepository,
     private val loginIdChangeRepository: LoginIdChangeRepository,
     private val awsSqsSender: AwsSqsSender,
     private val tokenProvider: TokenProvider,
@@ -175,12 +177,17 @@ class AccountService(
 
     @Transactional
     fun inactivate(
-        id: UUID
+        id: UUID,
+        reason: String?
     ) {
        val user = userRepository.findByIdOrNull(id)
            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-       user.inactivate()
+       val existProceedingRental = rentalQueryRepository.existsConfirmedByUserId(id)
+       if (existProceedingRental)
+           throw BusinessException(ErrorCode.USER_INACTIVATE_NOT_ALLOWED)
+
+       user.inactivate(reason)
     }
 
     fun createLoginIdChange(
