@@ -191,7 +191,7 @@ class AccountServiceTest : BaseServiceTest() {
         //given
         val user = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
         val doriUser = DoriUser(user.id, user.loginId, user.name, user.role)
 
         //when

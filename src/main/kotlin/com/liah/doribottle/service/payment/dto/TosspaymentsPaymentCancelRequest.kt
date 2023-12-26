@@ -1,5 +1,5 @@
 package com.liah.doribottle.service.payment.dto
 
-data class TossPaymentCancelRequest(
+data class TosspaymentsPaymentCancelRequest(
     val cancelReason: String
 )
