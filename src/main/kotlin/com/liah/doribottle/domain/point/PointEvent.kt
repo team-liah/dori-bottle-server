@@ -3,6 +3,7 @@ package com.liah.doribottle.domain.point
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import jakarta.persistence.*
 import jakarta.persistence.FetchType.LAZY
+import java.util.*
 
 @Entity
 @Table(
@@ -12,7 +13,8 @@ import jakarta.persistence.FetchType.LAZY
 class PointEvent(
     point: Point,
     type: PointEventType,
-    amounts: Long
+    amounts: Long,
+    targetId: UUID?
 ) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "point_id", nullable = false)
@@ -24,4 +26,10 @@ class PointEvent(
 
     @Column(nullable = false)
     val amounts: Long = amounts
+
+    val targetId: UUID? = targetId
+
+    fun cancel(): Long {
+        return point.cancel(this)
+    }
 }
