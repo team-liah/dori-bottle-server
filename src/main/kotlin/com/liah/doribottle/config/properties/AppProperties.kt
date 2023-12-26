@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "app")
 data class AppProperties(
     val auth: AuthProperties,
-    val naverCloud: NaverCloud,
+    val ncloud: Ncloud,
     val tosspayments: Tosspayments,
     val aws: Aws
 ) {
@@ -24,7 +24,7 @@ data class AppProperties(
         )
     }
 
-    data class NaverCloud(
+    data class Ncloud(
         val notification: Notification,
     ) {
         data class Notification(
