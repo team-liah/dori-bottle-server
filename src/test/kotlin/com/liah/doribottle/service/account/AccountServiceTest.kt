@@ -7,6 +7,11 @@ import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.domain.common.Address
+import com.liah.doribottle.domain.common.Location
+import com.liah.doribottle.domain.cup.Cup
+import com.liah.doribottle.domain.machine.Machine
+import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentMethodType
@@ -14,12 +19,16 @@ import com.liah.doribottle.domain.payment.card.Card
 import com.liah.doribottle.domain.payment.card.CardOwnerType
 import com.liah.doribottle.domain.payment.card.CardProvider
 import com.liah.doribottle.domain.payment.card.CardType
+import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.LoginIdChange
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.repository.cup.CupRepository
+import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
+import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
@@ -46,6 +55,9 @@ class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
     @Autowired private lateinit var userRepository: UserRepository
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+    @Autowired private lateinit var machineRepository: MachineRepository
+    @Autowired private lateinit var rentalRepository: RentalRepository
+    @Autowired private lateinit var cupRepository: CupRepository
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired private lateinit var loginIdChangeRepository: LoginIdChangeRepository
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
@@ -146,7 +158,7 @@ class AccountServiceTest : BaseServiceTest() {
             val loginPassword = "123456"
             val encryptedPassword = passwordEncoder.encode(loginPassword)
             user.updatePassword(encryptedPassword)
-            user.inactivate()
+            user.inactivate(null)
             userRepository.save(user)
 
             accountService.auth("010-0001-0001", "123456")
@@ -216,13 +228,33 @@ class AccountServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        accountService.inactivate(user.id)
+        accountService.inactivate(user.id, "테스트")
         clear()
 
         //then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.active).isFalse()
+        assertThat(findUser?.inactivateReason).isEqualTo("테스트")
+    }
+
+    @DisplayName("유저 비활성화 예외")
+    @Test
+    fun inactivateException() {
+        //given
+        val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
+        val vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, MachineType.VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100))
+        val cup = cupRepository.save(Cup(CUP_RFID))
+        val rental = Rental(user, vendingMachine, true, 24)
+        rental.confirm(cup)
+        rentalRepository.save(rental)
+        clear()
+
+        //when, then
+        val exception = assertThrows<BusinessException> {
+            accountService.inactivate(user.id, null)
+        }
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_INACTIVATE_NOT_ALLOWED)
     }
 
     @DisplayName("로그인 아이디 변경 요청 생성")

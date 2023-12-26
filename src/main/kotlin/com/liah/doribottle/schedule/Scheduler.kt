@@ -6,7 +6,7 @@ import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
-import com.liah.doribottle.event.Events
+import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.payment.PaymentService
 import com.liah.doribottle.service.payment.TossPaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentMethodDto
@@ -25,7 +25,8 @@ class Scheduler(
     private val rentalService: RentalService,
     private val paymentService: PaymentService,
     private val userService: UserService,
-    private val tossPaymentsService: TossPaymentsService
+    private val tossPaymentsService: TossPaymentsService,
+    private val notificationService: NotificationService
 ) {
     @SchedulerLock(
         name = "scheduledTask",
@@ -58,14 +59,15 @@ class Scheduler(
 
     private fun remindRental(task: TaskDto) {
         val rental = rentalService.get(task.targetId)
-        Events.notify(
+        notificationService.saveAll(listOf(
             NotificationIndividual(
                 userId = rental.user.id,
                 type = NotificationType.NEAR_EXPIRATION,
                 targetId = rental.id,
                 rental.no
             )
-        )
+        ))
+        notificationService.alert(rental.user.id)
     }
 
     /**

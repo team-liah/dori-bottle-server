@@ -52,7 +52,7 @@ class RentalService(
         verifyCanRent(user)
 
         val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 24))
-        pointService.use(user.id, rental.cost)
+        pointService.use(user.id, rental.cost, rental.id)
 
         if (!user.use) {
             user.use()
@@ -69,7 +69,7 @@ class RentalService(
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
 
-    fun updateRentalCup(
+    fun confirm(
         id: UUID,
         cupRfid: String
     ) {
@@ -78,7 +78,7 @@ class RentalService(
         val cup = cupRepository.findByRfid(cupRfid)
             ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
 
-        rental.setRentalCup(cup)
+        rental.confirm(cup)
 
         registerTasks(rental)
     }
@@ -124,6 +124,20 @@ class RentalService(
                 targetId = rental.id,
                 rental.no
             )
+        )
+    }
+
+    fun cancel(
+        id: UUID
+    ) {
+        val rental = rentalRepository.findByIdOrNull(id)
+            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+
+        rental.cancel()
+
+        pointService.cancel(
+            userId = rental.user.id,
+            targetId = rental.id
         )
     }
 

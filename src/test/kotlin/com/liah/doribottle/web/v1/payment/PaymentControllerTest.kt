@@ -647,7 +647,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val vendingMachine = machineRepository.save(Machine(BaseServiceTest.MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100))
         val cup = cupRepository.save(Cup(BaseServiceTest.CUP_RFID))
         val rental = Rental(user, vendingMachine, true, 10)
-        rental.setRentalCup(cup)
+        rental.confirm(cup)
         rentalRepository.save(rental)
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)

@@ -75,6 +75,10 @@ class User(
     var active: Boolean = true
         protected set
 
+    @Column
+    var inactivateReason: String? = null
+        protected set
+
     @Column(nullable = false)
     var blocked: Boolean = false
         protected set
@@ -198,7 +202,7 @@ class User(
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
 
-        if (penalties.size >= 5) {
+        if (penalties.isNotEmpty() && (penalties.size%5) == 0) {
             block(FIVE_PENALTIES, null)
         }
     }
@@ -227,11 +231,12 @@ class User(
         }
     }
 
-    fun inactivate() {
+    fun inactivate(reason: String?) {
         this.active = false
+        this.inactivateReason = reason
     }
 
     fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, use, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, use, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, inactivateReason, use, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
     fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }

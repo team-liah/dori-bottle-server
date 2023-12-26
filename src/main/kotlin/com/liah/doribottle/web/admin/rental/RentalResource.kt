@@ -54,7 +54,7 @@ class RentalResource(
         @PathVariable id: UUID,
         @Valid @RequestBody request: RentalCupMapRequest
     ) {
-        rentalService.updateRentalCup(
+        rentalService.confirm(
             id = id,
             cupRfid = request.cupRfid!!
         )
@@ -69,5 +69,13 @@ class RentalResource(
             toMachineNo = request.machineNo!!,
             cupRfid = request.cupRfid!!
         )
+    }
+
+    @Operation(summary = "대여 취소")
+    @PostMapping("/{id}/cancel")
+    fun cancel(
+        @PathVariable id: UUID
+    ) {
+        rentalService.cancel(id)
     }
 }

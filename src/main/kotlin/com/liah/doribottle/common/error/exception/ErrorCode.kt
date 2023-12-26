@@ -34,6 +34,7 @@ enum class ErrorCode(
     UNBLOCKED_USER(400, "C008", "Unblocked user."),
     LOGIN_ID_NOT_ALLOWED(400, "C009", "LoginId is cannot be changed."),
     BLOCKED_USER_ACCESS_DENIED_LOST_CUP(403, "C010", "BlockedUser is denied access. (Lost cup penalty)"),
+    USER_INACTIVATE_NOT_ALLOWED(400, "C011", "User is can't inactivate."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),
@@ -44,6 +45,7 @@ enum class ErrorCode(
     // Rental
     RENTAL_NOT_FOUND(404, "E001", "Rental entity not found."),
     LACK_OF_POINT(400, "E002", "Lack of points to rent cup."),
+    RENTAL_CANCEL_NOT_ALLOWED(400, "E003", "Rental can not be canceled."),
 
     // Group
     GROUP_NOT_FOUND(404, "F001", "Group entity not found."),
@@ -61,6 +63,7 @@ enum class ErrorCode(
 
     // Point
     POINT_NOT_FOUNT(404, "I001", "Point entity not found."),
+    POINT_EVENT_NOT_FOUNT(404, "I002", "Point event entity not found."),
 
     // Inquiry
     INQUIRY_NOT_FOUNT(404, "J001", "Inquiry entity not found."),

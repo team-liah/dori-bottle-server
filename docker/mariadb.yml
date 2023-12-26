@@ -1,0 +1,11 @@
+version: '3'
+services:
+  mariadb:
+    image: mariadb:10.6
+    container_name: doribottle_db
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=root
+      - MARIADB_DATABASE=doribottle_local
+    ports:
+      - 3306:3306

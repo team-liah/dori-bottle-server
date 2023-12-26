@@ -1,0 +1,11 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    container_name: doribottle_redis
+    restart: always
+    labels:
+      - "name=redis"
+      - "mode=standalone"
+    ports:
+      - 127.0.0.1:6379:6379

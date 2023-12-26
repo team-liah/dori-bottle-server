@@ -1,8 +1,8 @@
 package com.liah.doribottle.service.rental.dto
 
 import com.liah.doribottle.domain.rental.RentalStatus
+import com.liah.doribottle.service.cup.dto.CupDto
 import com.liah.doribottle.service.machine.dto.MachineDto
-import com.liah.doribottle.service.user.dto.UserDto
 import com.liah.doribottle.service.user.dto.UserSimpleDto
 import com.liah.doribottle.web.v1.rental.vm.RentalMachineInfo
 import com.liah.doribottle.web.v1.rental.vm.RentalSearchResponse
@@ -13,7 +13,7 @@ data class RentalDto(
     val id: UUID,
     val no: String,
     val user: UserSimpleDto,
-    val cupId: UUID?,
+    val cup: CupDto?,
     val fromMachine: MachineDto,
     val toMachine: MachineDto?,
     val withIce: Boolean,
@@ -28,7 +28,7 @@ data class RentalDto(
         id = id,
         no = no,
         userId = user.id,
-        cupId = cupId,
+        cupId = cup?.id,
         fromMachine = RentalMachineInfo(
             id = fromMachine.id,
             no = fromMachine.no,

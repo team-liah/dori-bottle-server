@@ -42,7 +42,6 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.security:spring-security-test")
-	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
@@ -54,7 +53,10 @@ dependencies {
 
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	testImplementation("org.testcontainers:testcontainers:1.18.3")
+
+	// testcontainers
+	testImplementation("org.testcontainers:testcontainers:1.19.3")
+	testImplementation("org.testcontainers:mariadb:1.19.3")
 
 	// ulid-creator
 	implementation("com.github.f4b6a3:ulid-creator:5.2.0")
