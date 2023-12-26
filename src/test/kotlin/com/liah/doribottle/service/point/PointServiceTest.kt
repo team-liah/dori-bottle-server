@@ -30,6 +30,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import java.util.*
 
 class PointServiceTest : BaseServiceTest() {
     @Autowired private lateinit var pointService: PointService
@@ -128,11 +129,12 @@ class PointServiceTest : BaseServiceTest() {
         //given
         val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        val targetId = UUID.randomUUID()
         given(mockPointQueryRepository.getAllRemainByUserId(user.id))
             .willReturn(listOf(rewardPoint, payPoint))
 
         //when
-        pointService.use(user.id, 15)
+        pointService.use(user.id, 15, targetId)
         clear()
 
         //then
@@ -155,12 +157,18 @@ class PointServiceTest : BaseServiceTest() {
         assertThat(findRewardPointEvents)
             .extracting("amounts")
             .containsExactly(10L, -10L)
+        assertThat(findRewardPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId)
         assertThat(findPayPointEvents)
             .extracting("type")
             .containsExactly(SAVE_PAY, USE_CUP)
         assertThat(findPayPointEvents)
             .extracting("amounts")
             .containsExactly(10L, -5L)
+        assertThat(findPayPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId)
 
         assertThat(findPointHistories)
             .extracting("eventType")
@@ -177,13 +185,104 @@ class PointServiceTest : BaseServiceTest() {
     fun useException() {
         val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
         val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
+        val targetId = UUID.randomUUID()
         given(mockPointQueryRepository.getAllRemainByUserId(user.id))
             .willReturn(listOf(rewardPoint, payPoint))
 
         val exception = assertThrows<BusinessException> {
-            pointService.use(user.id, 25)
+            pointService.use(user.id, 25, targetId)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
+    }
+
+    @DisplayName("포인트 사용 취소")
+    @Test
+    fun cancel() {
+        //given
+        val targetId = UUID.randomUUID()
+        val point = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 10))
+        point.use(2, targetId)
+        clear()
+
+        //when
+        pointService.cancel(user.id, targetId)
+        clear()
+
+        //then
+        val findPoint = pointRepository.findByIdOrNull(point.id)
+        val findPointEvents = pointEventRepository.findAllByPointId(point.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+
+        assertThat(findPoint?.remainAmounts).isEqualTo(10)
+
+        assertThat(findPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_REGISTER_REWARD, USE_CUP, CANCEL_USE)
+        assertThat(findPointEvents)
+            .extracting("amounts")
+            .containsExactly(10L, -2L, 2L)
+        assertThat(findPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId, null)
+
+        assertThat(findPointHistories)
+            .extracting("eventType")
+            .containsExactly(CANCEL_USE)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(2L)
+    }
+
+    @DisplayName("포인트 사용 취소 TC2")
+    @Test
+    fun cancelTc2() {
+        //given
+        val targetId = UUID.randomUUID()
+        val rewardPoint = pointRepository.save(Point(user.id, REWARD, SAVE_REGISTER_REWARD, 1))
+        val payPoint = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+        rewardPoint.use(1, targetId)
+        payPoint.use(1, targetId)
+        clear()
+
+        //when
+        pointService.cancel(user.id, targetId)
+        clear()
+
+        //then
+        val findRewardPoint = pointRepository.findByIdOrNull(rewardPoint.id)
+        val findPayPoint = pointRepository.findByIdOrNull(payPoint.id)
+        val findRewardPointEvents = pointEventRepository.findAllByPointId(rewardPoint.id)
+        val findPayPointEvents = pointEventRepository.findAllByPointId(payPoint.id)
+        val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+
+        assertThat(findRewardPoint?.remainAmounts).isEqualTo(1)
+        assertThat(findPayPoint?.remainAmounts).isEqualTo(1)
+
+        assertThat(findRewardPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_REGISTER_REWARD, USE_CUP, CANCEL_USE)
+        assertThat(findRewardPointEvents)
+            .extracting("amounts")
+            .containsExactly(1L, -1L, 1L)
+        assertThat(findRewardPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId, null)
+        assertThat(findPayPointEvents)
+            .extracting("type")
+            .containsExactly(SAVE_PAY, USE_CUP, CANCEL_USE)
+        assertThat(findPayPointEvents)
+            .extracting("amounts")
+            .containsExactly(1L, -1L, 1L)
+        assertThat(findPayPointEvents)
+            .extracting("targetId")
+            .containsExactly(null, targetId, null)
+
+        assertThat(findPointHistories)
+            .extracting("eventType")
+            .containsExactly(CANCEL_USE)
+        assertThat(findPointHistories)
+            .extracting("amounts")
+            .containsExactly(2L)
     }
 
     @DisplayName("포인트 총합 조회")

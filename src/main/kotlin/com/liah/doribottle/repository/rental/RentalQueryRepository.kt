@@ -3,7 +3,7 @@ package com.liah.doribottle.repository.rental
 import com.liah.doribottle.domain.rental.QRental.Companion.rental
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
-import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
+import com.liah.doribottle.domain.rental.RentalStatus.CONFIRMED
 import com.liah.doribottle.extension.toPage
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
@@ -40,7 +40,6 @@ class RentalQueryRepository(
                 statusEq(status),
                 expired(expired)
             )
-            .where(rental.cup.isNotNull)
             .toPage(pageable)
     }
 
@@ -52,21 +51,19 @@ class RentalQueryRepository(
             .where(
                 cupIdEq(cupId)
             )
-            .where(rental.cup.isNotNull)
             .orderBy(rental.createdDate.desc())
             .fetchFirst()
     }
 
-    fun existsProceedingByUserId(
+    fun existsConfirmedByUserId(
         userId: UUID
     ): Boolean {
         return queryFactory
             .selectFrom(rental)
             .where(
                 userIdEq(userId),
-                statusEq(PROCEEDING)
+                statusEq(CONFIRMED)
             )
-            .where(rental.cup.isNotNull)
             .fetchFirst() != null
     }
 
