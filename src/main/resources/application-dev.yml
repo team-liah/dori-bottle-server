@@ -37,7 +37,7 @@ app:
       pre-auth-expired-ms: 300000 # 5minute
     refresh-jwt:
       expired-ms: 1209600000 # 2weeks
-  naver-cloud:
+  ncloud:
     notification:
       sms:
         baseUrl: https://sens.apigw.ntruss.com/sms/v2
