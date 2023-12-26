@@ -115,5 +115,5 @@ class Rental(
         this.status = CANCELED
     }
 
-    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup?.id, fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
+    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup?.toDto(), fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }

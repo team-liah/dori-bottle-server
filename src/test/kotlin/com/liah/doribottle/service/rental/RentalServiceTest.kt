@@ -563,7 +563,7 @@ class RentalServiceTest : BaseServiceTest() {
         //then
         assertThat(result.id).isEqualTo(rental.id)
         assertThat(result.user.id).isEqualTo(user.id)
-        assertThat(result.cupId).isEqualTo(cup.id)
+        assertThat(result.cup?.id).isEqualTo(cup.id)
         assertThat(result.status).isEqualTo(CONFIRMED)
         assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
         assertThat(result.withIce).isTrue()
