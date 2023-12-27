@@ -25,9 +25,10 @@ class BannerService(
         priority: Int,
         visible: Boolean,
         backgroundColor: String?,
-        imageUrl: String?
+        imageUrl: String?,
+        targetUrl: String?
     ): UUID {
-        val banner = bannerRepository.save(Banner(title, content, priority, visible, backgroundColor, imageUrl))
+        val banner = bannerRepository.save(Banner(title, content, priority, visible, backgroundColor, imageUrl, targetUrl))
 
         return banner.id
     }
@@ -39,12 +40,13 @@ class BannerService(
         priority: Int,
         visible: Boolean,
         backgroundColor: String?,
-        imageUrl: String?
+        imageUrl: String?,
+        targetUrl: String?
     ) {
         val banner = bannerRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.BANNER_NOT_FOUND)
 
-        banner.update(title, content, priority, visible, backgroundColor, imageUrl)
+        banner.update(title, content, priority, visible, backgroundColor, imageUrl, targetUrl)
     }
 
     @Transactional(readOnly = true)
