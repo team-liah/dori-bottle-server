@@ -33,6 +33,7 @@ class BannerResource(
             visible = request.visible!!,
             backgroundColor = request.backgroundColor,
             imageUrl = request.imageUrl,
+            targetUrl = request.targetUrl
         )
     }
 
@@ -73,7 +74,8 @@ class BannerResource(
             priority = request.priority!!,
             visible = request.visible!!,
             backgroundColor = request.backgroundColor,
-            imageUrl = request.imageUrl
+            imageUrl = request.imageUrl,
+            targetUrl = request.targetUrl
         )
     }
 

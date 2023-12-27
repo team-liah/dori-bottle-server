@@ -12,5 +12,6 @@ data class BannerRegisterOrUpdateRequest(
     @field:NotNull
     val visible: Boolean?,
     val backgroundColor: String?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val targetUrl: String?
 )

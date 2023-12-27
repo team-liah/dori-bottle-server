@@ -12,10 +12,11 @@ data class BannerDto(
     val visible: Boolean,
     val backgroundColor: String?,
     val imageUrl: String?,
+    val targetUrl: String?,
     val createdDate: Instant,
     val lastModifiedDate: Instant
 ) {
     fun toSearchResponse(): BannerSearchResponse {
-        return BannerSearchResponse(id, title, content, priority, visible, backgroundColor, imageUrl)
+        return BannerSearchResponse(id, title, content, priority, visible, backgroundColor, imageUrl, targetUrl)
     }
 }

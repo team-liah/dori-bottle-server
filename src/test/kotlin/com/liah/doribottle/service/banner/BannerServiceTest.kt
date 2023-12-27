@@ -20,7 +20,7 @@ class BannerServiceTest : BaseServiceTest() {
     @Test
     fun register() {
         //given, when
-        val id = bannerService.register("Test", "test", 0, true, null, null)
+        val id = bannerService.register("Test", "test", 0, true, null, null, null)
 
         //then
         val findBanner = bannerRepository.findByIdOrNull(id)
@@ -37,11 +37,11 @@ class BannerServiceTest : BaseServiceTest() {
     @Test
     fun update() {
         //given
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null))
+        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
         clear()
 
         //when
-        bannerService.update(banner.id, "Updated", "updated", 1, false, "#000000", null)
+        bannerService.update(banner.id, "Updated", "updated", 1, false, "#000000", null, null)
         clear()
 
         //then
@@ -59,7 +59,7 @@ class BannerServiceTest : BaseServiceTest() {
     @Test
     fun get() {
         //given
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null))
+        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
         clear()
 
         //when
@@ -112,19 +112,19 @@ class BannerServiceTest : BaseServiceTest() {
     }
 
     fun insertBanners() {
-        bannerRepository.save(Banner("1", "test", 5, true, null, null))
-        bannerRepository.save(Banner("2", "test", 4, true, null, null))
-        bannerRepository.save(Banner("3", "test", 3, true, null, null))
-        bannerRepository.save(Banner("4", "test", 2, true, null, null))
-        bannerRepository.save(Banner("5", "test", 1, false, null, null))
-        bannerRepository.save(Banner("6", "test", 0, true, null, null))
+        bannerRepository.save(Banner("1", "test", 5, true, null, null, null))
+        bannerRepository.save(Banner("2", "test", 4, true, null, null, null))
+        bannerRepository.save(Banner("3", "test", 3, true, null, null, null))
+        bannerRepository.save(Banner("4", "test", 2, true, null, null, null))
+        bannerRepository.save(Banner("5", "test", 1, false, null, null, null))
+        bannerRepository.save(Banner("6", "test", 0, true, null, null, null))
     }
 
     @DisplayName("배너 삭제")
     @Test
     fun delete() {
         //given
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null))
+        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
         clear()
 
         //when
