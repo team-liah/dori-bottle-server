@@ -69,5 +69,8 @@ enum class ErrorCode(
     INQUIRY_NOT_FOUNT(404, "J001", "Inquiry entity not found."),
 
     // Post
-    POST_NOT_FOUND(404, "K003", "Post entity not found.")
+    POST_NOT_FOUND(404, "K003", "Post entity not found."),
+
+    // Banner
+    BANNER_NOT_FOUND(404, "L001", "Banner entity not found.")
 }
