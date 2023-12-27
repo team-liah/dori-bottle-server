@@ -1,5 +1,6 @@
 package com.liah.doribottle.service.banner.dto
 
+import com.liah.doribottle.web.v1.banner.vm.BannerSearchResponse
 import java.time.Instant
 import java.util.*
 
@@ -13,4 +14,8 @@ data class BannerDto(
     val imageUrl: String?,
     val createdDate: Instant,
     val lastModifiedDate: Instant
-)
+) {
+    fun toSearchResponse(): BannerSearchResponse {
+        return BannerSearchResponse(id, title, content, priority, visible, backgroundColor, imageUrl)
+    }
+}
