@@ -14,7 +14,8 @@ class Banner(
     priority: Int,
     visible: Boolean,
     backgroundColor: String?,
-    imageUrl: String?
+    imageUrl: String?,
+    targetUrl: String?
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var title: String = title
@@ -40,13 +41,18 @@ class Banner(
     var imageUrl: String? = imageUrl
         protected set
 
+    @Column
+    var targetUrl: String? = targetUrl
+        protected set
+
     fun update(
         title: String,
         content: String,
         priority: Int,
         visible: Boolean,
         backgroundColor: String?,
-        imageUrl: String?
+        imageUrl: String?,
+        targetUrl: String?
     ) {
         this.title = title
         this.content = content
@@ -54,7 +60,8 @@ class Banner(
         this.visible = visible
         this.backgroundColor = backgroundColor
         this.imageUrl = imageUrl
+        this.targetUrl = targetUrl
     }
 
-    fun toDto() = BannerDto(id, title, content, priority, visible, backgroundColor, imageUrl, createdDate, lastModifiedDate)
+    fun toDto() = BannerDto(id, title, content, priority, visible, backgroundColor, imageUrl, targetUrl, createdDate, lastModifiedDate)
 }
