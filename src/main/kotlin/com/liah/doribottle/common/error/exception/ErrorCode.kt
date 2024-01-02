@@ -16,6 +16,7 @@ enum class ErrorCode(
     BILLING_KEY_ISSUANCE_ERROR(500, "A008", "Billing Key Issuance Error."),
     BILLING_EXECUTE_ERROR(500, "A009", "Billing Execute Error."),
     PAYMENT_CANCEL_ERROR(500, "A010", "Payment Cancel Error."),
+    DISABLED_ACCOUNT(401, "A011", "Disabled account."),
 
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),

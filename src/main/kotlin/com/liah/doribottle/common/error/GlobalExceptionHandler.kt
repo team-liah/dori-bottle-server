@@ -88,7 +88,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(DisabledException::class)
     protected fun handleDisabledException(e: DisabledException): ResponseEntity<ErrorResponse> {
         log.error("DisabledException", e)
-        val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
+        val response = ErrorResponse.of(ErrorCode.DISABLED_ACCOUNT)
         val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
