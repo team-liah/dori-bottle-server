@@ -88,9 +88,18 @@ class UserService(
         val inviter = userRepository.findByInvitationCode(invitationCode)
             ?: throw NotFoundException(ErrorCode.INVITER_NOT_FOUND)
 
-        invitee.setInviter(inviter)
-
         // invitee reward
+        rewardInvitee(invitee, inviter)
+
+        // inviter reward
+        rewardInviter(inviter)
+    }
+
+    private fun rewardInvitee(
+        invitee: User,
+        inviter: User
+    ) {
+        invitee.setInviter(inviter)
         awsSqsSender.send(
             PointSaveMessage(
                 invitee.id,
@@ -99,21 +108,6 @@ class UserService(
                 SAVE_REGISTER_INVITER_REWARD_AMOUNTS
             )
         )
-
-        if (invitee.use) {
-            // inviter reward
-            rewardInviter(inviter)
-        }
-    }
-
-    fun rewardInviterByInvitee(
-        inviteeId: UUID
-    ) {
-        val invitee = userRepository.findByIdOrNull(inviteeId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val inviter = invitee.inviterId?.let { userRepository.findByIdOrNull(it) }
-
-        inviter?.let { rewardInviter(it) }
     }
 
     private fun rewardInviter(

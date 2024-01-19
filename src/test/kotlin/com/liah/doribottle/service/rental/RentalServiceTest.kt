@@ -119,8 +119,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
 
-        assertThat(findUser?.use).isTrue()
-
         assertThat(findPoint.remainAmounts).isEqualTo(8L)
 
         assertThat(findPointEvents)
@@ -173,8 +171,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
-
-        assertThat(findUser?.use).isTrue()
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(0L)
@@ -240,8 +236,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
 
-        assertThat(findUser?.use).isTrue()
-
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(1L)
         assertThat(thirdPoint.remainAmounts).isEqualTo(0L)
@@ -303,8 +297,6 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
         assertThat(findRental?.status).isEqualTo(PROCEEDING)
-
-        assertThat(findUser?.use).isTrue()
 
         assertThat(findPoint.remainAmounts).isEqualTo(9L)
 
