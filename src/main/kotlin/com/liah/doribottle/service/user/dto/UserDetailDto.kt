@@ -20,7 +20,6 @@ data class UserDetailDto(
     val role: Role,
     val active: Boolean,
     val inactivateReason: String?,
-    val use: Boolean,
     val registeredDate: Instant?,
     val description: String?,
     val group: GroupDto?,

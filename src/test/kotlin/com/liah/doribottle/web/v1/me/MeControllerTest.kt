@@ -209,7 +209,7 @@ class MeControllerTest : BaseControllerTest() {
         val findInviter = userRepository.findByIdOrNull(inviter.id)
 
         assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
-        assertThat(findInviter?.invitationCount).isEqualTo(0)
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
 
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
@@ -225,7 +225,6 @@ class MeControllerTest : BaseControllerTest() {
         inviter.register()
         userRepository.save(inviter)
 
-        user.use()
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
@@ -260,7 +259,6 @@ class MeControllerTest : BaseControllerTest() {
         (0..3).forEach { _ -> inviter.increaseInvitationCount() }
         userRepository.save(inviter)
 
-        user.use()
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
