@@ -22,5 +22,13 @@ class Penalty(
     @Column
     val cause: String?
 ) : PrimaryKeyEntity() {
-    fun toDto() = PenaltyDto(id, user.id, type, cause, createdDate, lastModifiedDate)
+    @Column(nullable = false)
+    var disabled: Boolean = false
+        protected set
+
+    fun disable() {
+        this.disabled = true
+    }
+
+    fun toDto() = PenaltyDto(id, user.id, type, cause, disabled, createdDate, lastModifiedDate)
 }

@@ -9,6 +9,7 @@ data class PenaltyDto(
     val userId: UUID,
     val type: PenaltyType,
     val cause: String?,
+    val disabled: Boolean,
     val createdDate: Instant,
     val lastModifiedDate: Instant
 )
