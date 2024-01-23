@@ -450,6 +450,67 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.penalties).isEmpty()
     }
 
+    @DisplayName("유저 페널티 제거 TC2")
+    @Test
+    fun removePenaltyTc2() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        userRepository.save(user)
+        val penaltyId = user.penalties.first().id
+        clear()
+
+        //when
+        userService.removePenalty(user.id, penaltyId)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.penalties)
+            .extracting("type")
+            .containsExactly(DAMAGED_CUP, NON_MANNER, ETC, DAMAGED_CUP)
+
+        assertThat(findUser?.blocked).isFalse()
+        assertThat(findUser?.blockedCauses).isEmpty()
+    }
+
+    @DisplayName("유저 페널티 제거 TC3")
+    @Test
+    fun removePenaltyTc3() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        userRepository.save(user)
+        val penaltyId = user.penalties.first().id
+        clear()
+
+        //when
+        userService.removePenalty(user.id, penaltyId)
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.penalties)
+            .extracting("type")
+            .containsExactly(DAMAGED_CUP, NON_MANNER, ETC, DAMAGED_CUP, DAMAGED_CUP)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findUser?.blockedCauses)
+            .extracting("type")
+            .containsExactly(FIVE_PENALTIES)
+    }
+
     @DisplayName("유저 블락")
     @Test
     fun block() {
@@ -475,10 +536,14 @@ class UserServiceTest : BaseServiceTest() {
     fun unblock() {
         //given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
-        user.block(LOST_CUP_PENALTY, "cup1 분실")
-        user.block(LOST_CUP_PENALTY, "cup2 분실")
-        val blockedCauseIds = user.blockedCauses.map { it.id }
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
         userRepository.save(user)
+        val blockedCauseIds = user.blockedCauses.map { it.id }
         clear()
 
         //when
@@ -490,6 +555,9 @@ class UserServiceTest : BaseServiceTest() {
 
         assertThat(findUser?.blocked).isFalse()
         assertThat(findUser?.blockedCauses).isEmpty()
+        assertThat(findUser?.penalties)
+            .extracting("disabled")
+            .containsExactly(true, true, true, true, true, false)
     }
 
     @DisplayName("유저 블락 해제 TC2")
@@ -517,5 +585,59 @@ class UserServiceTest : BaseServiceTest() {
         assertThat(findUser?.blockedCauses)
             .extracting("description")
             .containsExactly("cup2 분실")
+    }
+
+    @DisplayName("유저 블락 해제 TC3")
+    @Test
+    fun unblockTc3() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.block(LOST_CUP_PENALTY, "cup1 분실")
+        user.block(LOST_CUP_PENALTY, "cup2 분실")
+        val blockedCauseIds = user.blockedCauses.map { it.id }
+        userRepository.save(user)
+        clear()
+
+        //when
+        userService.unblock(user.id, blockedCauseIds.toSet())
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.blocked).isFalse()
+        assertThat(findUser?.blockedCauses).isEmpty()
+    }
+
+    @DisplayName("유저 블락 해제 TC4")
+    @Test
+    fun unblockTc4() {
+        //given
+        val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.block(LOST_CUP_PENALTY, "컵 분실")
+        userRepository.save(user)
+        val lostCupBlockedCauseIds = user.blockedCauses.filter { it.type == LOST_CUP_PENALTY }.map { it.id }
+        clear()
+
+        //when
+        userService.unblock(user.id, lostCupBlockedCauseIds.toSet())
+        clear()
+
+        //then
+        val findUser = userRepository.findByIdOrNull(user.id)
+
+        assertThat(findUser?.blocked).isTrue()
+        assertThat(findUser?.blockedCauses)
+            .extracting("type")
+            .containsExactly(FIVE_PENALTIES)
+        assertThat(findUser?.penalties)
+            .extracting("disabled")
+            .containsExactly(false, false, false, false, false, false)
     }
 }
