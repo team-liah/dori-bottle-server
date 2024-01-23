@@ -161,6 +161,14 @@ class UserService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.removePenalty(penaltyId)
+
+        Events.notify(
+            NotificationIndividual(
+                userId = user.id,
+                type = NotificationType.PENALTY_CANCEL,
+                targetId = null
+            )
+        )
     }
 
     fun block(
@@ -181,6 +189,8 @@ class UserService(
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-        user.unblock(blockedCauseIds)
+        blockedCauseIds.forEach { blockedCauseId ->
+            user.unblock(blockedCauseId)
+        }
     }
 }

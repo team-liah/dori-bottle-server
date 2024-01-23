@@ -202,7 +202,7 @@ class User(
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
 
-        if (penalties.isNotEmpty() && (penalties.size%5) == 0) {
+        if (isBlockBoundary()) {
             block(FIVE_PENALTIES, null)
         }
     }
@@ -210,7 +210,18 @@ class User(
     fun removePenalty(
         penaltyId: UUID
     ) {
-        this.mutablePenalties.removeIf { it.id == penaltyId }
+        val penalty = penalties.find { it.id == penaltyId } ?: return
+
+        if (!penalty.disabled && isBlockBoundary()) {
+            val blockedCause = blockedCauses.find { it.type == FIVE_PENALTIES }
+            blockedCause?.id?.let { unblock(it) }
+        }
+
+        this.mutablePenalties.remove(penalty)
+    }
+
+    private fun isBlockBoundary(): Boolean {
+        return penalties.isNotEmpty() && (penalties.count { !it.disabled } % 5) == 0
     }
 
     fun block(
@@ -222,11 +233,20 @@ class User(
     }
 
     fun unblock(
-        blockedCauseIds: Set<UUID>
+        blockedCauseId: UUID
     ) {
-        this.mutableBlockedCauses.removeAll { blockedCauseIds.contains(it.id) }
+        val blockCause = blockedCauses.find { it.id == blockedCauseId }
 
-        if (this.mutableBlockedCauses.isEmpty()) {
+        this.mutableBlockedCauses.remove(blockCause)
+
+        if (blockCause?.type == FIVE_PENALTIES) {
+            (1..5).forEach { _ ->
+                val penalty = this.penalties.firstOrNull { !it.disabled }
+                penalty?.disable()
+            }
+        }
+
+        if (this.blockedCauses.isEmpty()) {
             this.blocked = false
         }
     }
