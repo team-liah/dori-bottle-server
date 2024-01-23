@@ -4,7 +4,6 @@ import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.event.notification.NotificationAllEvent
 import com.liah.doribottle.event.notification.NotificationIndividualEvent
-import com.liah.doribottle.event.user.FirstRentalUseEvent
 import org.springframework.context.ApplicationEventPublisher
 import java.util.*
 
@@ -33,16 +32,6 @@ class Events {
             targetId: UUID?
         ) {
             publisher.publishEvent(NotificationAllEvent(type, targetId))
-        }
-
-        fun useFirstRental(
-            userId: UUID
-        ) {
-            publisher.publishEvent(
-                FirstRentalUseEvent(
-                    userId = userId
-                )
-            )
         }
     }
 }

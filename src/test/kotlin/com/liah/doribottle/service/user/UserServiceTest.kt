@@ -214,7 +214,7 @@ class UserServiceTest : BaseServiceTest() {
         val findInviter = userRepository.findByIdOrNull(inviter.id)
         val findInvitee = userRepository.findByIdOrNull(invitee.id)
 
-        assertThat(findInviter?.invitationCount).isEqualTo(0)
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
         assertThat(findInvitee?.inviterId!!).isEqualTo(findInviter?.id!!)
 
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
@@ -230,7 +230,6 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(inviter)
         val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
         invitee.register()
-        invitee.use()
         userRepository.save(invitee)
         clear()
 
@@ -257,7 +256,6 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(inviter)
         val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
         invitee.register()
-        invitee.use()
         userRepository.save(invitee)
         clear()
 
@@ -305,81 +303,6 @@ class UserServiceTest : BaseServiceTest() {
             userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         }
         assertThat(exception3.errorCode).isEqualTo(ErrorCode.INVITER_ALREADY_REGISTERED)
-    }
-
-    @DisplayName("초대자 보상 지급")
-    @Test
-    fun rewardInviterByInvitee() {
-        //given
-        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
-        inviter.register()
-        userRepository.save(inviter)
-        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
-        invitee.register()
-        invitee.setInviter(inviter)
-        userRepository.save(invitee)
-        clear()
-
-        //when
-        userService.rewardInviterByInvitee(invitee.id)
-        clear()
-
-        //then
-        val findInviter = userRepository.findByIdOrNull(inviter.id)
-
-        assertThat(findInviter?.invitationCount).isEqualTo(1)
-    }
-
-    @DisplayName("초대자 보상 지급 TC2")
-    @Test
-    fun rewardInviterByInviteeTc2() {
-        //given
-        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
-        inviter.register()
-        (0..3).forEach { _ -> inviter.increaseInvitationCount() } // +4
-        userRepository.save(inviter)
-        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
-        invitee.register()
-        invitee.setInviter(inviter)
-        userRepository.save(invitee)
-        clear()
-
-        //when
-        userService.rewardInviterByInvitee(invitee.id)
-        clear()
-
-        //then
-        val findInviter = userRepository.findByIdOrNull(inviter.id)
-
-        assertThat(findInviter?.invitationCount).isEqualTo(5)
-        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
-    }
-
-    @DisplayName("초대자 보상 지급 TC3")
-    @Test
-    fun rewardInviterByInviteeTc3() {
-        //given
-        doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
-        inviter.register()
-        (0..8).forEach { _ -> inviter.increaseInvitationCount() } // +8
-        userRepository.save(inviter)
-        val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
-        invitee.register()
-        invitee.setInviter(inviter)
-        userRepository.save(invitee)
-        clear()
-
-        //when
-        userService.rewardInviterByInvitee(invitee.id)
-        clear()
-
-        //then
-        val findInviter = userRepository.findByIdOrNull(inviter.id)
-
-        assertThat(findInviter?.invitationCount).isEqualTo(10)
-        verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
 
     @DisplayName("유저 페널티 부과")
