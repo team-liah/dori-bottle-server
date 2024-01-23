@@ -4,7 +4,6 @@ import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.event.dummy.DummyInitEvent
 import com.liah.doribottle.event.notification.NotificationAllEvent
 import com.liah.doribottle.event.notification.NotificationIndividualEvent
-import com.liah.doribottle.event.user.FirstRentalUseEvent
 import com.liah.doribottle.service.account.AccountService
 import com.liah.doribottle.service.cup.CupService
 import com.liah.doribottle.service.machine.MachineService
@@ -49,12 +48,6 @@ class ApplicationEventListener(
         }
         notificationService.saveAll(individuals)
         individuals.forEach { notificationService.alert(it.userId) }
-    }
-
-    @Async
-    @TransactionalEventListener(FirstRentalUseEvent::class)
-    fun handleFirstRentalUseEvent(event: FirstRentalUseEvent) {
-        userService.rewardInviterByInvitee(event.userId)
     }
 
     // TODO: Remove
