@@ -78,7 +78,6 @@ class AdminResource(
             id = id,
             loginId = request.loginId!!,
             name = request.name!!,
-            role = request.role!!,
             email = request.email,
             phoneNumber = request.phoneNumber,
             description = request.description

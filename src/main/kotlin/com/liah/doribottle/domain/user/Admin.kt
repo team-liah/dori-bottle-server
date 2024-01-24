@@ -37,10 +37,7 @@ class Admin(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: Role = role.validateAdmin()
-        set(value) {
-            field = value.validateAdmin()
-        }
+    val role: Role = role.validateAdmin()
 
     @Column
     var email: String? = email
@@ -65,14 +62,12 @@ class Admin(
     fun update(
         loginId: String,
         name: String,
-        role: Role,
         email: String?,
         phoneNumber: String?,
         description: String?
     ) {
         this.loginId = loginId
         this.name = name
-        this.role = role
         this.email = email
         this.phoneNumber = phoneNumber
         this.description = description

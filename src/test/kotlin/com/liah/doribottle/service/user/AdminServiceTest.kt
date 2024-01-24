@@ -141,25 +141,12 @@ class AdminServiceTest : BaseServiceTest() {
         val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
         clear()
 
-        adminService.update(admin.id, "updated", "updated", Role.MACHINE_ADMIN, null, null, null)
+        adminService.update(admin.id, "updated", "updated", null, null, null)
         clear()
 
         val findAdmin = adminRepository.findByIdOrNull(admin.id)
         assertThat(findAdmin?.loginId).isEqualTo("updated")
         assertThat(findAdmin?.name).isEqualTo("updated")
-        assertThat(findAdmin?.role).isEqualTo(Role.MACHINE_ADMIN)
-    }
-
-    @DisplayName("관리자 수정 예외")
-    @Test
-    fun updateException() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
-        clear()
-
-        val exception = assertThrows<IllegalArgumentException> {
-            adminService.update(admin.id, "updated", "updated", Role.USER, null, null, null)
-        }
-        assertThat(exception.message).isEqualTo("Non Admin role is not allowed.")
     }
 
     @DisplayName("관리자 비밀번호 수정")
