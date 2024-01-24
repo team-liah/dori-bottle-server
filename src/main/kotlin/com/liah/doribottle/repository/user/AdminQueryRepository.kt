@@ -8,6 +8,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
+import java.time.Instant
+import java.util.*
 
 @Repository
 class AdminQueryRepository(
@@ -35,4 +37,37 @@ class AdminQueryRepository(
     private fun nameContains(name: String?) = name?.let { admin.name.contains(it) }
     private fun roleEq(role: Role?) = role?.let { admin.role.eq(it) }
     private fun deletedEq(deleted: Boolean?) = deleted?.let { admin.deleted.eq(it) }
+
+    fun insert(
+        id: UUID,
+        loginId: String,
+        loginPassword: String,
+        name: String,
+        role: Role
+    ): Long {
+        return queryFactory.insert(admin)
+            .columns(
+                admin.id,
+                admin.loginId,
+                admin.loginPassword,
+                admin.name,
+                admin.role,
+                admin.createdDate,
+                admin.lastModifiedDate,
+                admin.createdBy,
+                admin.lastModifiedBy,
+                admin.deleted
+            ).values(
+                id,
+                loginId,
+                loginPassword,
+                name,
+                role.name,
+                Instant.now(),
+                Instant.now(),
+                id,
+                id,
+                false
+            ).execute()
+    }
 }

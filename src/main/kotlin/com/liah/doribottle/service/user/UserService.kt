@@ -2,8 +2,7 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
-import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.PointEventType
@@ -105,7 +104,7 @@ class UserService(
                 invitee.id,
                 PointSaveType.REWARD,
                 PointEventType.SAVE_REGISTER_INVITER_REWARD,
-                SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+                DoriConstant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
             )
         )
     }
@@ -114,7 +113,7 @@ class UserService(
         inviter: User
     ) {
         inviter.increaseInvitationCount()
-        val inviteRewardAmounts = SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
+        val inviteRewardAmounts = DoriConstant.SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
         if (inviteRewardAmounts != null) {
             awsSqsSender.send(
                 PointSaveMessage(

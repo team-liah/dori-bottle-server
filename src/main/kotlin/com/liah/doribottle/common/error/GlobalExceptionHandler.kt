@@ -1,7 +1,7 @@
 package com.liah.doribottle.common.error
 
 import com.liah.doribottle.common.error.exception.*
-import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.extension.expireCookie
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -78,7 +78,7 @@ class GlobalExceptionHandler {
     protected fun handleBadCredentialsException(e: BadCredentialsException): ResponseEntity<ErrorResponse> {
         log.error("BadCredentialsException", e)
         val response = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
@@ -89,7 +89,7 @@ class GlobalExceptionHandler {
     protected fun handleDisabledException(e: DisabledException): ResponseEntity<ErrorResponse> {
         log.error("DisabledException", e)
         val response = ErrorResponse.of(ErrorCode.DISABLED_ACCOUNT)
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
@@ -132,7 +132,7 @@ class GlobalExceptionHandler {
     protected fun handleUnauthorizedException(e: UnauthorizedException): ResponseEntity<ErrorResponse> {
         log.error("UnauthorizedException", e)
         val response = ErrorResponse.of(e.errorCode)
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())

@@ -2,7 +2,7 @@ package com.liah.doribottle.web
 
 import com.liah.doribottle.config.TestcontainersConfig
 import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.user.Role
 import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.BeforeEach
@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import java.util.*
 
+@ActiveProfiles("test")
 @Import(TestcontainersConfig::class)
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -56,7 +58,7 @@ class BaseControllerTest {
     ): Cookie {
         val accessToken = tokenProvider.generateAccessToken(id, loginId, name, role)
 
-        return Cookie(ACCESS_TOKEN, accessToken)
+        return Cookie(AuthorityConstant.ACCESS_TOKEN, accessToken)
     }
 
     protected fun encodePassword(rawPassword: String): String = passwordEncoder.encode(rawPassword)
