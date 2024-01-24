@@ -2,6 +2,7 @@ package com.liah.doribottle.config.security
 
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.findBy
+import com.liah.doribottle.extension.systemId
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -16,7 +17,8 @@ class TokenProvider(
     private val refreshTokenRepository: RefreshTokenRepository,
     @Value("\${app.auth.jwt.secret}") private val secret: String,
     @Value("\${app.auth.jwt.expiredMs}") private val expiredMs: Long,
-    @Value("\${app.auth.jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long
+    @Value("\${app.auth.jwt.preAuthExpiredMs}") private val preAuthExpiredMs: Long,
+    @Value("\${app.auth.jwt.systemExpiredMs}") private val systemExpiredMs: Long
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -30,6 +32,12 @@ class TokenProvider(
         val now = Date()
         val expiredDate = Date(now.time + expiredMs)
         return generateAccessToken(id, loginId, name, role, now, expiredDate)
+    }
+
+    fun generateSystemAccessToken(loginId: String, name: String): String {
+        val now = Date()
+        val expiredDate = Date(now.time + systemExpiredMs)
+        return generateAccessToken(systemId(), loginId, name, Role.SYSTEM, now, expiredDate)
     }
 
     private fun generateAccessToken(id: UUID, loginId: String, name: String, role: Role, issueDate: Date, expiredDate: Date): String {

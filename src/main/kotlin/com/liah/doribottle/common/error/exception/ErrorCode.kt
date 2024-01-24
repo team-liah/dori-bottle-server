@@ -16,6 +16,7 @@ enum class ErrorCode(
     BILLING_KEY_ISSUANCE_ERROR(500, "A008", "Billing Key Issuance Error."),
     BILLING_EXECUTE_ERROR(500, "A009", "Billing Execute Error."),
     PAYMENT_CANCEL_ERROR(500, "A010", "Payment Cancel Error."),
+    DISABLED_ACCOUNT(401, "A011", "Disabled account."),
 
     // Cup
     CUP_DELETE_NOT_ALLOWED(400, "B001", "Cup on loan can not be deleted."),
@@ -35,6 +36,7 @@ enum class ErrorCode(
     LOGIN_ID_NOT_ALLOWED(400, "C009", "LoginId is cannot be changed."),
     BLOCKED_USER_ACCESS_DENIED_LOST_CUP(403, "C010", "BlockedUser is denied access. (Lost cup penalty)"),
     USER_INACTIVATE_NOT_ALLOWED(400, "C011", "User is can't inactivate."),
+    SYSTEM_DELETE_NOT_ALLOWED(400, "C012", "Default system account is can't deleted."),
 
     // Machine
     MACHINE_NOT_FOUND(404, "D001", "Machine entity not found."),

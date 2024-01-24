@@ -7,7 +7,7 @@ import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.notification.Alert
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Gender.MALE
-import com.liah.doribottle.domain.user.PenaltyType.DAMAGED_CUP
+import com.liah.doribottle.domain.user.PenaltyType.*
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
@@ -167,6 +167,44 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("blockedCauses[*].type", `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name))))
     }
 
+    @DisplayName("프로필 조회 - TC3")
+    @Test
+    fun getProfileTC3() {
+        val user = User("010-0001-0001", "Blocked User", "010-0001-0001", Role.USER)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(NON_MANNER, null)
+        user.imposePenalty(ETC, null)
+        user.imposePenalty(DAMAGED_CUP, null)
+        user.imposePenalty(ETC, null)
+        user.blockedCauses.firstOrNull()?.let { user.unblock(it.id) }
+        userRepository.save(user)
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get("${endPoint}/profile")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("id", `is`(user.id.toString())))
+            .andExpect(jsonPath("loginId", `is`(user.loginId)))
+            .andExpect(jsonPath("name", `is`(user.name)))
+            .andExpect(jsonPath("phoneNumber", `is`(user.phoneNumber)))
+            .andExpect(jsonPath("invitationCode", `is`(user.invitationCode)))
+            .andExpect(jsonPath("invitationCount", `is`(user.invitationCount)))
+            .andExpect(jsonPath("inviterId", nullValue()))
+            .andExpect(jsonPath("birthDate", nullValue()))
+            .andExpect(jsonPath("gender", `is`(user.gender)))
+            .andExpect(jsonPath("role", `is`(user.role.name)))
+            .andExpect(jsonPath("group", nullValue()))
+            .andExpect(jsonPath("penalties[*].type", `is`(listOf(ETC.name))))
+            .andExpect(jsonPath("penalties[*].disabled", `is`(listOf(false))))
+            .andExpect(jsonPath("blocked", `is`(false)))
+            .andExpect(jsonPath("blockedCauses", `is`(emptyList<Any>())))
+    }
+
     @DisplayName("프로필 업데이트")
     @Test
     fun updateProfile() {
@@ -209,7 +247,7 @@ class MeControllerTest : BaseControllerTest() {
         val findInviter = userRepository.findByIdOrNull(inviter.id)
 
         assertThat(findInvitee?.inviterId).isEqualTo(inviter.id)
-        assertThat(findInviter?.invitationCount).isEqualTo(0)
+        assertThat(findInviter?.invitationCount).isEqualTo(1)
 
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
@@ -225,7 +263,6 @@ class MeControllerTest : BaseControllerTest() {
         inviter.register()
         userRepository.save(inviter)
 
-        user.use()
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
@@ -260,7 +297,6 @@ class MeControllerTest : BaseControllerTest() {
         (0..3).forEach { _ -> inviter.increaseInvitationCount() }
         userRepository.save(inviter)
 
-        user.use()
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 

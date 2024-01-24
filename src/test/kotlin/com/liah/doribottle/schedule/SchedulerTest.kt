@@ -2,7 +2,7 @@ package com.liah.doribottle.schedule
 
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.config.TestcontainersConfig
-import com.liah.doribottle.constant.LOST_CUP_PRICE
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.cup.Cup
@@ -47,9 +47,11 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
 import java.util.*
 
+@ActiveProfiles("test")
 @Import(TestcontainersConfig::class)
 @SpringBootTest
 class SchedulerTest {
@@ -99,7 +101,7 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         //when
@@ -107,7 +109,7 @@ class SchedulerTest {
 
         //then
         verify(mockTossPaymentsService, times(2))
-            .executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
+            .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
         val findRental1 = rentalRepository.findByIdOrNull(rental1.id)
@@ -118,7 +120,7 @@ class SchedulerTest {
 
         assertThat(findPayments)
             .extracting("price")
-            .containsExactly(LOST_CUP_PRICE, LOST_CUP_PRICE)
+            .containsExactly(DoriConstant.LOST_CUP_PRICE, DoriConstant.LOST_CUP_PRICE)
         assertThat(findPayments)
             .extracting("type")
             .containsExactly(LOST_CUP, LOST_CUP)
@@ -163,7 +165,7 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         //when
@@ -171,7 +173,7 @@ class SchedulerTest {
 
         //then
         verify(mockTossPaymentsService, times(1))
-            .executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
+            .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
         val findRental1 = rentalRepository.findByIdOrNull(rental1.id)
@@ -182,7 +184,7 @@ class SchedulerTest {
 
         assertThat(findPayments)
             .extracting("price")
-            .containsExactly(LOST_CUP_PRICE)
+            .containsExactly(DoriConstant.LOST_CUP_PRICE)
         assertThat(findPayments)
             .extracting("type")
             .containsExactly(LOST_CUP)
@@ -227,7 +229,7 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user1.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user1.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         //when
@@ -235,7 +237,7 @@ class SchedulerTest {
 
         //then
         verify(mockTossPaymentsService, times(1))
-            .executeBilling(eq(billingKey), eq(user1.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
+            .executeBilling(eq(billingKey), eq(user1.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser1 = userRepository.findByIdOrNull(user1.id)
         val findUser2 = userRepository.findByIdOrNull(user2.id)
@@ -258,7 +260,7 @@ class SchedulerTest {
 
         assertThat(findPayments)
             .extracting("price")
-            .containsExactly(LOST_CUP_PRICE)
+            .containsExactly(DoriConstant.LOST_CUP_PRICE)
         assertThat(findPayments)
             .extracting("type")
             .containsExactly(LOST_CUP)
@@ -295,7 +297,7 @@ class SchedulerTest {
 
         taskRepository.save(Task(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
             .willThrow(BillingExecuteException())
 
         //when
@@ -303,7 +305,7 @@ class SchedulerTest {
 
         //then
         verify(mockTossPaymentsService, times(1))
-            .executeBilling(eq(billingKey), eq(user.id), eq(LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
+            .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser = userRepository.findByIdOrNull(user.id)
         val findBlockedCauses = blockedCauseRepository.findAll().filter { it.user.id == user.id }
@@ -317,7 +319,7 @@ class SchedulerTest {
             .extracting("type")
             .containsExactly(BlockedCauseType.LOST_CUP_PENALTY)
 
-        assertThat(findPayment?.price).isEqualTo(LOST_CUP_PRICE)
+        assertThat(findPayment?.price).isEqualTo(DoriConstant.LOST_CUP_PRICE)
         assertThat(findPayment?.type).isEqualTo(LOST_CUP)
         assertThat(findPayment?.status).isEqualTo(PaymentStatus.FAILED)
         assertThat(findPayment?.card).isEqualTo(card)

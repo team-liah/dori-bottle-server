@@ -2,8 +2,11 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.extension.systemId
+import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -14,12 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.util.*
 
 class AdminServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var adminService: AdminService
     @Autowired
     private lateinit var adminRepository: AdminRepository
+    @Autowired
+    private lateinit var adminQueryRepository: AdminQueryRepository
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
@@ -56,6 +62,24 @@ class AdminServiceTest : BaseServiceTest() {
             adminService.register("user", "123456", "Tester", Role.USER, null, null, null)
         }
         assertThat(exception2.message).isEqualTo("Non Admin role is not allowed.")
+    }
+
+    @DisplayName("System 관리자 등록")
+    @Test
+    fun registerForSystem() {
+        //given, when
+        adminService.register(UUID.fromString(AuthorityConstant.SYSTEM_ID), "system", "system", "system", Role.SYSTEM)
+        adminService.register(UUID.fromString(AuthorityConstant.ADMIN_ID), "admin", "admin", "admin", Role.ADMIN)
+
+        //then
+        val findAdmins = adminRepository.findAll()
+
+        assertThat(findAdmins)
+            .extracting("id")
+            .containsExactly(
+                UUID.fromString(AuthorityConstant.SYSTEM_ID),
+                UUID.fromString(AuthorityConstant.ADMIN_ID)
+            )
     }
 
     @DisplayName("관리자 조회")
@@ -163,5 +187,18 @@ class AdminServiceTest : BaseServiceTest() {
         val findAdmin = adminRepository.findByIdOrNull(admin.id)
         assertThat(findAdmin?.deleted).isTrue()
         assertThat(findAdmin?.loginId).startsWith("Deleted")
+    }
+
+    @DisplayName("관리자 삭제 예외")
+    @Test
+    fun deleteException() {
+        val exception = assertThrows<BusinessException> {
+            adminQueryRepository.insert(systemId(), "system", "system", "1234", Role.SYSTEM)
+            clear()
+
+            adminService.delete(systemId())
+        }
+
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.SYSTEM_DELETE_NOT_ALLOWED)
     }
 }

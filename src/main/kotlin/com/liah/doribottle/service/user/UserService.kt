@@ -2,8 +2,7 @@ package com.liah.doribottle.service.user
 
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.constant.SAVE_INVITE_REWARD_AMOUNTS_MAP
-import com.liah.doribottle.constant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.point.PointEventType
@@ -88,39 +87,33 @@ class UserService(
         val inviter = userRepository.findByInvitationCode(invitationCode)
             ?: throw NotFoundException(ErrorCode.INVITER_NOT_FOUND)
 
-        invitee.setInviter(inviter)
-
         // invitee reward
+        rewardInvitee(invitee, inviter)
+
+        // inviter reward
+        rewardInviter(inviter)
+    }
+
+    private fun rewardInvitee(
+        invitee: User,
+        inviter: User
+    ) {
+        invitee.setInviter(inviter)
         awsSqsSender.send(
             PointSaveMessage(
                 invitee.id,
                 PointSaveType.REWARD,
                 PointEventType.SAVE_REGISTER_INVITER_REWARD,
-                SAVE_REGISTER_INVITER_REWARD_AMOUNTS
+                DoriConstant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
             )
         )
-
-        if (invitee.use) {
-            // inviter reward
-            rewardInviter(inviter)
-        }
-    }
-
-    fun rewardInviterByInvitee(
-        inviteeId: UUID
-    ) {
-        val invitee = userRepository.findByIdOrNull(inviteeId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val inviter = invitee.inviterId?.let { userRepository.findByIdOrNull(it) }
-
-        inviter?.let { rewardInviter(it) }
     }
 
     private fun rewardInviter(
         inviter: User
     ) {
         inviter.increaseInvitationCount()
-        val inviteRewardAmounts = SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
+        val inviteRewardAmounts = DoriConstant.SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
         if (inviteRewardAmounts != null) {
             awsSqsSender.send(
                 PointSaveMessage(
@@ -161,6 +154,14 @@ class UserService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.removePenalty(penaltyId)
+
+        Events.notify(
+            NotificationIndividual(
+                userId = user.id,
+                type = NotificationType.PENALTY_CANCEL,
+                targetId = null
+            )
+        )
     }
 
     fun block(
@@ -181,6 +182,8 @@ class UserService(
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-        user.unblock(blockedCauseIds)
+        blockedCauseIds.forEach { blockedCauseId ->
+            user.unblock(blockedCauseId)
+        }
     }
 }
