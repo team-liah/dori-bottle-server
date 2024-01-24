@@ -1,7 +1,8 @@
 package com.liah.doribottle.extension
 
 import com.liah.doribottle.config.security.DoriUser
-import com.liah.doribottle.constant.SYSTEM_ID
+import com.liah.doribottle.constant.AuthorityConstant
+import com.liah.doribottle.domain.user.Admin
 import org.springframework.security.core.context.SecurityContextHolder
 import java.util.*
 
@@ -20,6 +21,6 @@ private fun getPrincipal(): DoriUser? {
     }
 }
 
-fun systemId(): UUID = UUID.fromString(SYSTEM_ID)
+fun systemId(): UUID = UUID.fromString(AuthorityConstant.SYSTEM_ID)
 
-fun UUID.isSystem(): Boolean = this == UUID.fromString(SYSTEM_ID)
+fun Admin.isSystem(): Boolean = this.id == UUID.fromString(AuthorityConstant.SYSTEM_ID)

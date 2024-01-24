@@ -3,7 +3,7 @@ package com.liah.doribottle.service.account
 import com.liah.doribottle.common.error.exception.*
 import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.config.security.TokenProvider
-import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
@@ -57,7 +57,7 @@ class AccountService(
                 userId = user.id,
                 saveType = PointSaveType.REWARD,
                 eventType = PointEventType.SAVE_REGISTER_REWARD,
-                saveAmounts = SAVE_REGISTER_REWARD_AMOUNTS
+                saveAmounts = DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS
             )
         )
 

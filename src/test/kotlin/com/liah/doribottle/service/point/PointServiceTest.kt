@@ -2,7 +2,7 @@ package com.liah.doribottle.service.point
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.constant.SAVE_REGISTER_REWARD_AMOUNTS
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointEventType.*
 import com.liah.doribottle.domain.point.PointHistory
@@ -59,7 +59,7 @@ class PointServiceTest : BaseServiceTest() {
         val userId = user.id
 
         //when
-        val id = pointService.save(userId, REWARD, SAVE_REGISTER_REWARD, SAVE_REGISTER_REWARD_AMOUNTS)
+        val id = pointService.save(userId, REWARD, SAVE_REGISTER_REWARD, DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS)
         clear()
 
         //then
@@ -69,7 +69,7 @@ class PointServiceTest : BaseServiceTest() {
 
         assertThat(findPoint?.userId).isEqualTo(userId)
         assertThat(findPoint?.saveType).isEqualTo(REWARD)
-        assertThat(findPoint?.saveAmounts).isEqualTo(SAVE_REGISTER_REWARD_AMOUNTS)
+        assertThat(findPoint?.saveAmounts).isEqualTo(DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS)
         assertThat(findPoint?.description).isEqualTo(SAVE_REGISTER_REWARD.title)
 
         assertThat(findPointEvents)
@@ -77,14 +77,14 @@ class PointServiceTest : BaseServiceTest() {
             .containsExactly(SAVE_REGISTER_REWARD)
         assertThat(findPointEvents)
             .extracting("amounts")
-            .containsExactly(SAVE_REGISTER_REWARD_AMOUNTS)
+            .containsExactly(DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS)
 
         assertThat(findPointHistories)
             .extracting("eventType")
             .containsExactly(SAVE_REGISTER_REWARD)
         assertThat(findPointHistories)
             .extracting("amounts")
-            .containsExactly(SAVE_REGISTER_REWARD_AMOUNTS)
+            .containsExactly(DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS)
 
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
