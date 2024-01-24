@@ -2,7 +2,7 @@ package com.liah.doribottle.config.security
 
 import com.liah.doribottle.common.error.ErrorResponse
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.constant.ACCESS_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.extension.expireCookie
 import jakarta.servlet.http.HttpServletRequest
@@ -18,7 +18,7 @@ class RestAuthenticationEntryPoint : AuthenticationEntryPoint {
         e: AuthenticationException
     ) {
         val errorResponse = ErrorResponse.of(ErrorCode.UNAUTHORIZED)
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
         response.setHeader(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
         response.contentType = "application/json"
         response.status = HttpServletResponse.SC_UNAUTHORIZED
