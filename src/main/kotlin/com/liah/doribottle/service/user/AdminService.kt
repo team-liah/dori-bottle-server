@@ -102,7 +102,6 @@ class AdminService(
         id: UUID,
         loginId: String,
         name: String,
-        role: Role,
         email: String?,
         phoneNumber: String?,
         description: String?
@@ -113,7 +112,6 @@ class AdminService(
         admin.update(
             loginId = loginId,
             name = name,
-            role = role,
             email = email,
             phoneNumber = phoneNumber,
             description = description
