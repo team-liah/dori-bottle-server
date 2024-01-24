@@ -124,7 +124,7 @@ class AdminResourceTest : BaseControllerTest() {
     @Test
     fun update() {
         val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
-        val body = AdminUpdateRequest("updated", "1234", Role.MACHINE_ADMIN, null, null, null)
+        val body = AdminUpdateRequest("updated", "1234", null, null, null)
 
         mockMvc.perform(
             put("$endPoint/${admin.id}")
