@@ -5,6 +5,8 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
+import com.liah.doribottle.extension.systemId
+import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -22,6 +24,8 @@ class AdminServiceTest : BaseServiceTest() {
     private lateinit var adminService: AdminService
     @Autowired
     private lateinit var adminRepository: AdminRepository
+    @Autowired
+    private lateinit var adminQueryRepository: AdminQueryRepository
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
@@ -183,5 +187,18 @@ class AdminServiceTest : BaseServiceTest() {
         val findAdmin = adminRepository.findByIdOrNull(admin.id)
         assertThat(findAdmin?.deleted).isTrue()
         assertThat(findAdmin?.loginId).startsWith("Deleted")
+    }
+
+    @DisplayName("관리자 삭제 예외")
+    @Test
+    fun deleteException() {
+        val exception = assertThrows<BusinessException> {
+            adminQueryRepository.insert(systemId(), "system", "system", "1234", Role.SYSTEM)
+            clear()
+
+            adminService.delete(systemId())
+        }
+
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.SYSTEM_DELETE_NOT_ALLOWED)
     }
 }

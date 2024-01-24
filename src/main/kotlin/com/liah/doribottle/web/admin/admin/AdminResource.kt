@@ -1,8 +1,11 @@
 package com.liah.doribottle.web.admin.admin
 
 import com.liah.doribottle.common.pageable.CustomPage
+import com.liah.doribottle.config.security.TokenProvider
+import com.liah.doribottle.extension.systemId
 import com.liah.doribottle.service.user.AdminService
 import com.liah.doribottle.service.user.dto.AdminDto
+import com.liah.doribottle.web.admin.account.vm.SystemTokenResponse
 import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminSearchRequest
@@ -21,7 +24,8 @@ import java.util.*
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RequestMapping("/admin/api/admin")
 class AdminResource(
-    private val adminService: AdminService
+    private val adminService: AdminService,
+    private val tokenProvider: TokenProvider
 ) {
     @Operation(summary = "관리자 등록")
     @PostMapping
@@ -99,5 +103,14 @@ class AdminResource(
         @PathVariable id: UUID
     ) {
         adminService.delete(id)
+    }
+
+    @Operation(summary = "시스템 토큰 조회")
+    @GetMapping("/system-token")
+    fun getSystemToken(): SystemTokenResponse {
+        val system = adminService.get(systemId())
+        val accessToken = tokenProvider.generateSystemAccessToken(system.loginId, system.name)
+
+        return SystemTokenResponse(accessToken)
     }
 }

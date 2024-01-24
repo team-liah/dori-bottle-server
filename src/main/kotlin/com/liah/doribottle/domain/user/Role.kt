@@ -12,12 +12,12 @@ enum class Role(
     SYSTEM("ROLE_SYSTEM", "시스템");
 
     fun validateAdmin(): Role {
-        return if (this != GUEST && this != USER) this
+        return if (this != GUEST && this != USER && this != SYSTEM) this
         else throw IllegalArgumentException("Non Admin role is not allowed.")
     }
 
     fun validateUser(): Role {
-        return if (this != ADMIN && this != MACHINE_ADMIN && this != INSTITUTION) this
+        return if (this != ADMIN && this != MACHINE_ADMIN && this != INSTITUTION && this != SYSTEM) this
         else throw IllegalArgumentException("Non User role is not allowed.")
     }
 }
