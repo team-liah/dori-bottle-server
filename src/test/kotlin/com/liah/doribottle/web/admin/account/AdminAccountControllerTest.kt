@@ -4,8 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.WithMockDoriUser
-import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
@@ -58,8 +57,8 @@ class AdminAccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 - Unauthorized")
@@ -74,7 +73,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isUnauthorized)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -82,7 +81,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun refreshAuth() {
-        val cookie = Cookie(REFRESH_TOKEN, adminRefreshToken.refreshToken)
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, adminRefreshToken.refreshToken)
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -91,15 +90,15 @@ class AdminAccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 새로고침 - Unauthorized")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun refreshAuthException() {
-        val cookie = Cookie(REFRESH_TOKEN, UUID.randomUUID().toString())
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, UUID.randomUUID().toString())
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -108,7 +107,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isUnauthorized)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -122,7 +121,7 @@ class AdminAccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, ""))
-            .andExpect(cookie().value(REFRESH_TOKEN, ""))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, ""))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, ""))
     }
 }

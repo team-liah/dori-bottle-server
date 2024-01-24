@@ -50,6 +50,21 @@ class AdminService(
         return admin.id
     }
 
+    fun register(
+        id: UUID,
+        loginId: String,
+        loginPassword: String,
+        name: String,
+        role: Role
+    ) {
+        if (!adminRepository.existsById(id)) {
+            verifyDuplicatedLoginId(loginId)
+
+            val encryptedPassword = passwordEncoder.encode(loginPassword)
+            adminQueryRepository.insert(id, loginId, encryptedPassword, name, role)
+        }
+    }
+
     private fun verifyDuplicatedLoginId(loginId: String) {
         val admin = adminRepository.findByLoginId(loginId)
         if (admin != null)
@@ -125,23 +140,5 @@ class AdminService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         admin.delete()
-    }
-
-    //TODO: Remove
-    fun createDummyAdmin(
-        adminLoginId: String,
-        adminLoginPassword: String,
-        machineLoginId: String,
-        machineLoginPassword: String,
-    ) {
-        val admin = adminRepository.findByLoginId(adminLoginId)
-        if (admin == null) {
-            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN, null, null, null)
-        }
-
-        val machine = adminRepository.findByLoginId(machineLoginId)
-        if (machine == null) {
-            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN, null, null, null)
-        }
     }
 }

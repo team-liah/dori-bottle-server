@@ -1,6 +1,6 @@
 package com.liah.doribottle.web.v1.account.vm
 
-import com.liah.doribottle.constant.BIRTH_DATE_REGEX
+import com.liah.doribottle.constant.RegexConstant
 import com.liah.doribottle.domain.user.Gender
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
@@ -11,7 +11,7 @@ data class RegisterRequest(
     val name: String?,
     val gender: Gender?,
     @field:NotNull
-    @field:Pattern(regexp = BIRTH_DATE_REGEX)
+    @field:Pattern(regexp = RegexConstant.BIRTH_DATE_REGEX)
     val birthDate: String?,
     @field:NotNull
     val agreedTermsOfService: Boolean?,

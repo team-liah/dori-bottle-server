@@ -1,7 +1,6 @@
 package com.liah.doribottle.web.admin.account
 
-import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.extension.createCookie
 import com.liah.doribottle.extension.expireCookie
 import com.liah.doribottle.service.account.AdminAccountService
@@ -30,12 +29,12 @@ class AdminAccountController(
             .auth(request.loginId!!, request.loginPassword!!)
 
         val accessTokenCookie = createCookie(
-            name = ACCESS_TOKEN,
+            name = AuthorityConstant.ACCESS_TOKEN,
             value = result.accessToken,
             expiredMs = jwtExpiredMs
         )
         val refreshTokenCookie = createCookie(
-            name = REFRESH_TOKEN,
+            name = AuthorityConstant.REFRESH_TOKEN,
             value = result.refreshToken,
             expiredMs = refreshTokenExpiredMs
         )
@@ -52,12 +51,12 @@ class AdminAccountController(
         val result = adminAccountService.refreshAuth(refreshToken)
 
         val accessTokenCookie = createCookie(
-            name = ACCESS_TOKEN,
+            name = AuthorityConstant.ACCESS_TOKEN,
             value = result.accessToken,
             expiredMs = jwtExpiredMs
         )
         val refreshTokenCookie = createCookie(
-            name = REFRESH_TOKEN,
+            name = AuthorityConstant.REFRESH_TOKEN,
             value = result.refreshToken,
             expiredMs = refreshTokenExpiredMs
         )
@@ -69,8 +68,8 @@ class AdminAccountController(
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     fun logout(): ResponseEntity<Void> {
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
-        val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
+        val expiredRefreshTokenCookie = expireCookie(AuthorityConstant.REFRESH_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()

@@ -4,12 +4,15 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.extension.systemId
 import com.liah.doribottle.repository.user.AdminRepository
+import com.liah.doribottle.service.user.AdminService
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminUpdateRequest
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -26,6 +29,8 @@ class AdminResourceTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var adminRepository: AdminRepository
+    @Autowired
+    private lateinit var adminService: AdminService
 
     @AfterEach
     internal fun destroy() {
@@ -158,5 +163,20 @@ class AdminResourceTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
+    }
+
+    @DisplayName("시스템 토큰 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getSystemToken() {
+        adminService.register(systemId(), "system", "system", "system", Role.SYSTEM)
+
+        mockMvc.perform(
+            get("$endPoint/system-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("systemToken", notNullValue()))
     }
 }

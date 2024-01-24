@@ -35,6 +35,7 @@ app:
       secret: ${JWT_SECRET}
       expiredMs: 3600000 # 1hour
       preAuthExpiredMs: 300000 # 5minute
+      systemExpiredMs: 3153600000000 # 100year
     refreshToken:
       expiredMs: 1209600000 # 2weeks
   toast:

@@ -3,7 +3,7 @@ package com.liah.doribottle.service.user
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
-import com.liah.doribottle.constant.LOST_CUP_PRICE
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.group.Group
 import com.liah.doribottle.domain.group.GroupType.COMPANY
 import com.liah.doribottle.domain.user.BlockedCauseType.FIVE_PENALTIES
@@ -125,7 +125,7 @@ class UserServiceTest : BaseServiceTest() {
             .containsExactly(LOST_CUP_PENALTY)
         assertThat(result.blockedCauses)
             .extracting("clearPrice")
-            .containsExactly(LOST_CUP_PRICE)
+            .containsExactly(DoriConstant.LOST_CUP_PRICE)
     }
 
     @DisplayName("유저 조회 예외")
