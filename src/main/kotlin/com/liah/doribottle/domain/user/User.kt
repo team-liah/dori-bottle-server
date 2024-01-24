@@ -206,7 +206,12 @@ class User(
 
         if (!penalty.disabled && isBlockBoundary()) {
             val blockedCause = blockedCauses.find { it.type == FIVE_PENALTIES }
-            blockedCause?.id?.let { unblock(it) }
+
+            this.mutableBlockedCauses.remove(blockedCause)
+
+            if (this.blockedCauses.isEmpty()) {
+                this.blocked = false
+            }
         }
 
         this.mutablePenalties.remove(penalty)
