@@ -11,24 +11,20 @@ import java.util.*
     indexes = [Index(name = "IDX_POINT_EVENT_POINT_ID", columnList = "point_id")]
 )
 class PointEvent(
-    point: Point,
-    type: PointEventType,
-    amounts: Long,
-    targetId: UUID?
-) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "point_id", nullable = false)
-    val point: Point = point
+    val point: Point,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PointEventType = type
+    val type: PointEventType,
 
     @Column(nullable = false)
-    val amounts: Long = amounts
+    val amounts: Long,
 
-    val targetId: UUID? = targetId
-
+    @Column
+    val targetId: UUID?
+) : PrimaryKeyEntity() {
     fun cancel(): Long {
         return point.cancel(this)
     }

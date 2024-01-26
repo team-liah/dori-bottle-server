@@ -16,25 +16,20 @@ import jakarta.persistence.FetchType.LAZY
     indexes = [Index(name = "IDX_PAYMENT_USER_ID", columnList = "user_id")]
 )
 class Payment(
-    user: User,
-    price: Long,
-    type: PaymentType,
-    card: Card
-) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User = user
+    val user: User,
 
     @Column(nullable = false)
-    val price: Long = price
+    val price: Long,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PaymentType = type
+    val type: PaymentType,
 
     @Embedded
-    val card: Card = card
-
+    val card: Card
+) : PrimaryKeyEntity() {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: PaymentStatus = PROCEEDING

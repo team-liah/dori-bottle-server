@@ -11,19 +11,15 @@ import java.util.*
     indexes = [Index(name = "IDX_POINT_HISTORY_USER_ID", columnList = "userId")]
 )
 class PointHistory(
-    userId: UUID,
-    type: PointEventType,
-    amounts: Long
-) : PrimaryKeyEntity() {
     @Column(nullable = false)
-    val userId: UUID = userId
+    val userId: UUID,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val eventType: PointEventType = type
+    val eventType: PointEventType,
 
     @Column(nullable = false)
-    val amounts: Long = amounts
-
+    val amounts: Long
+) : PrimaryKeyEntity() {
     fun toDto() = PointHistoryDto(id, userId, eventType, amounts, createdDate, lastModifiedDate)
 }

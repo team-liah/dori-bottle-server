@@ -8,7 +8,9 @@ import jakarta.persistence.*
 @Table(name = "`group`")
 class Group(
     name: String,
+
     type: GroupType,
+
     discountRate: Int
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)

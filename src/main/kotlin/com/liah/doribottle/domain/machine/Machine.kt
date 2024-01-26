@@ -19,13 +19,19 @@ import java.util.*
 )
 class Machine(
     no: String,
+
     name: String,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: MachineType,
+
     address: Address,
+
     location: Location,
+
     capacity: Int,
+
     imageUrl: String?
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
