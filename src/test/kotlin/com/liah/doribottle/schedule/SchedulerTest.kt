@@ -82,7 +82,7 @@ class SchedulerTest {
     @Test
     fun overdueRental() {
         //given
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -144,8 +144,8 @@ class SchedulerTest {
     @Test
     fun overdueRentalFailException() {
         //given
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
-        val collectionMachine = machineRepository.save(Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        val collectionMachine = machineRepository.save(Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -208,7 +208,7 @@ class SchedulerTest {
     @Test
     fun overdueRentalPaymentMethodException() {
         //given
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -284,7 +284,7 @@ class SchedulerTest {
     @Test
     fun overdueRentalBillingException() {
         //given
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup = cupRepository.save(Cup("00 00 00 00"))
 
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))

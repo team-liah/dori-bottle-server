@@ -20,20 +20,21 @@ import java.util.*
 class Machine(
     no: String,
     name: String,
-    type: MachineType,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val type: MachineType,
     address: Address,
     location: Location,
-    capacity: Int
+    capacity: Int,
+    imageUrl: String?
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var no: String = no
+        protected set
 
     @Column(nullable = false)
     var name: String = name
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val type: MachineType = type
+        protected set
 
     @Embedded
     var address: Address = address
@@ -56,6 +57,10 @@ class Machine(
     var state: MachineState = NORMAL
         protected set
 
+    @Column
+    var imageUrl: String? = imageUrl
+        protected set
+
     override fun delete() {
         this.no = "Deleted ${UUID.randomUUID()}"
         super.delete()
@@ -67,13 +72,15 @@ class Machine(
         location: Location,
         capacity: Int,
         cupAmounts: Int,
-        state: MachineState
+        state: MachineState,
+        imageUrl: String?
     ) {
         this.name = name
         this.address = address
         this.location = location
         this.capacity = capacity
         this.state = state
+        this.imageUrl = imageUrl
         updateCupAmounts(cupAmounts)
     }
 
@@ -98,5 +105,5 @@ class Machine(
         }
     }
 
-    fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, createdDate, lastModifiedDate)
+    fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, imageUrl, createdDate, lastModifiedDate)
 }
