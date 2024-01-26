@@ -19,6 +19,7 @@ class Cup(
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var rfid: String = rfid
+        protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

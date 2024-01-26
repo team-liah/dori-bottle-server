@@ -18,8 +18,9 @@ data class MachineDto(
     val capacity: Int,
     val cupAmounts: Int,
     val state: MachineState,
+    val imageUrl: String?,
     val createdDate: Instant,
     val lastModifiedDate: Instant
 ) {
-    fun toResponse() = MachineResponse(id, no, name, type, address, location, capacity, cupAmounts, state)
+    fun toResponse() = MachineResponse(id, no, name, type, address, location, capacity, cupAmounts, state, imageUrl)
 }

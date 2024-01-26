@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.user.Admin
+import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
@@ -30,7 +31,8 @@ class AdminService(
         role: Role,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        gender: Gender?
     ): UUID {
         verifyDuplicatedLoginId(loginId)
 
@@ -43,7 +45,8 @@ class AdminService(
                 role = role,
                 email = email,
                 phoneNumber = phoneNumber,
-                description = description
+                description = description,
+                gender = gender
             )
         )
 
@@ -104,7 +107,8 @@ class AdminService(
         name: String,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        gender: Gender?
     ) {
         val admin = adminRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -114,7 +118,8 @@ class AdminService(
             name = name,
             email = email,
             phoneNumber = phoneNumber,
-            description = description
+            description = description,
+            gender = gender
         )
     }
 

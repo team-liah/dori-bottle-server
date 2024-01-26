@@ -19,8 +19,10 @@ import java.util.*
 class Task(
     @Column(nullable = false)
     val executeDate: Instant,
+
     @Column(nullable = false)
     val type: TaskType,
+
     @Column(nullable = false)
     val targetId: UUID
 ) : PrimaryKeyEntity() {

@@ -13,5 +13,6 @@ data class MachinePatchRequest(
     val capacity: Int?,
     @field:Min(0)
     val cupAmounts: Int?,
-    val state: MachineState?
+    val state: MachineState?,
+    val imageUrl: String?
 )

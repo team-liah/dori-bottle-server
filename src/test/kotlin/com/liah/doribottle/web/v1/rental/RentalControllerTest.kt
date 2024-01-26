@@ -70,10 +70,10 @@ class RentalControllerTest : BaseControllerTest() {
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
 
-        val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100)
+        val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null)
         machineEntity.updateCupAmounts(100)
         vendingMachine = machineRepository.save(machineEntity)
-        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100))
+        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
 
         cup = cupRepository.save(Cup(CUP_RFID))
     }

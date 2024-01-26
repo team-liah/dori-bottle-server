@@ -32,7 +32,8 @@ class MachineResource(
             type = request.type!!,
             address = request.address!!,
             location = request.location!!,
-            capacity = request.capacity!!
+            capacity = request.capacity!!,
+            imageUrl = request.imageUrl
         )
     }
 
@@ -76,7 +77,8 @@ class MachineResource(
             location = request.location!!,
             capacity = request.capacity!!,
             cupAmounts = request.cupAmounts!!,
-            state = request.state!!
+            state = request.state!!,
+            imageUrl = request.imageUrl
         )
     }
 
@@ -94,7 +96,8 @@ class MachineResource(
             location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
-            state = request.state ?: machine.state
+            state = request.state ?: machine.state,
+            imageUrl = request.imageUrl ?: machine.imageUrl
         )
     }
 
@@ -112,7 +115,8 @@ class MachineResource(
             location = request.location ?: machine.location,
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
-            state = request.state ?: machine.state
+            state = request.state ?: machine.state,
+            imageUrl = request.imageUrl ?: machine.imageUrl
         )
     }
 

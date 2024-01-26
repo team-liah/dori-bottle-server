@@ -60,7 +60,7 @@ class RentalResourceTest : BaseControllerTest() {
         val userA = userRepository.save(User("010-1111-1111", "Tester A", "010-1111-1111", Role.USER))
         val userB = userRepository.save(User("010-2222-2222", "Tester B", "010-2222-2222", Role.USER))
         val userC = userRepository.save(User("010-3333-3333", "Tester C", "010-3333-3333", Role.USER))
-        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100)
+        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null)
         vendingMachine.updateCupAmounts(100)
         machineRepository.save(vendingMachine)
         insertRentals(userA, userB, userC, vendingMachine)
@@ -124,7 +124,7 @@ class RentalResourceTest : BaseControllerTest() {
     fun get() {
         //given
         val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
-        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100)
+        val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null)
         vendingMachine.updateCupAmounts(100)
         machineRepository.save(vendingMachine)
         val rental = Rental(user, vendingMachine, true, 7)
@@ -147,7 +147,7 @@ class RentalResourceTest : BaseControllerTest() {
     @Test
     fun mapRentalCup() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup = cupRepository.save(Cup(CUP_RFID))
         val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
         val body = RentalCupMapRequest(cup.rfid)
@@ -166,8 +166,8 @@ class RentalResourceTest : BaseControllerTest() {
     @Test
     fun `return`() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
-        val collectionMachine = machineRepository.save(Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        val collectionMachine = machineRepository.save(Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val cup = cupRepository.save(Cup(CUP_RFID))
         val rental = Rental(user, vendingMachine, true, 14)
         rental.confirm(cup)
@@ -189,7 +189,7 @@ class RentalResourceTest : BaseControllerTest() {
     @Test
     fun cancel() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
         val rental = rentalRepository.save(Rental(user, vendingMachine, true, 14))
 
         mockMvc.perform(
