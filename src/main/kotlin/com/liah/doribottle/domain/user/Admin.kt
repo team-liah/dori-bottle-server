@@ -21,7 +21,8 @@ class Admin(
     role: Role,
     email: String?,
     phoneNumber: String?,
-    description: String?
+    description: String?,
+    gender: Gender?
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -51,6 +52,11 @@ class Admin(
     var description: String? = description
         protected set
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    var gender: Gender? = gender
+        protected set
+
     override fun delete() {
         if (this.isSystem())
             throw BusinessException(ErrorCode.SYSTEM_DELETE_NOT_ALLOWED)
@@ -64,13 +70,15 @@ class Admin(
         name: String,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        gender: Gender?
     ) {
         this.loginId = loginId
         this.name = name
         this.email = email
         this.phoneNumber = phoneNumber
         this.description = description
+        this.gender = gender
     }
 
     fun updatePassword(

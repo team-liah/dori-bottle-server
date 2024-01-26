@@ -24,17 +24,19 @@ import java.time.temporal.ChronoUnit
     ]
 )
 class Rental(
-    user: User,
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: User,
+
     fromMachine: Machine,
-    withIce: Boolean,
+
+    @Column(nullable = false)
+    val withIce: Boolean,
+
     hourLimit: Long
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     val no: String = generateRandomString(8)
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: User = user
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "from_machine_id", nullable = false)
@@ -50,9 +52,6 @@ class Rental(
     @JoinColumn(name = "to_machine_id")
     var toMachine: Machine? = null
         protected set
-
-    @Column(nullable = false)
-    val withIce: Boolean = withIce
 
     @Column(nullable = false)
     var cost: Long = if (withIce) 2 else 1

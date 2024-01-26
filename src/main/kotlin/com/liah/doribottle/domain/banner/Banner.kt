@@ -10,11 +10,17 @@ import jakarta.persistence.Table
 @Table(name = "banner")
 class Banner(
     title: String,
+
     content: String,
+
     priority: Int,
+
     visible: Boolean,
+
     backgroundColor: String?,
+
     imageUrl: String?,
+
     targetUrl: String?
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
