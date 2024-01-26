@@ -644,7 +644,7 @@ class PaymentControllerTest : BaseControllerTest() {
         //given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val vendingMachine = machineRepository.save(Machine(BaseServiceTest.MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100))
+        val vendingMachine = machineRepository.save(Machine(BaseServiceTest.MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100, null))
         val cup = cupRepository.save(Cup(BaseServiceTest.CUP_RFID))
         val rental = Rental(user, vendingMachine, true, 10)
         rental.confirm(cup)
