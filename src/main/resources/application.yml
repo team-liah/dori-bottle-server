@@ -40,7 +40,7 @@ app:
   ncloud:
     notification:
       sms:
-        baseUrl: https://sens.apigw.ntruss.com/sms/v2
+        baseUrl: https://sens.apigw.ntruss.com/sms/v2/services
         serviceId: test
   tosspayments:
     baseUrl: https://api.tosspayments.com/
