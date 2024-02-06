@@ -35,7 +35,7 @@ class BannerResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = BannerRegisterOrUpdateRequest("Test", "test", 0, true, null, null, null)
+        val body = BannerRegisterOrUpdateRequest("Test", "test", "test", 0, true, null, null, null, null)
 
         mockMvc.perform(
             post(endPoint)
@@ -50,7 +50,7 @@ class BannerResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun get() {
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
+        val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null, null))
         mockMvc.perform(
             get("${endPoint}/${banner.id}")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -83,20 +83,20 @@ class BannerResourceTest : BaseControllerTest() {
     }
 
     fun insertBanners() {
-        bannerRepository.save(Banner("1", "test", 5, true, null, null, null))
-        bannerRepository.save(Banner("2", "test", 4, true, null, null, null))
-        bannerRepository.save(Banner("3", "test", 3, true, null, null, null))
-        bannerRepository.save(Banner("4", "test", 2, true, null, null, null))
-        bannerRepository.save(Banner("5", "test", 1, false, null, null, null))
-        bannerRepository.save(Banner("6", "test", 0, true, null, null, null))
+        bannerRepository.save(Banner("1", "test", "test", 5, true, null, null, null))
+        bannerRepository.save(Banner("2", "test", "test", 4, true, null, null, null))
+        bannerRepository.save(Banner("3", "test", "test", 3, true, null, null, null))
+        bannerRepository.save(Banner("4", "test", "test", 2, true, null, null, null))
+        bannerRepository.save(Banner("5", "test", "test", 1, false, null, null, null))
+        bannerRepository.save(Banner("6", "test", "test", 0, true, null, null, null))
     }
 
     @DisplayName("컵 수정")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
-        val body = BannerRegisterOrUpdateRequest("Updated", "updated", 0, true, "#000000", null, null)
+        val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null))
+        val body = BannerRegisterOrUpdateRequest("Updated", "test", "updated", 0, true, "#000000", null, null, null)
 
         mockMvc.perform(
             put("${endPoint}/${banner.id}")
@@ -111,7 +111,7 @@ class BannerResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun remove() {
-        val banner = bannerRepository.save(Banner("Test", "test", 0, true, null, null, null))
+        val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null))
 
         mockMvc.perform(
             delete("${endPoint}/${banner.id}")

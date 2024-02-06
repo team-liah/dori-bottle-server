@@ -28,10 +28,12 @@ class BannerResource(
     ): UUID {
         return bannerService.register(
             title = request.title!!,
-            content = request.content!!,
+            header = request.header,
+            content = request.content,
             priority = request.priority!!,
             visible = request.visible!!,
             backgroundColor = request.backgroundColor,
+            backgroundImageUrl = request.backgroundImageUrl,
             imageUrl = request.imageUrl,
             targetUrl = request.targetUrl
         )
@@ -70,10 +72,12 @@ class BannerResource(
         bannerService.update(
             id = id,
             title = request.title!!,
-            content = request.content!!,
+            header = request.header,
+            content = request.content,
             priority = request.priority!!,
             visible = request.visible!!,
             backgroundColor = request.backgroundColor,
+            backgroundImageUrl = request.backgroundImageUrl,
             imageUrl = request.imageUrl,
             targetUrl = request.targetUrl
         )

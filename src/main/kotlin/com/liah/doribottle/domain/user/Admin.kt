@@ -19,10 +19,10 @@ class Admin(
     loginPassword: String,
     name: String,
     role: Role,
-    email: String?,
-    phoneNumber: String?,
-    description: String?,
-    gender: Gender?
+    email: String? = null,
+    phoneNumber: String? = null,
+    description: String? = null,
+    gender: Gender? = null
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId

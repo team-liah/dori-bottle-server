@@ -268,7 +268,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val paymentKey = "dummyPaymentKey"
         paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -283,14 +283,14 @@ class PaymentControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
 
         verify(mockTossPaymentsService, times(1))
-            .executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
+            .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
         val findUser = userRepository.findByIdOrNull(user.id)
         val findBlockedCauses = blockedCauseRepository.findAll()
 
         assertThat(findPayment?.user?.id).isEqualTo(user.id)
-        assertThat(findPayment?.price).isEqualTo(40000)
+        assertThat(findPayment?.price).isEqualTo(46000)
         assertThat(findPayment?.type).isEqualTo(UNBLOCK_ACCOUNT)
         assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
         assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)
@@ -317,7 +317,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val billingKey = "dummyBillingKey"
         paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willThrow(BillingExecuteException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -334,14 +334,14 @@ class PaymentControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
 
         verify(mockTossPaymentsService, times(1))
-            .executeBilling(eq(billingKey), eq(user.id), eq(40000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
+            .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
         val findUser = userRepository.findByIdOrNull(user.id)
         val findBlockedCauses = blockedCauseRepository.findAll()
 
         assertThat(findPayment?.user?.id).isEqualTo(user.id)
-        assertThat(findPayment?.price).isEqualTo(40000)
+        assertThat(findPayment?.price).isEqualTo(46000)
         assertThat(findPayment?.type).isEqualTo(UNBLOCK_ACCOUNT)
         assertThat(findPayment?.card?.issuerProvider).isEqualTo(KOOKMIN)
         assertThat(findPayment?.card?.acquirerProvider).isEqualTo(KOOKMIN)

@@ -20,7 +20,7 @@ class Penalty(
     val type: PenaltyType,
 
     @Column
-    val cause: String?
+    val cause: String? = null
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var disabled: Boolean = false

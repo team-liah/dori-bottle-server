@@ -14,6 +14,7 @@ class BannerQueryRepository(
 ) {
     fun getAll(
         title: String? = null,
+        header: String? = null,
         content: String? = null,
         visible: Boolean? = null,
         pageable: Pageable
@@ -31,6 +32,7 @@ class BannerQueryRepository(
 
     fun getAll(
         title: String? = null,
+        header: String? = null,
         content: String? = null,
         visible: Boolean? = null
     ): List<Banner> {
@@ -46,6 +48,7 @@ class BannerQueryRepository(
     }
 
     private fun titleContains(title: String?) = title?.let { banner.title.contains(it) }
+    private fun headerContains(header: String?) = header?.let { banner.header.contains(it) }
     private fun contentContains(content: String?) = content?.let { banner.content.contains(it) }
     private fun visibleEq(visible: Boolean?) = visible?.let { banner.visible.eq(it) }
 }

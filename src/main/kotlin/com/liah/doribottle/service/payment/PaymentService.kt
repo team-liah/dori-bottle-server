@@ -117,7 +117,7 @@ class PaymentService(
 
     fun updateResult(
         id: UUID,
-        result: PaymentResultDto?,
+        result: PaymentResultDto? = null,
         pointId: UUID? = null
     ) {
         val payment = paymentRepository.findByIdOrNull(id)
@@ -232,8 +232,8 @@ class PaymentService(
         amounts: Long,
         price: Long,
         discountRate: Int,
-        discountExpiredDate: Instant?,
-        expiredDate: Instant?
+        discountExpiredDate: Instant? = null,
+        expiredDate: Instant? = null
     ): UUID {
         val category = paymentCategoryRepository.save(
             PaymentCategory(
@@ -274,8 +274,8 @@ class PaymentService(
         amounts: Long,
         price: Long,
         discountRate: Int,
-        discountExpiredDate: Instant?,
-        expiredDate: Instant?
+        discountExpiredDate: Instant? = null,
+        expiredDate: Instant? = null
     ) {
         val category = paymentCategoryRepository.findByIdOrNull(categoryId)
             ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)

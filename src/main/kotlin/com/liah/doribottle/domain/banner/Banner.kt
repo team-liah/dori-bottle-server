@@ -11,24 +11,32 @@ import jakarta.persistence.Table
 class Banner(
     title: String,
 
-    content: String,
+    header: String? = null,
+
+    content: String? = null,
 
     priority: Int,
 
     visible: Boolean,
 
-    backgroundColor: String?,
+    backgroundColor: String? = null,
 
-    imageUrl: String?,
+    backgroundImageUrl: String? = null,
 
-    targetUrl: String?
+    imageUrl: String? = null,
+
+    targetUrl: String? = null
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var title: String = title
         protected set
 
-    @Column(nullable = false)
-    var content: String = content
+    @Column
+    var header: String? = header
+        protected set
+
+    @Column
+    var content: String? = content
         protected set
 
     @Column(nullable = false)
@@ -44,6 +52,10 @@ class Banner(
         protected set
 
     @Column
+    var backgroundImageUrl: String? = backgroundImageUrl
+        protected set
+
+    @Column
     var imageUrl: String? = imageUrl
         protected set
 
@@ -53,21 +65,24 @@ class Banner(
 
     fun update(
         title: String,
-        content: String,
+        header: String? = null,
+        content: String? = null,
         priority: Int,
         visible: Boolean,
-        backgroundColor: String?,
-        imageUrl: String?,
-        targetUrl: String?
+        backgroundColor: String? = null,
+        backgroundImageUrl: String? = null,
+        imageUrl: String? = null,
+        targetUrl: String? = null
     ) {
         this.title = title
         this.content = content
         this.priority = priority
         this.visible = visible
         this.backgroundColor = backgroundColor
+        this.backgroundImageUrl = backgroundImageUrl
         this.imageUrl = imageUrl
         this.targetUrl = targetUrl
     }
 
-    fun toDto() = BannerDto(id, title, content, priority, visible, backgroundColor, imageUrl, targetUrl, createdDate, lastModifiedDate)
+    fun toDto() = BannerDto(id, title, header, content, priority, visible, backgroundColor, backgroundImageUrl, imageUrl, targetUrl, createdDate, lastModifiedDate)
 }

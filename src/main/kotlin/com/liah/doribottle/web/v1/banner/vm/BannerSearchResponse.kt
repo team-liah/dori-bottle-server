@@ -4,11 +4,12 @@ import java.util.*
 
 data class BannerSearchResponse(
     val id: UUID,
-    val title: String,
-    val content: String,
+    val header: String?,
+    val content: String?,
     val priority: Int,
     val visible: Boolean,
     val backgroundColor: String?,
+    val backgroundImageUrl: String?,
     val imageUrl: String?,
     val targetUrl: String?
 )

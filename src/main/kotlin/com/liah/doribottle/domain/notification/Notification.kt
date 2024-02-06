@@ -25,7 +25,7 @@ class Notification(
     val content: String,
 
     @Column
-    val targetId: UUID?
+    val targetId: UUID? = null
 ) : PrimaryKeyEntity() {
     @Column(name = "`read`", nullable = false)
     var read: Boolean = false
