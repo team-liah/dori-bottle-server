@@ -3,7 +3,6 @@ package com.liah.doribottle.web.admin.rental
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.service.rental.dto.RentalDto
-import com.liah.doribottle.web.admin.rental.vm.RentalCupMapRequest
 import com.liah.doribottle.web.admin.rental.vm.RentalSearchRequest
 import com.liah.doribottle.web.admin.rental.vm.ReturnRequest
 import io.swagger.v3.oas.annotations.Operation
@@ -46,18 +45,6 @@ class RentalResource(
         @PathVariable id: UUID
     ): RentalDto {
         return rentalService.get(id)
-    }
-
-    @Operation(summary = "대여 정보 - 컵 매핑")
-    @PostMapping("/{id}/map")
-    fun mapRentalCup(
-        @PathVariable id: UUID,
-        @Valid @RequestBody request: RentalCupMapRequest
-    ) {
-        rentalService.confirm(
-            id = id,
-            cupRfid = request.cupRfid!!
-        )
     }
 
     @Operation(summary = "반납 처리")

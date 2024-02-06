@@ -28,6 +28,10 @@ class Rental(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cup_id", nullable = false)
+    val cup: Cup,
+
     fromMachine: Machine,
 
     @Column(nullable = false)
@@ -43,10 +47,6 @@ class Rental(
     val fromMachine: Machine =
         if (fromMachine.type == MachineType.VENDING) fromMachine
         else throw IllegalArgumentException("Non VendingMachine is not allowed.")
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cup_id")
-    var cup: Cup? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_machine_id")
@@ -67,15 +67,12 @@ class Rental(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: RentalStatus = PROCEEDING
+    var status: RentalStatus = CONFIRMED
         protected set
 
-    fun confirm(cup: Cup) {
-        this.cup = cup
-        this.status = CONFIRMED
-
-        fromMachine.increaseCupAmounts(-1)
-        cup.loan()
+    init {
+        this.cup.loan()
+        this.fromMachine.increaseCupAmounts(-1)
     }
 
     fun `return`(
@@ -91,7 +88,7 @@ class Rental(
             succeed()
         }
 
-        cup?.`return`()
+        cup.`return`()
     }
 
     private fun succeed() {
@@ -104,15 +101,15 @@ class Rental(
             throw IllegalArgumentException("Cup return has already been succeeded.")
 
         this.status = FAILED
-        cup?.lost()
+        cup.lost()
     }
 
     fun cancel() {
-        if (this.status != PROCEEDING && toMachine == null)
+        if (toMachine == null)
             throw BusinessException(ErrorCode.RENTAL_CANCEL_NOT_ALLOWED)
 
         this.status = CANCELED
     }
 
-    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup?.toDto(), fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
+    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup.toDto(), fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }

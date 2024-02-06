@@ -245,9 +245,7 @@ class AccountServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
         val vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, MachineType.VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
         val cup = cupRepository.save(Cup(CUP_RFID))
-        val rental = Rental(user, vendingMachine, true, 24)
-        rental.confirm(cup)
-        rentalRepository.save(rental)
+        rentalRepository.save(Rental(user, cup, vendingMachine, true, 24))
         clear()
 
         //when, then

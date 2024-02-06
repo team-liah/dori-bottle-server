@@ -91,12 +91,8 @@ class SchedulerTest {
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
-        val rental1 = Rental(user, machine, true, 0)
-        rental1.confirm(cup1)
-        rentalRepository.save(rental1)
-        val rental2 = Rental(user, machine, true, 0)
-        rental2.confirm(cup2)
-        rentalRepository.save(rental2)
+        val rental1 = rentalRepository.save(Rental(user, cup1, machine, true, 0))
+        val rental2 = rentalRepository.save(Rental(user, cup2, machine, true, 0))
 
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
@@ -154,12 +150,10 @@ class SchedulerTest {
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
-        val rental1 = Rental(user, vendingMachine, true, 0)
-        rental1.confirm(cup1)
+        val rental1 = Rental(user, cup1, vendingMachine, true, 0)
         rental1.`return`(collectionMachine)
         rentalRepository.save(rental1)
-        val rental2 = Rental(user, vendingMachine, true, 0)
-        rental2.confirm(cup2)
+        val rental2 = Rental(user, cup2, vendingMachine, true, 0)
         rentalRepository.save(rental2)
 
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
@@ -217,13 +211,11 @@ class SchedulerTest {
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user1, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
-        val rental1 = Rental(user1, vendingMachine, true, 0)
-        rental1.confirm(cup1)
+        val rental1 = Rental(user1, cup1, vendingMachine, true, 0)
         rentalRepository.save(rental1)
 
         val user2 = userRepository.save(User("010-0000-0001", "Tester 1", "010-0000-0001", Role.USER))
-        val rental2 = Rental(user2, vendingMachine, true, 0)
-        rental2.confirm(cup2)
+        val rental2 = Rental(user2, cup2, vendingMachine, true, 0)
         rentalRepository.save(rental2)
 
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
@@ -291,9 +283,7 @@ class SchedulerTest {
         val billingKey = "dummyBillingKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
         paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
-        val rental = Rental(user, machine, true, 0)
-        rental.confirm(cup)
-        rentalRepository.save(rental)
+        val rental = rentalRepository.save(Rental(user, cup, machine, true, 0))
 
         taskRepository.save(Task(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id))
 
