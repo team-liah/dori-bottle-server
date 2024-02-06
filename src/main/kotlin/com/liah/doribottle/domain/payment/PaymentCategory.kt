@@ -13,8 +13,8 @@ class PaymentCategory(
     amounts: Long,
     price: Long,
     discountRate: Int,
-    discountExpiredDate: Instant?,
-    expiredDate: Instant?
+    discountExpiredDate: Instant? = null,
+    expiredDate: Instant? = null
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var amounts: Long = amounts

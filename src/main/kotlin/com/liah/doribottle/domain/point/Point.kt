@@ -17,7 +17,7 @@ class Point(
     @Column(nullable = false)
     val userId: UUID,
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     val saveType: PointSaveType,
 

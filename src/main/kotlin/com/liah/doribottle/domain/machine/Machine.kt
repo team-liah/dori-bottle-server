@@ -32,7 +32,7 @@ class Machine(
 
     capacity: Int,
 
-    imageUrl: String?
+    imageUrl: String? = null
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var no: String = no

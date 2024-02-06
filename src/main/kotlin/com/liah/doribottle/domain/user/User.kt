@@ -136,9 +136,9 @@ class User(
 
     fun update(
         name: String,
-        birthDate: String?,
-        gender: Gender?,
-        description: String?
+        birthDate: String? = null,
+        gender: Gender? = null,
+        description: String? = null
     ) {
         this.name = name
         this.birthDate = birthDate
@@ -171,7 +171,7 @@ class User(
     }
 
     fun updateGroup(
-        group: Group?
+        group: Group? = null
     ) {
         this.group = group
     }
@@ -190,7 +190,7 @@ class User(
 
     fun imposePenalty(
         penaltyType: PenaltyType,
-        penaltyCause: String?
+        penaltyCause: String? = null
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
 
@@ -223,7 +223,7 @@ class User(
 
     fun block(
         blockedCauseType: BlockedCauseType,
-        blockedCauseDescription: String?
+        blockedCauseDescription: String? = null
     ) {
         this.blocked = true
         this.mutableBlockedCauses.add(BlockedCause(this, blockedCauseType, blockedCauseDescription))

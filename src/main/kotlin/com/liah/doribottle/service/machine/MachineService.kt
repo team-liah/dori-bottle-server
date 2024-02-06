@@ -32,7 +32,7 @@ class MachineService(
         address: AddressDto,
         location: LocationDto,
         capacity: Int,
-        imageUrl: String?
+        imageUrl: String? = null
     ): UUID {
         verifyDuplicatedNo(no)
 
@@ -101,7 +101,7 @@ class MachineService(
         capacity: Int,
         cupAmounts: Int,
         state: MachineState,
-        imageUrl: String?
+        imageUrl: String? = null
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)

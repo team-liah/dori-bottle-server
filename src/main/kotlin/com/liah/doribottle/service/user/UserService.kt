@@ -62,10 +62,10 @@ class UserService(
     fun update(
         id: UUID,
         name: String,
-        birthDate: String?,
-        gender: Gender?,
-        description: String?,
-        groupId: UUID?
+        birthDate: String? = null,
+        gender: Gender? = null,
+        description: String? = null,
+        groupId: UUID? = null
     ) {
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -129,7 +129,7 @@ class UserService(
     fun imposePenalty(
         id: UUID,
         penaltyType: PenaltyType,
-        penaltyCause: String?
+        penaltyCause: String? = null
     ) {
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -167,7 +167,7 @@ class UserService(
     fun block(
         id: UUID,
         blockedCauseType: BlockedCauseType,
-        blockedCauseDescription: String?
+        blockedCauseDescription: String? = null
     ) {
         val user = userRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)

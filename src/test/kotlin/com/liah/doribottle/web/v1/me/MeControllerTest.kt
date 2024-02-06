@@ -163,7 +163,7 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("group", nullValue()))
             .andExpect(jsonPath("penalties", `is`(emptyList<Any>())))
             .andExpect(jsonPath("blocked", `is`(true)))
-            .andExpect(jsonPath("blockedCauses[*].clearPrice", `is`(listOf(5000, 5000))))
+            .andExpect(jsonPath("blockedCauses[*].clearPrice", `is`(listOf(8000, 8000))))
             .andExpect(jsonPath("blockedCauses[*].type", `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name))))
     }
 
