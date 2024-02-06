@@ -41,18 +41,23 @@ class RentalService(
 ) {
     fun rent(
         userId: UUID,
+        cupRfid: String,
         fromMachineNo: String,
         withIce: Boolean
     ): UUID {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val cup = cupRepository.findByRfid(cupRfid)
+            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
         val fromMachine = machineRepository.findByNo(fromMachineNo)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         verifyCanRent(user)
 
-        val rental = rentalRepository.save(Rental(user, fromMachine, withIce, 24))
+        val rental = rentalRepository.save(Rental(user, cup, fromMachine, withIce, 24))
         pointService.use(user.id, rental.cost, rental.id)
+
+        registerTasks(rental)
 
         return rental.id
     }
@@ -62,20 +67,6 @@ class RentalService(
             throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
         paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
-    }
-
-    fun confirm(
-        id: UUID,
-        cupRfid: String
-    ) {
-        val rental = rentalRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
-        val cup = cupRepository.findByRfid(cupRfid)
-            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-
-        rental.confirm(cup)
-
-        registerTasks(rental)
     }
 
     private fun registerTasks(rental: Rental) {

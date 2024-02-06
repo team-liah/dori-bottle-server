@@ -94,7 +94,7 @@ class RentalControllerTest : BaseControllerTest() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = RentRequest(vendingMachine.no, true)
+        val body = RentRequest(cup.rfid, vendingMachine.no, true)
 
         mockMvc.perform(
             post(endPoint)
@@ -112,7 +112,7 @@ class RentalControllerTest : BaseControllerTest() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = RentRequest(vendingMachine.no, true)
+        val body = RentRequest(cup.rfid, vendingMachine.no, true)
 
         mockMvc.perform(
             post(endPoint)
@@ -133,7 +133,7 @@ class RentalControllerTest : BaseControllerTest() {
         userRepository.save(user)
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = RentRequest(vendingMachine.no, true)
+        val body = RentRequest(cup.rfid, vendingMachine.no, true)
 
         mockMvc.perform(
             post(endPoint)
@@ -154,7 +154,7 @@ class RentalControllerTest : BaseControllerTest() {
         pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = RentRequest(vendingMachine.no, true)
+        val body = RentRequest(cup.rfid, vendingMachine.no, true)
 
         mockMvc.perform(
             post(endPoint)
@@ -172,7 +172,7 @@ class RentalControllerTest : BaseControllerTest() {
     @Test
     fun rentExceptionFromGuest() {
         val cookie = createAccessTokenCookie(guest.id, guest.loginId, guest.name, guest.role)
-        val body = RentRequest(vendingMachine.no, true)
+        val body = RentRequest(cup.rfid, vendingMachine.no, true)
 
         mockMvc.perform(
             post(endPoint)
@@ -214,28 +214,11 @@ class RentalControllerTest : BaseControllerTest() {
     }
 
     private fun insertRentals() {
-        val rental1 = Rental(user, vendingMachine, true, 7)
-        rental1.confirm(cupRepository.save(Cup("B1:B1:B1:B1")))
-        rentalRepository.save(rental1)
-
-        val rental2 = Rental(user, vendingMachine, true, 7)
-        rental2.confirm(cupRepository.save(Cup("C1:C1:C1:C1")))
-        rentalRepository.save(rental2)
-
-        val rental3 = Rental(user, vendingMachine, true, 7)
-        rental3.confirm(cupRepository.save(Cup("D1:D1:D1:D1")))
-        rentalRepository.save(rental3)
-
-        val rental4 = Rental(user, vendingMachine, true, 7)
-        rental4.confirm(cupRepository.save(Cup("E1:E1:E1:E1")))
-        rentalRepository.save(rental4)
-
-        val rental5 = Rental(user, vendingMachine, true, 7)
-        rental5.confirm(cupRepository.save(Cup("F1:F1:F1:F1")))
-        rentalRepository.save(rental5)
-
-        val rental6 = Rental(user, vendingMachine, true, 7)
-        rental6.confirm(cupRepository.save(Cup("G1:G1:G1:G1")))
-        rentalRepository.save(rental6)
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("B1:B1:B1:B1")), vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("C1:C1:C1:C1")), vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("D1:D1:D1:D1")), vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("E1:E1:E1:E1")), vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("F1:F1:F1:F1")), vendingMachine, true, 7))
+        rentalRepository.save(Rental(user, cupRepository.save(Cup("G1:G1:G1:G1")), vendingMachine, true, 7))
     }
 }

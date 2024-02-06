@@ -27,6 +27,7 @@ class RentalController(
     ): UUID {
         return rentalService.rent(
             userId = currentUserId()!!,
+            cupRfid = request.cupRfid!!,
             fromMachineNo = request.machineNo!!,
             withIce = request.withIce!!
         )
