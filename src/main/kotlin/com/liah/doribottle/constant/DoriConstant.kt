@@ -1,6 +1,10 @@
 package com.liah.doribottle.constant
 
 object DoriConstant {
+    const val RENT_CUP_AMOUNTS: Long = 1
+    const val RENT_ICE_CUP_AMOUNTS: Long = 2
+    const val RENT_CUP_HOUR_LIMIT: Long = 24
+
     const val FIVE_PENALTIES_PRICE: Long = 30000
     const val LOST_CUP_PRICE: Long = 8000
 

@@ -221,4 +221,23 @@ class RentalControllerTest : BaseControllerTest() {
         rentalRepository.save(Rental(user, cupRepository.save(Cup("F1:F1:F1:F1")), vendingMachine, true, 7))
         rentalRepository.save(Rental(user, cupRepository.save(Cup("G1:G1:G1:G1")), vendingMachine, true, 7))
     }
+
+    @DisplayName("대여 가능 여부 확인")
+    @Test
+    fun check() {
+        pointRepository.save(Point(user.id, PAY, SAVE_PAY, 1))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        val expectPossible = 1
+
+        mockMvc.perform(
+            get("$endPoint/check")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("possible", `is`(expectPossible)))
+    }
 }
