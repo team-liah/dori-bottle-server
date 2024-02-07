@@ -3,6 +3,7 @@ package com.liah.doribottle.service.rental
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.ForbiddenException
 import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.rental.Rental
@@ -54,7 +55,7 @@ class RentalService(
 
         verifyCanRent(user)
 
-        val rental = rentalRepository.save(Rental(user, cup, fromMachine, withIce, 24))
+        val rental = rentalRepository.save(Rental(user, cup, fromMachine, withIce, DoriConstant.RENT_CUP_HOUR_LIMIT))
         pointService.use(user.id, rental.cost, rental.id)
 
         registerTasks(rental)

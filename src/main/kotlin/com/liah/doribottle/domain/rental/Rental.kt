@@ -2,6 +2,7 @@ package com.liah.doribottle.domain.rental
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
@@ -54,7 +55,7 @@ class Rental(
         protected set
 
     @Column(nullable = false)
-    var cost: Long = if (withIce) 2 else 1
+    var cost: Long = if (this.withIce) DoriConstant.RENT_ICE_CUP_AMOUNTS else DoriConstant.RENT_CUP_AMOUNTS
         protected set
 
     @Column
