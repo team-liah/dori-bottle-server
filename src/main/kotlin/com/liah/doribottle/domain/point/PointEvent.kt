@@ -23,7 +23,7 @@ class PointEvent(
     val amounts: Long,
 
     @Column
-    val targetId: UUID?
+    val targetId: UUID? = null
 ) : PrimaryKeyEntity() {
     fun cancel(): Long {
         return point.cancel(this)

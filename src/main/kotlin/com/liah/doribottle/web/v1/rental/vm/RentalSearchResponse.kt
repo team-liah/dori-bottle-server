@@ -10,7 +10,7 @@ data class RentalSearchResponse(
     val id: UUID,
     val no: String,
     val userId: UUID,
-    val cupId: UUID?,
+    val cupId: UUID,
     val fromMachine: RentalMachineInfo,
     val toMachine: RentalMachineInfo?,
     val withIce: Boolean,

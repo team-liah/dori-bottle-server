@@ -38,7 +38,7 @@ class AccountService(
         loginId: String,
         name: String,
         birthDate: String,
-        gender: Gender?,
+        gender: Gender? = null,
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
         agreedTermsOfMarketing: Boolean
@@ -178,7 +178,7 @@ class AccountService(
     @Transactional
     fun inactivate(
         id: UUID,
-        reason: String?
+        reason: String? = null
     ) {
        val user = userRepository.findByIdOrNull(id)
            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)

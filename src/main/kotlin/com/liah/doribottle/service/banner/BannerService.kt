@@ -21,14 +21,16 @@ class BannerService(
 ) {
     fun register(
         title: String,
-        content: String,
+        header: String? = null,
+        content: String? = null,
         priority: Int,
         visible: Boolean,
-        backgroundColor: String?,
-        imageUrl: String?,
-        targetUrl: String?
+        backgroundColor: String? = null,
+        backgroundImageUrl: String? = null,
+        imageUrl: String? = null,
+        targetUrl: String? = null
     ): UUID {
-        val banner = bannerRepository.save(Banner(title, content, priority, visible, backgroundColor, imageUrl, targetUrl))
+        val banner = bannerRepository.save(Banner(title, header, content, priority, visible, backgroundColor, backgroundImageUrl, imageUrl, targetUrl))
 
         return banner.id
     }
@@ -36,17 +38,19 @@ class BannerService(
     fun update(
         id: UUID,
         title: String,
-        content: String,
+        header: String? = null,
+        content: String? = null,
         priority: Int,
         visible: Boolean,
-        backgroundColor: String?,
-        imageUrl: String?,
-        targetUrl: String?
+        backgroundColor: String? = null,
+        backgroundImageUrl: String? = null,
+        imageUrl: String? = null,
+        targetUrl: String? = null
     ) {
         val banner = bannerRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.BANNER_NOT_FOUND)
 
-        banner.update(title, content, priority, visible, backgroundColor, imageUrl, targetUrl)
+        banner.update(title, header, content, priority, visible, backgroundColor, backgroundImageUrl, imageUrl, targetUrl)
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +64,7 @@ class BannerService(
     @Transactional(readOnly = true)
     fun getAll(
         title: String? = null,
+        header: String? = null,
         content: String? = null,
         visible: Boolean? = null,
         pageable: Pageable
@@ -75,6 +80,7 @@ class BannerService(
     @Transactional(readOnly = true)
     fun getAll(
         title: String? = null,
+        header: String? = null,
         content: String? = null,
         visible: Boolean? = null
     ): List<BannerDto> {

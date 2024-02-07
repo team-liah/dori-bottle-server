@@ -29,10 +29,10 @@ class AdminService(
         loginPassword: String,
         name: String,
         role: Role,
-        email: String?,
-        phoneNumber: String?,
-        description: String?,
-        gender: Gender?
+        email: String? = null,
+        phoneNumber: String? = null,
+        description: String? = null,
+        gender: Gender? = null
     ): UUID {
         verifyDuplicatedLoginId(loginId)
 
@@ -105,10 +105,10 @@ class AdminService(
         id: UUID,
         loginId: String,
         name: String,
-        email: String?,
-        phoneNumber: String?,
-        description: String?,
-        gender: Gender?
+        email: String? = null,
+        phoneNumber: String? = null,
+        description: String? = null,
+        gender: Gender? = null
     ) {
         val admin = adminRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)

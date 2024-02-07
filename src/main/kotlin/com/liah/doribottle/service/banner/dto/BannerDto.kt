@@ -7,16 +7,18 @@ import java.util.*
 data class BannerDto(
     val id: UUID,
     val title: String,
-    val content: String,
+    val header: String?,
+    val content: String?,
     val priority: Int,
     val visible: Boolean,
     val backgroundColor: String?,
+    val backgroundImageUrl: String?,
     val imageUrl: String?,
     val targetUrl: String?,
     val createdDate: Instant,
     val lastModifiedDate: Instant
 ) {
     fun toSearchResponse(): BannerSearchResponse {
-        return BannerSearchResponse(id, title, content, priority, visible, backgroundColor, imageUrl, targetUrl)
+        return BannerSearchResponse(id, header, content, priority, visible, backgroundColor, backgroundImageUrl, imageUrl, targetUrl)
     }
 }
