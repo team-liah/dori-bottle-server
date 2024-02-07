@@ -5,6 +5,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 data class RentalCheckResponse private constructor(
+    // 0 -> 대여 불가, 1 -> 컵 대여 가능, 2 -> 얼음컵 대여 가능
     val possible: Int,
     val expectedReturnDate: Instant
 ) {
