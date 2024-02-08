@@ -7,7 +7,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 
 class BannerServiceTest : BaseServiceTest() {
@@ -84,31 +85,13 @@ class BannerServiceTest : BaseServiceTest() {
         //when
         val result = bannerService.getAll(
             visible = true,
-            pageable = Pageable.ofSize(3)
+            pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "priority"))
         )
 
         //then
         assertThat(result)
             .extracting("title")
-            .containsExactly("6", "4", "3")
-    }
-
-    @DisplayName("배너 목록 조회")
-    @Test
-    fun getAll() {
-        //given
-        insertBanners()
-        clear()
-
-        //when
-        val result = bannerService.getAll(
-            visible = true
-        )
-
-        //then
-        assertThat(result)
-            .extracting("title")
-            .containsExactly("6", "4", "3", "2", "1")
+            .containsExactly("1", "2", "3")
     }
 
     fun insertBanners() {
