@@ -8,6 +8,7 @@ import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.service.machine.dto.MachineDto
+import com.liah.doribottle.service.machine.dto.MachineSimpleDto
 import jakarta.persistence.*
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -112,4 +113,5 @@ class Machine(
     }
 
     fun toDto() = MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, imageUrl, createdDate, lastModifiedDate)
+    fun toSimpleDto() = MachineSimpleDto(id, type, location.toDto(), state)
 }
