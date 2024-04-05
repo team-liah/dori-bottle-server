@@ -4,10 +4,9 @@ import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.LocationDto
 import com.liah.doribottle.web.v1.machine.vm.MachineSimpleResponse
-import com.querydsl.core.annotations.QueryProjection
 import java.util.*
 
-data class MachineSimpleDto @QueryProjection constructor(
+data class MachineSimpleDto (
     val id: UUID,
     val type: MachineType,
     val location: LocationDto,

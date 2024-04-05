@@ -77,20 +77,6 @@ class BannerService(
         ).map { it.toDto() }
     }
 
-    @Transactional(readOnly = true)
-    fun getAll(
-        title: String? = null,
-        header: String? = null,
-        content: String? = null,
-        visible: Boolean? = null
-    ): List<BannerDto> {
-        return bannerQueryRepository.getAll(
-            title = title,
-            content = content,
-            visible = visible
-        ).map { it.toDto() }
-    }
-
     fun delete(id: UUID) {
         bannerRepository.deleteById(id)
     }
