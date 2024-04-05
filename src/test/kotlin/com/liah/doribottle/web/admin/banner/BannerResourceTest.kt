@@ -6,6 +6,7 @@ import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.banner.BannerRepository
 import com.liah.doribottle.web.BaseControllerTest
+import com.liah.doribottle.web.admin.banner.vm.BannerPatchRequest
 import com.liah.doribottle.web.admin.banner.vm.BannerRegisterOrUpdateRequest
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.AfterEach
@@ -25,7 +26,6 @@ class BannerResourceTest : BaseControllerTest() {
     @Autowired
     private lateinit var bannerRepository: BannerRepository
 
-
     @AfterEach
     internal fun destroy() {
         bannerRepository.deleteAll()
@@ -41,7 +41,7 @@ class BannerResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -52,9 +52,9 @@ class BannerResourceTest : BaseControllerTest() {
     fun get() {
         val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null, null))
         mockMvc.perform(
-            get("${endPoint}/${banner.id}")
+            get("$endPoint/${banner.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("title", `is`("Test")))
@@ -76,7 +76,7 @@ class BannerResourceTest : BaseControllerTest() {
             get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].title", `is`(expectTitle)))
@@ -91,7 +91,7 @@ class BannerResourceTest : BaseControllerTest() {
         bannerRepository.save(Banner("6", "test", "test", 0, true, null, null, null))
     }
 
-    @DisplayName("컵 수정")
+    @DisplayName("배너 수정")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
@@ -99,10 +99,26 @@ class BannerResourceTest : BaseControllerTest() {
         val body = BannerRegisterOrUpdateRequest("Updated", "test", "updated", 0, true, "#000000", null, null, null)
 
         mockMvc.perform(
-            put("${endPoint}/${banner.id}")
+            put("$endPoint/${banner.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("배너 패치")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun patch() {
+        val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null))
+        val body = BannerPatchRequest()
+
+        mockMvc.perform(
+            patch("$endPoint/${banner.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -114,9 +130,9 @@ class BannerResourceTest : BaseControllerTest() {
         val banner = bannerRepository.save(Banner("Test", "test", "test", 0, true, null, null, null))
 
         mockMvc.perform(
-            delete("${endPoint}/${banner.id}")
+            delete("$endPoint/${banner.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
     }
