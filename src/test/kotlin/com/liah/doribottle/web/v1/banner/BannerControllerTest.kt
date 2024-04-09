@@ -32,7 +32,7 @@ class BannerControllerTest : BaseControllerTest() {
     fun getAll() {
         insertBanners()
 
-        val expectTitle = listOf("test", "test", "test", "test", "test")
+        val expectTitle = listOf("1", "2", "3", "4", "6")
         mockMvc.perform(
             get("$endPoint/all")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -43,11 +43,11 @@ class BannerControllerTest : BaseControllerTest() {
     }
 
     fun insertBanners() {
-        bannerRepository.save(Banner("1", "test", "test", 5, true, null, null, null))
-        bannerRepository.save(Banner("2", "test", "test", 4, true, null, null, null))
-        bannerRepository.save(Banner("3", "test", "test", 3, true, null, null, null))
-        bannerRepository.save(Banner("4", "test", "test", 2, true, null, null, null))
-        bannerRepository.save(Banner("5", "test", "test", 1, false, null, null, null))
-        bannerRepository.save(Banner("6", "test", "test", 0, true, null, null, null))
+        bannerRepository.save(Banner("1", "1", "test", 5, true, null, null, null))
+        bannerRepository.save(Banner("2", "2", "test", 4, true, null, null, null))
+        bannerRepository.save(Banner("3", "3", "test", 3, true, null, null, null))
+        bannerRepository.save(Banner("4", "4", "test", 2, true, null, null, null))
+        bannerRepository.save(Banner("5", "5", "test", 1, false, null, null, null))
+        bannerRepository.save(Banner("6", "6", "test", 0, true, null, null, null))
     }
 }

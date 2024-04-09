@@ -156,7 +156,7 @@ class MachineServiceTest : BaseServiceTest() {
         insertMachines()
         clear()
 
-        val result = machineService.getAll()
+        val result = machineService.getAllSimple(pageable = Pageable.unpaged())
 
         assertThat(result)
             .extracting("type")

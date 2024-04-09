@@ -26,25 +26,7 @@ class BannerQueryRepository(
                 contentContains(content),
                 visibleEq(visible)
             )
-            .orderBy(banner.priority.asc())
             .toPage(pageable)
-    }
-
-    fun getAll(
-        title: String? = null,
-        header: String? = null,
-        content: String? = null,
-        visible: Boolean? = null
-    ): List<Banner> {
-        return queryFactory
-            .selectFrom(banner)
-            .where(
-                titleContains(title),
-                contentContains(content),
-                visibleEq(visible)
-            )
-            .orderBy(banner.priority.asc())
-            .fetch()
     }
 
     private fun titleContains(title: String?) = title?.let { banner.title.contains(it) }

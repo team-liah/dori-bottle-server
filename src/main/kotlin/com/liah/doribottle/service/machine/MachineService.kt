@@ -89,8 +89,24 @@ class MachineService(
     }
 
     @Transactional(readOnly = true)
-    fun getAll(): List<MachineSimpleDto> {
-        return machineQueryRepository.getAll(deleted = false)
+    fun getAllSimple(
+        no: String? = null,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
+        deleted: Boolean? = null,
+        pageable: Pageable
+    ): Page<MachineSimpleDto> {
+        return machineQueryRepository.getAll(
+            no = no,
+            name = name,
+            type = type,
+            state = state,
+            addressKeyword = addressKeyword,
+            deleted = deleted,
+            pageable = pageable
+        ).map { it.toSimpleDto() }
     }
 
     fun update(
