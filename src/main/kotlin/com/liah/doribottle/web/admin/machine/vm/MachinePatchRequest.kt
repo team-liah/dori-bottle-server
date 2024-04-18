@@ -14,5 +14,7 @@ data class MachinePatchRequest(
     @field:Min(0)
     val cupAmounts: Int?,
     val state: MachineState?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val rentCupAmounts: Long?,
+    val rentIceCupAmounts: Long?,
 )

@@ -8,7 +8,6 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineState.NORMAL
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
-import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
 import com.liah.doribottle.repository.machine.MachineRepository
@@ -45,13 +44,21 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun register() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, null)
+        val body =
+            MachineRegisterRequest(
+                "0000001", "name", VENDING,
+                AddressDto(
+                    "12345",
+                    "삼성로",
+                ),
+                LocationDto(37.508855, 127.059479), 100, null, null, null,
+            )
 
         mockMvc.perform(
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -60,13 +67,21 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
     @Test
     fun registerException() {
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, null)
+        val body =
+            MachineRegisterRequest(
+                "0000001", "name", VENDING,
+                AddressDto(
+                    "12345",
+                    "삼성로",
+                ),
+                LocationDto(37.508855, 127.059479), 100, null, null, null,
+            )
 
         mockMvc.perform(
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
@@ -76,14 +91,24 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun registerExceptionTc2() {
-        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val body = MachineRegisterRequest("0000001", "name", VENDING, AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, null)
+        machineRepository.save(
+            Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        val body =
+            MachineRegisterRequest(
+                "0000001", "name", VENDING,
+                AddressDto(
+                    "12345",
+                    "삼성로",
+                ),
+                LocationDto(37.508855, 127.059479), 100, null, null, null,
+            )
 
         mockMvc.perform(
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.MACHINE_ALREADY_REGISTERED.message)))
@@ -93,12 +118,15 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun get() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
 
         mockMvc.perform(
-            get("${endPoint}/${machine.id}")
+            get("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("no", `is`(machine.no)))
@@ -130,33 +158,49 @@ class MachineResourceTest : BaseControllerTest() {
             get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].no", `is`(expectValue)))
     }
 
     private fun insertMachines() {
-        machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479),  100, null))
-        machineRepository.save(Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), Location(37.508855, 127.059479),  100, null))
-        machineRepository.save(Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), Location(37.508855, 127.059479),  100, null))
-        machineRepository.save(Machine("0000004", "name", VENDING, Address("00004", "마장로", null), Location(37.508855, 127.059479),  100, null))
-        machineRepository.save(Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), Location(37.508855, 127.059479),  100, null))
-        machineRepository.save(Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), Location(37.508855, 127.059479),  100, null))
+        machineRepository.save(
+            Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        machineRepository.save(
+            Machine("0000002", "name", VENDING, Address("00002", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        machineRepository.save(
+            Machine("0000003", "name", VENDING, Address("00003", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        machineRepository.save(
+            Machine("0000004", "name", VENDING, Address("00004", "마장로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        machineRepository.save(
+            Machine("0000005", "name", COLLECTION, Address("00005", "도산대로", null), Location(37.508855, 127.059479), 100, null),
+        )
+        machineRepository.save(
+            Machine("0000006", "name", VENDING, Address("00006", "도산대로", null), Location(37.508855, 127.059479), 100, null),
+        )
     }
 
     @DisplayName("자판기 정보 수정")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL, null)
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val body =
+            MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, 50, NORMAL, null, null, null)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -165,14 +209,18 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun updateExceptionTc2() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val body = MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, -1, NORMAL, null)
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val body =
+            MachineUpdateRequest("name", AddressDto("12345", "삼성로"), LocationDto(37.508855, 127.059479), 100, -1, NORMAL, null, null, null)
 
         mockMvc.perform(
             put("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.INVALID_INPUT_VALUE.code)))
@@ -182,14 +230,17 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun patch() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val body = MachinePatchRequest("updated",  null, null, null, 10, null, null)
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val body = MachinePatchRequest("updated", null, null, null, 10, null, null, null, null)
 
         mockMvc.perform(
             patch("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -198,14 +249,17 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun patchPost() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val body = MachinePatchRequest("updated",  null, null, null, 10, null, null)
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val body = MachinePatchRequest("updated", null, null, null, 10, null, null, null, null)
 
         mockMvc.perform(
             post("$endPoint/${machine.id}/patch")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -214,12 +268,15 @@ class MachineResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun delete() {
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
 
         mockMvc.perform(
             delete("$endPoint/${machine.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
     }
