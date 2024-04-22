@@ -21,5 +21,7 @@ data class MachineUpdateRequest(
     val cupAmounts: Int?,
     @field:NotNull
     val state: MachineState?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val rentCupAmounts: Long?,
+    val rentIceCupAmounts: Long?,
 )

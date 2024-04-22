@@ -23,7 +23,7 @@ import java.util.*
 @Transactional
 class MachineService(
     private val machineRepository: MachineRepository,
-    private val machineQueryRepository: MachineQueryRepository
+    private val machineQueryRepository: MachineQueryRepository,
 ) {
     fun register(
         no: String,
@@ -32,37 +32,42 @@ class MachineService(
         address: AddressDto,
         location: LocationDto,
         capacity: Int,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        rentCupAmounts: Long? = null,
+        rentIceCupAmounts: Long? = null,
     ): UUID {
         verifyDuplicatedNo(no)
 
-        val machine = machineRepository.save(
-            Machine(
-                no = no,
-                name = name,
-                type = type,
-                address = address.toEmbeddable(),
-                location = location.toEmbeddable(),
-                capacity = capacity,
-                imageUrl = imageUrl
+        val machine =
+            machineRepository.save(
+                Machine(
+                    no = no,
+                    name = name,
+                    type = type,
+                    address = address.toEmbeddable(),
+                    location = location.toEmbeddable(),
+                    capacity = capacity,
+                    imageUrl = imageUrl,
+                    rentCupAmounts = rentCupAmounts,
+                    rentIceCupAmounts = rentIceCupAmounts,
+                ),
             )
-        )
 
         return machine.id
     }
 
     private fun verifyDuplicatedNo(no: String) {
         val machine = machineRepository.findByNo(no)
-        if (machine != null)
+        if (machine != null) {
             throw BusinessException(ErrorCode.MACHINE_ALREADY_REGISTERED)
+        }
     }
 
     @Transactional(readOnly = true)
-    fun get(
-        id: UUID
-    ): MachineDto {
-        val machine = machineRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+    fun get(id: UUID): MachineDto {
+        val machine =
+            machineRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         return machine.toDto()
     }
@@ -75,7 +80,7 @@ class MachineService(
         state: MachineState? = null,
         addressKeyword: String? = null,
         deleted: Boolean? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<MachineDto> {
         return machineQueryRepository.getAll(
             no = no,
@@ -84,7 +89,7 @@ class MachineService(
             state = state,
             addressKeyword = addressKeyword,
             deleted = deleted,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
@@ -96,7 +101,7 @@ class MachineService(
         state: MachineState? = null,
         addressKeyword: String? = null,
         deleted: Boolean? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<MachineSimpleDto> {
         return machineQueryRepository.getAll(
             no = no,
@@ -105,7 +110,7 @@ class MachineService(
             state = state,
             addressKeyword = addressKeyword,
             deleted = deleted,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toSimpleDto() }
     }
 
@@ -117,10 +122,13 @@ class MachineService(
         capacity: Int,
         cupAmounts: Int,
         state: MachineState,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        rentCupAmounts: Long? = null,
+        rentIceCupAmounts: Long? = null,
     ) {
-        val machine = machineRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+        val machine =
+            machineRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         machine.update(
             name = name,
@@ -129,15 +137,14 @@ class MachineService(
             capacity = capacity,
             cupAmounts = cupAmounts,
             state = state,
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
         )
     }
 
-    fun delete(
-        id: UUID
-    ) {
-        val machine = machineRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+    fun delete(id: UUID) {
+        val machine =
+            machineRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         machine.delete()
     }
@@ -145,7 +152,7 @@ class MachineService(
     // TODO: Remove
     fun createDummyMachine(
         no: String,
-        no2: String
+        no2: String,
     ) {
         val vending = machineRepository.findByNo(no)
         if (vending == null) {

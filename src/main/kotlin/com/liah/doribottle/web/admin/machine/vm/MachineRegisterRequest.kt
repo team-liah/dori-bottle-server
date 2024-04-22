@@ -18,5 +18,7 @@ data class MachineRegisterRequest(
     val location: LocationDto?,
     @field:NotNull
     val capacity: Int?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val rentCupAmounts: Long?,
+    val rentIceCupAmounts: Long?,
 )
