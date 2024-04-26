@@ -21,7 +21,9 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.stereotype.Repository
+import org.springframework.test.context.ActiveProfiles
 
+@ActiveProfiles("test")
 @Import(TestConfig::class, TestcontainersConfig::class)
 @DataJpaTest(includeFilters = [ComponentScan.Filter(type = FilterType.ANNOTATION, classes = [Repository::class])])
 class PointQueryRepositoryTest {

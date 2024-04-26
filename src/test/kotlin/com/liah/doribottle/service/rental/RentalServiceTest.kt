@@ -27,7 +27,6 @@ import com.liah.doribottle.domain.point.PointSaveType.REWARD
 import com.liah.doribottle.domain.rental.Rental
 import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.rental.RentalStatus.CONFIRMED
-import com.liah.doribottle.domain.rental.RentalStatus.PROCEEDING
 import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.domain.user.Role
@@ -83,10 +82,10 @@ class RentalServiceTest : BaseServiceTest() {
 
         cup = cupRepository.save(Cup(CUP_RFID))
 
-        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100))
+        vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
         vendingMachine.increaseCupAmounts(10)
 
-        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100))
+        collectionMachine = machineRepository.save(Machine(MACHINE_NO2, MACHINE_NAME, COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
         collectionMachine.increaseCupAmounts(0)
     }
 
@@ -99,27 +98,31 @@ class RentalServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val id = rentalService.rent(user.id, vendingMachine.no, true)
+        val id = rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         clear()
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
-        val findUser = userRepository.findByIdOrNull(user.id)
+        val findCup = cupRepository.findByIdOrNull(cup.id)
+        val findFromMachine = machineRepository.findByIdOrNull(vendingMachine.id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findRental?.user).isEqualTo(user)
-        assertThat(findRental?.cup).isNull()
+        assertThat(findRental?.cup).isEqualTo(cup)
         assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
         assertThat(findRental?.toMachine).isNull()
         assertThat(findRental?.withIce).isEqualTo(true)
         assertThat(findRental?.cost).isEqualTo(2L)
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
-        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+        assertThat(findRental?.status).isEqualTo(CONFIRMED)
 
-        assertThat(findUser?.use).isTrue()
+        assertThat(findCup?.status).isEqualTo(ON_LOAN)
+
+        assertThat(findFromMachine?.cupAmounts).isEqualTo(9L)
 
         assertThat(findPoint.remainAmounts).isEqualTo(8L)
 
@@ -137,6 +140,14 @@ class RentalServiceTest : BaseServiceTest() {
             .extracting("amounts")
             .containsExactly(10L, -2L)
 
+        assertThat(findTasks)
+            .extracting("executeDate")
+            .containsExactly(findRental?.expiredDate, findRental?.expiredDate?.minus(1, ChronoUnit.HOURS))
+        assertThat(findTasks)
+            .extracting("type")
+            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
+        assertThat(findTasks)
+
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
@@ -151,30 +162,34 @@ class RentalServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val id = rentalService.rent(user.id, vendingMachine.no, true)
+        val id = rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         clear()
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
-        val findUser = userRepository.findByIdOrNull(user.id)
+        val findCup = cupRepository.findByIdOrNull(cup.id)
+        val findFromMachine = machineRepository.findByIdOrNull(vendingMachine.id)
         val findPoints = pointRepository.findAllByUserId(user.id)
         val firstPoint = findPoints.first()
         val secondPoint = findPoints.last()
         val findFirstPointEvents = pointEventRepository.findAllByPointId(firstPoint.id)
         val findSecondPointEvents = pointEventRepository.findAllByPointId(secondPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findRental?.user).isEqualTo(user)
-        assertThat(findRental?.cup).isNull()
+        assertThat(findRental?.cup).isEqualTo(cup)
         assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
         assertThat(findRental?.toMachine).isNull()
         assertThat(findRental?.withIce).isEqualTo(true)
         assertThat(findRental?.cost).isEqualTo(2L)
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
-        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+        assertThat(findRental?.status).isEqualTo(CONFIRMED)
 
-        assertThat(findUser?.use).isTrue()
+        assertThat(findCup?.status).isEqualTo(ON_LOAN)
+
+        assertThat(findFromMachine?.cupAmounts).isEqualTo(9L)
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(0L)
@@ -199,6 +214,14 @@ class RentalServiceTest : BaseServiceTest() {
             .extracting("amounts")
             .containsExactly(1L, 1L, -2L)
 
+        assertThat(findTasks)
+            .extracting("executeDate")
+            .containsExactly(findRental?.expiredDate, findRental?.expiredDate?.minus(1, ChronoUnit.HOURS))
+        assertThat(findTasks)
+            .extracting("type")
+            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
+        assertThat(findTasks)
+
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
@@ -215,12 +238,13 @@ class RentalServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val id = rentalService.rent(user.id, vendingMachine.no, true)
+        val id = rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         clear()
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
-        val findUser = userRepository.findByIdOrNull(user.id)
+        val findCup = cupRepository.findByIdOrNull(cup.id)
+        val findFromMachine = machineRepository.findByIdOrNull(vendingMachine.id)
         val findPoints = pointRepository.findAllByUserId(user.id)
         val firstPoint = findPoints[0]
         val secondPoint = findPoints[1]
@@ -229,18 +253,21 @@ class RentalServiceTest : BaseServiceTest() {
         val findSecondPointEvents = pointEventRepository.findAllByPointId(secondPoint.id)
         val findThirdPointEvents = pointEventRepository.findAllByPointId(thirdPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findRental?.user).isEqualTo(user)
-        assertThat(findRental?.cup).isNull()
+        assertThat(findRental?.cup).isEqualTo(cup)
         assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
         assertThat(findRental?.toMachine).isNull()
         assertThat(findRental?.withIce).isEqualTo(true)
         assertThat(findRental?.cost).isEqualTo(2L)
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
-        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+        assertThat(findRental?.status).isEqualTo(CONFIRMED)
 
-        assertThat(findUser?.use).isTrue()
+        assertThat(findCup?.status).isEqualTo(ON_LOAN)
+
+        assertThat(findFromMachine?.cupAmounts).isEqualTo(9L)
 
         assertThat(firstPoint.remainAmounts).isEqualTo(0L)
         assertThat(secondPoint.remainAmounts).isEqualTo(1L)
@@ -272,6 +299,14 @@ class RentalServiceTest : BaseServiceTest() {
             .extracting("amounts")
             .containsExactly(1L, 1L, 1L, -2L)
 
+        assertThat(findTasks)
+            .extracting("executeDate")
+            .containsExactly(findRental?.expiredDate, findRental?.expiredDate?.minus(1, ChronoUnit.HOURS))
+        assertThat(findTasks)
+            .extracting("type")
+            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
+        assertThat(findTasks)
+
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
@@ -284,27 +319,31 @@ class RentalServiceTest : BaseServiceTest() {
         clear()
 
         //when
-        val id = rentalService.rent(user.id, vendingMachine.no, false)
+        val id = rentalService.rent(user.id, cup.rfid, vendingMachine.no, false)
         clear()
 
         //then
         val findRental = rentalRepository.findByIdOrNull(id)
-        val findUser = userRepository.findByIdOrNull(user.id)
+        val findCup = cupRepository.findByIdOrNull(cup.id)
+        val findFromMachine = machineRepository.findByIdOrNull(vendingMachine.id)
         val findPoint = pointRepository.findAllByUserId(user.id).first()
         val findPointEvents = pointEventRepository.findAllByPointId(findPoint.id)
         val findPointHistories = pointHistoryRepository.findAllByUserId(user.id)
+        val findTasks = taskRepository.findAll()
 
         assertThat(findRental?.user).isEqualTo(user)
-        assertThat(findRental?.cup).isNull()
+        assertThat(findRental?.cup).isEqualTo(cup)
         assertThat(findRental?.fromMachine).isEqualTo(vendingMachine)
         assertThat(findRental?.toMachine).isNull()
         assertThat(findRental?.withIce).isEqualTo(false)
         assertThat(findRental?.cost).isEqualTo(1L)
         assertThat(findRental?.succeededDate).isNull()
         assertThat(findRental?.expiredDate).isAfter(Instant.now())
-        assertThat(findRental?.status).isEqualTo(PROCEEDING)
+        assertThat(findRental?.status).isEqualTo(CONFIRMED)
 
-        assertThat(findUser?.use).isTrue()
+        assertThat(findCup?.status).isEqualTo(ON_LOAN)
+
+        assertThat(findFromMachine?.cupAmounts).isEqualTo(9L)
 
         assertThat(findPoint.remainAmounts).isEqualTo(9L)
 
@@ -322,6 +361,14 @@ class RentalServiceTest : BaseServiceTest() {
             .extracting("amounts")
             .containsExactly(10L, -1L)
 
+        assertThat(findTasks)
+            .extracting("executeDate")
+            .containsExactly(findRental?.expiredDate, findRental?.expiredDate?.minus(1, ChronoUnit.HOURS))
+        assertThat(findTasks)
+            .extracting("type")
+            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
+        assertThat(findTasks)
+
         assertThat(cacheManager.getCache("pointSum")?.get(user.id)).isNull()
     }
 
@@ -334,7 +381,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         //when, then
         val exception1 = assertThrows<BusinessException> {
-            rentalService.rent(user.id, vendingMachine.no, true)
+            rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.LACK_OF_POINT)
 
@@ -342,58 +389,22 @@ class RentalServiceTest : BaseServiceTest() {
             val user = User("010-1234-1234", "Tester 2", "010-1234-1234", Role.USER)
             user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
             userRepository.save(user)
-            rentalService.rent(user.id, vendingMachine.no, true)
+            rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         }
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
 
         val exception3 = assertThrows<NotFoundException> {
             val user = userRepository.save(User("010-1234-1234", "Tester 2", "010-1234-1234", Role.USER))
-            rentalService.rent(user.id, vendingMachine.no, true)
+            rentalService.rent(user.id, cup.rfid, vendingMachine.no, true)
         }
         assertThat(exception3.errorCode).isEqualTo(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
-    }
-
-    @DisplayName("대여 확정")
-    @Test
-    fun confirm() {
-        //given
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
-        clear()
-
-        //when
-        rentalService.confirm(rental.id, cup.rfid)
-        clear()
-
-        //then
-        val findRental = rentalRepository.findByIdOrNull(rental.id)
-        val findCup = cupRepository.findByIdOrNull(cup.id)
-        val findMachine = machineRepository.findByIdOrNull(vendingMachine.id)
-        val findTasks = taskRepository.findAll()
-
-        assertThat(findRental?.cup).isEqualTo(findCup)
-        assertThat(findRental?.status).isEqualTo(CONFIRMED)
-
-        assertThat(findCup?.status).isEqualTo(ON_LOAN)
-
-        assertThat(findMachine?.cupAmounts).isEqualTo(9)
-
-        assertThat(findTasks)
-            .extracting("executeDate")
-            .containsExactly(rental.expiredDate, rental.expiredDate.minus(1, ChronoUnit.HOURS))
-        assertThat(findTasks)
-            .extracting("type")
-            .containsExactly(TaskType.RENTAL_OVERDUE, TaskType.RENTAL_REMIND)
-        assertThat(findTasks)
-            .extracting("targetId")
-            .containsExactly(rental.id, rental.id)
     }
 
     @DisplayName("컵 반납")
     @Test
     fun `return`() {
         //given
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
-        rental.confirm(cup)
+        val rental = rentalRepository.save(Rental(user, cup, vendingMachine, true, 7))
         clear()
 
         //when
@@ -420,8 +431,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Test
     fun returnException() {
         //given
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
-        rental.confirm(cup)
+        rentalRepository.save(Rental(user, cup, vendingMachine, true, 7))
         cupRepository.save(Cup("B1:B1:B1:B1"))
         clear()
 
@@ -441,9 +451,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Test
     fun fail() {
         //given
-        val rental = Rental(user, vendingMachine, true, 7)
-        rental.confirm(cup)
-        rentalRepository.save(rental)
+        val rental = rentalRepository.save(Rental(user, cup, vendingMachine, true, 7))
         clear()
 
         //when
@@ -463,8 +471,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Test
     fun failException() {
         //given
-        val rental = Rental(user, vendingMachine, true, 7)
-        rental.confirm(cup)
+        val rental = Rental(user, cup, vendingMachine, true, 7)
         rental.`return`(collectionMachine)
         rentalRepository.save(rental)
         clear()
@@ -480,7 +487,9 @@ class RentalServiceTest : BaseServiceTest() {
     @Test
     fun cancel() {
         //given
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
+        val rental = Rental(user, cup, vendingMachine, true, 7)
+        rental.`return`(collectionMachine)
+        rentalRepository.save(rental)
         val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 10))
         point.use(2, rental.id)
         clear()
@@ -513,8 +522,7 @@ class RentalServiceTest : BaseServiceTest() {
     @Test
     fun cancelException() {
         //given
-        val rental = rentalRepository.save(Rental(user, vendingMachine, true, 7))
-        rental.confirm(cup)
+        val rental = rentalRepository.save(Rental(user, cup, vendingMachine, true, 7))
         clear()
 
         //when, then
@@ -537,8 +545,8 @@ class RentalServiceTest : BaseServiceTest() {
         )
 
         //then
-        assertThat(result.totalElements).isEqualTo(7)
-        assertThat(result.totalPages).isEqualTo(3)
+        assertThat(result.totalElements).isEqualTo(6)
+        assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
             .extracting("user.id")
             .containsExactly(user.id, user.id, user.id)
@@ -552,9 +560,7 @@ class RentalServiceTest : BaseServiceTest() {
     fun get() {
         //given
         val cup = cupRepository.save(Cup("G1:G1:G1:G1"))
-        val rental = Rental(user, vendingMachine, true, 0)
-        rental.confirm(cup)
-        rentalRepository.save(rental)
+        val rental = rentalRepository.save(Rental(user, cup, vendingMachine, true, 0))
         clear()
 
         //when
@@ -563,7 +569,7 @@ class RentalServiceTest : BaseServiceTest() {
         //then
         assertThat(result.id).isEqualTo(rental.id)
         assertThat(result.user.id).isEqualTo(user.id)
-        assertThat(result.cup?.id).isEqualTo(cup.id)
+        assertThat(result.cup.id).isEqualTo(cup.id)
         assertThat(result.status).isEqualTo(CONFIRMED)
         assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
         assertThat(result.withIce).isTrue()
@@ -576,18 +582,11 @@ class RentalServiceTest : BaseServiceTest() {
         val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
         val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
         val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
-        val rental1 = rentalRepository.save(Rental(user, vendingMachine, true, 0))
-        rental1.confirm(cup1)
-        val rental2 = rentalRepository.save(Rental(user, vendingMachine, true, 1))
-        rental2.confirm(cup2)
-        val rental3 = rentalRepository.save(Rental(user, vendingMachine, true, 2))
-        rental3.confirm(cup3)
-        val rental4 = rentalRepository.save(Rental(user, vendingMachine, true, 3))
-        rental4.confirm(cup4)
-        val rental5 = rentalRepository.save(Rental(user, vendingMachine, true, 4))
-        rental5.confirm(cup5)
-        val rental6 = rentalRepository.save(Rental(user, vendingMachine, true, 5))
-        rental6.confirm(cup6)
-        val rental7 = rentalRepository.save(Rental(user, vendingMachine, true, 6))
+        rentalRepository.save(Rental(user, cup1, vendingMachine, true, 0))
+        rentalRepository.save(Rental(user, cup2, vendingMachine, true, 1))
+        rentalRepository.save(Rental(user, cup3, vendingMachine, true, 2))
+        rentalRepository.save(Rental(user, cup4, vendingMachine, true, 3))
+        rentalRepository.save(Rental(user, cup5, vendingMachine, true, 4))
+        rentalRepository.save(Rental(user, cup6, vendingMachine, true, 5))
     }
 }

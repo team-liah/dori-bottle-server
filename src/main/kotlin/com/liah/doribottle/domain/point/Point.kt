@@ -14,23 +14,20 @@ import java.util.*
     indexes = [Index(name = "IDX_POINT_USER_ID", columnList = "userId")]
 )
 class Point(
-    userId: UUID,
-    saveType: PointSaveType,
+    @Column(nullable = false)
+    val userId: UUID,
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = false)
+    val saveType: PointSaveType,
+
     eventType: PointEventType,
-    saveAmounts: Long
+
+    @Column(nullable = false)
+    val saveAmounts: Long
 ) : PrimaryKeyEntity() {
-    @Column(nullable = false)
-    val userId: UUID = userId
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val saveType: PointSaveType = saveType
-
     @Column(nullable = false, length = 1000)
     val description: String = eventType.title
-
-    @Column(nullable = false)
-    val saveAmounts: Long = saveAmounts
 
     @Column(nullable = false)
     var remainAmounts: Long = saveAmounts

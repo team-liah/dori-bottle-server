@@ -20,5 +20,6 @@ data class MachineUpdateRequest(
     @field:NotNull
     val cupAmounts: Int?,
     @field:NotNull
-    val state: MachineState?
+    val state: MachineState?,
+    val imageUrl: String?
 )

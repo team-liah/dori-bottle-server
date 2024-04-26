@@ -31,7 +31,8 @@ class MachineService(
         type: MachineType,
         address: AddressDto,
         location: LocationDto,
-        capacity: Int
+        capacity: Int,
+        imageUrl: String? = null
     ): UUID {
         verifyDuplicatedNo(no)
 
@@ -42,7 +43,8 @@ class MachineService(
                 type = type,
                 address = address.toEmbeddable(),
                 location = location.toEmbeddable(),
-                capacity = capacity
+                capacity = capacity,
+                imageUrl = imageUrl
             )
         )
 
@@ -87,8 +89,24 @@ class MachineService(
     }
 
     @Transactional(readOnly = true)
-    fun getAll(): List<MachineSimpleDto> {
-        return machineQueryRepository.getAll(deleted = false)
+    fun getAllSimple(
+        no: String? = null,
+        name: String? = null,
+        type: MachineType? = null,
+        state: MachineState? = null,
+        addressKeyword: String? = null,
+        deleted: Boolean? = null,
+        pageable: Pageable
+    ): Page<MachineSimpleDto> {
+        return machineQueryRepository.getAll(
+            no = no,
+            name = name,
+            type = type,
+            state = state,
+            addressKeyword = addressKeyword,
+            deleted = deleted,
+            pageable = pageable
+        ).map { it.toSimpleDto() }
     }
 
     fun update(
@@ -98,7 +116,8 @@ class MachineService(
         location: LocationDto,
         capacity: Int,
         cupAmounts: Int,
-        state: MachineState
+        state: MachineState,
+        imageUrl: String? = null
     ) {
         val machine = machineRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
@@ -109,7 +128,8 @@ class MachineService(
             location = location.toEmbeddable(),
             capacity = capacity,
             cupAmounts = cupAmounts,
-            state = state
+            state = state,
+            imageUrl = imageUrl
         )
     }
 
@@ -129,12 +149,12 @@ class MachineService(
     ) {
         val vending = machineRepository.findByNo(no)
         if (vending == null) {
-            register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508855, 127.059479), 100)
+            register(no, "삼성역점", MachineType.VENDING, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508855, 127.059479), 100, null)
         }
 
         val collection = machineRepository.findByNo(no2)
         if (collection == null) {
-            register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508276, 127.055314), 100)
+            register(no2, "코엑스점", MachineType.COLLECTION, AddressDto("12345", "서울시", "삼성동"), LocationDto(37.508276, 127.055314), 100, null)
         }
     }
 }

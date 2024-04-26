@@ -1,7 +1,5 @@
 package com.liah.doribottle.repository.point
 
-import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.point.Point
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.point.PointSaveType.PAY
@@ -49,7 +47,7 @@ class PointQueryRepository(
             )
             .from(point)
             .where(point.userId.eq(userId))
-            .fetchFirst() ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+            .fetchFirst() ?: PointSumDto(userId, 0, 0)
     }
 
     private fun generateSumSubQuery(userId: UUID, type: PointSaveType): JPQLQuery<Long> {

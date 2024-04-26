@@ -4,6 +4,7 @@ import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.domain.user.Admin
+import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.repository.user.AdminQueryRepository
 import com.liah.doribottle.repository.user.AdminRepository
@@ -28,9 +29,10 @@ class AdminService(
         loginPassword: String,
         name: String,
         role: Role,
-        email: String?,
-        phoneNumber: String?,
-        description: String?
+        email: String? = null,
+        phoneNumber: String? = null,
+        description: String? = null,
+        gender: Gender? = null
     ): UUID {
         verifyDuplicatedLoginId(loginId)
 
@@ -43,11 +45,27 @@ class AdminService(
                 role = role,
                 email = email,
                 phoneNumber = phoneNumber,
-                description = description
+                description = description,
+                gender = gender
             )
         )
 
         return admin.id
+    }
+
+    fun register(
+        id: UUID,
+        loginId: String,
+        loginPassword: String,
+        name: String,
+        role: Role
+    ) {
+        if (!adminRepository.existsById(id)) {
+            verifyDuplicatedLoginId(loginId)
+
+            val encryptedPassword = passwordEncoder.encode(loginPassword)
+            adminQueryRepository.insert(id, loginId, encryptedPassword, name, role)
+        }
     }
 
     private fun verifyDuplicatedLoginId(loginId: String) {
@@ -87,10 +105,10 @@ class AdminService(
         id: UUID,
         loginId: String,
         name: String,
-        role: Role,
-        email: String?,
-        phoneNumber: String?,
-        description: String?
+        email: String? = null,
+        phoneNumber: String? = null,
+        description: String? = null,
+        gender: Gender? = null
     ) {
         val admin = adminRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -98,10 +116,10 @@ class AdminService(
         admin.update(
             loginId = loginId,
             name = name,
-            role = role,
             email = email,
             phoneNumber = phoneNumber,
-            description = description
+            description = description,
+            gender = gender
         )
     }
 
@@ -125,23 +143,5 @@ class AdminService(
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         admin.delete()
-    }
-
-    //TODO: Remove
-    fun createDummyAdmin(
-        adminLoginId: String,
-        adminLoginPassword: String,
-        machineLoginId: String,
-        machineLoginPassword: String,
-    ) {
-        val admin = adminRepository.findByLoginId(adminLoginId)
-        if (admin == null) {
-            register(adminLoginId, adminLoginPassword, "안감독", Role.ADMIN, null, null, null)
-        }
-
-        val machine = adminRepository.findByLoginId(machineLoginId)
-        if (machine == null) {
-            register(machineLoginId, machineLoginPassword, "MACHINE", Role.MACHINE_ADMIN, null, null, null)
-        }
     }
 }

@@ -17,5 +17,6 @@ data class MachineRegisterRequest(
     @field:NotNull
     val location: LocationDto?,
     @field:NotNull
-    val capacity: Int?
+    val capacity: Int?,
+    val imageUrl: String?
 )

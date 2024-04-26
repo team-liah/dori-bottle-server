@@ -14,38 +14,32 @@ import java.time.Instant
     indexes = [Index(name = "IDX_PAYMENT_METHOD_USER_ID", columnList = "user_id")]
 )
 class PaymentMethod(
-    user: User,
-    billingKey: String,
-    providerType: PaymentMethodProviderType,
-    type: PaymentMethodType,
-    card: Card,
-    default: Boolean,
-    authenticatedDate: Instant
-) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User = user
+    val user: User,
 
     @Column(nullable = false, unique = true)
-    val billingKey: String = billingKey
+    val billingKey: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val providerType: PaymentMethodProviderType = providerType
+    val providerType: PaymentMethodProviderType,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: PaymentMethodType = type
+    val type: PaymentMethodType,
 
     @Embedded
-    val card: Card = card
+    val card: Card,
 
+    default: Boolean,
+
+    @Column(nullable = false)
+    val authenticatedDate: Instant
+) : PrimaryKeyEntity() {
     @Column(name = "`default`", nullable = false)
     var default: Boolean = default
         protected set
-
-    @Column(nullable = false)
-    val authenticatedDate: Instant = authenticatedDate
 
     fun update(default: Boolean) {
         this.default = default

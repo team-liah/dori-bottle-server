@@ -6,6 +6,7 @@ import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.MeResponse
+import com.liah.doribottle.web.v1.me.vm.ProfileResponse
 import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -26,7 +27,9 @@ class MeController(
 
     @Operation(summary = "로그인 유저 프로필 조회")
     @GetMapping("/profile")
-    fun getProfile() = userService.get(currentUserId()!!).toProfileResponse()
+    fun getProfile(): ProfileResponse {
+        return userService.get(currentUserId()!!).toProfileResponse()
+    }
 
     @Operation(summary = "로그인 유저 프로필 업데이트")
     @PutMapping("/profile")

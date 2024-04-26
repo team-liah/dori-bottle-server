@@ -1,6 +1,6 @@
 package com.liah.doribottle.schedule
 
-import com.liah.doribottle.constant.LOST_CUP_PRICE
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.notification.NotificationIndividual
 import com.liah.doribottle.domain.notification.NotificationType
 import com.liah.doribottle.domain.payment.PaymentType
@@ -97,7 +97,7 @@ class Scheduler(
     ) {
         val paymentId = paymentService.create(
             userId = userId,
-            price = LOST_CUP_PRICE,
+            price = DoriConstant.LOST_CUP_PRICE,
             type = PaymentType.LOST_CUP,
             card = paymentMethod.card
         )
@@ -106,7 +106,7 @@ class Scheduler(
             tosspaymentsService.executeBilling(
                 billingKey = paymentMethod.billingKey,
                 userId = userId,
-                price = LOST_CUP_PRICE,
+                price = DoriConstant.LOST_CUP_PRICE,
                 paymentId = paymentId,
                 paymentType = PaymentType.LOST_CUP
             )

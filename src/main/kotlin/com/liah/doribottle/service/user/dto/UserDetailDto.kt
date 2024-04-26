@@ -20,7 +20,6 @@ data class UserDetailDto(
     val role: Role,
     val active: Boolean,
     val inactivateReason: String?,
-    val use: Boolean,
     val registeredDate: Instant?,
     val description: String?,
     val group: GroupDto?,
@@ -30,5 +29,5 @@ data class UserDetailDto(
     val createdDate: Instant,
     val lastModifiedDate: Instant
 ) {
-    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group, penalties, blocked, blockedCauses)
+    fun toProfileResponse() = ProfileResponse(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, registeredDate, group, penalties.filter { !it.disabled }, blocked, blockedCauses)
 }
