@@ -88,7 +88,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(
-            PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
+            PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
         )
 
         cup = cupRepository.save(Cup(CUP_RFID))

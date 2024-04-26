@@ -12,7 +12,7 @@ import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.*
-import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSSPAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
 import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
@@ -41,7 +41,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
-import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
@@ -72,27 +72,36 @@ class PaymentControllerTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var paymentRepository: PaymentRepository
+
     @Autowired
     private lateinit var paymentMethodRepository: PaymentMethodRepository
+
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
+
     @Autowired
     private lateinit var userRepository: UserRepository
+
     @Autowired
     private lateinit var groupRepository: GroupRepository
+
     @Autowired
     private lateinit var pointRepository: PointRepository
+
     @Autowired
     private lateinit var blockedCauseRepository: BlockedCauseRepository
+
     @Autowired
     private lateinit var rentalRepository: RentalRepository
+
     @Autowired
     private lateinit var machineRepository: MachineRepository
+
     @Autowired
     private lateinit var cupRepository: CupRepository
 
     @MockBean
-    private lateinit var mockTossPaymentsService: TossPaymentsService
+    private lateinit var mockTosspaymentsService: TosspaymentsService
 
     @AfterEach
     internal fun destroy() {
@@ -109,31 +118,33 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("포인트 충전 결제")
     @Test
     fun payToSavePoint() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
-        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+        )
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = PayToSavePointRequest(category.id)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/save-point")
+            post("$endPoint/save-point")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -157,7 +168,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("포인트 충전 결제 TC2: 기관 할인")
     @Test
     fun payToSavePointTc2() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
@@ -166,25 +177,27 @@ class PaymentControllerTest : BaseControllerTest() {
         userRepository.save(user)
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
-        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+        )
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = PayToSavePointRequest(category.id)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/save-point")
+            post("$endPoint/save-point")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -208,32 +221,34 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("포인트 충전 결제 예외")
     @Test
     fun payToSavePointException() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val billingKey = "dummyBillingKey"
-        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+        )
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willThrow(BillingExecuteException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = PayToSavePointRequest(category.id)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/save-point")
+            post("$endPoint/save-point")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().is5xxServerError)
             .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
             .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -257,7 +272,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("계정 블락 해제 결제")
     @Test
     fun payToUnblockAccount() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
@@ -266,23 +281,25 @@ class PaymentControllerTest : BaseControllerTest() {
 
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
-        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+        )
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/unblock-account")
+            post("$endPoint/unblock-account")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -307,7 +324,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("계정 블락 해제 결제 예외")
     @Test
     fun payToUnblockAccountException() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
@@ -315,25 +332,27 @@ class PaymentControllerTest : BaseControllerTest() {
         userRepository.save(user)
 
         val billingKey = "dummyBillingKey"
-        paymentMethodRepository.save(PaymentMethod(user,billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+        )
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willThrow(BillingExecuteException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/unblock-account")
+            post("$endPoint/unblock-account")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().is5xxServerError)
             .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
             .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -357,7 +376,7 @@ class PaymentControllerTest : BaseControllerTest() {
             .containsExactly(
                 BlockedCauseType.LOST_CUP_PENALTY,
                 BlockedCauseType.LOST_CUP_PENALTY,
-                BlockedCauseType.FIVE_PENALTIES
+                BlockedCauseType.FIVE_PENALTIES,
             )
     }
 
@@ -382,7 +401,7 @@ class PaymentControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
@@ -431,7 +450,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("포인트 충전 결제 취소")
     @Test
     fun cancel() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
@@ -441,21 +460,21 @@ class PaymentControllerTest : BaseControllerTest() {
         payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
         paymentRepository.save(payment)
 
-        given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+        given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/${payment.id}/cancel")
+            post("$endPoint/${payment.id}/cancel")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
-        verify(mockTossPaymentsService, times(1))
+        verify(mockTosspaymentsService, times(1))
             .cancelPayment(eq(paymentKey), eq("포인트 적립 취소"))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -480,7 +499,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("포인트 충전 결제 취소 예외")
     @Test
     fun cancelException() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
@@ -489,17 +508,17 @@ class PaymentControllerTest : BaseControllerTest() {
         payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
         paymentRepository.save(payment)
 
-        given(mockTossPaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+        given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willThrow(PaymentCancelException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/${payment.id}/cancel")
+            post("$endPoint/${payment.id}/cancel")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().is5xxServerError)
             .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_CANCEL_ERROR.code)))
@@ -509,23 +528,23 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("결제 수단 등록")
     @Test
     fun registerMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = PaymentMethodRegisterRequest(TOSS_PAYMENTS, "dummyAuthKey")
+        val body = PaymentMethodRegisterRequest(TOSSPAYMENTS, "dummyAuthKey")
 
-        given(mockTossPaymentsService.issueBillingKey("dummyAuthKey", user.id))
+        given(mockTosspaymentsService.issueBillingKey("dummyAuthKey", user.id))
             .willReturn(
-                BillingInfo("dummyBillingKey", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
+                BillingInfo("dummyBillingKey", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now()),
             )
 
-        //when, then
+        // when, then
         mockMvc.perform(
             post("$endPoint/method")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -547,11 +566,11 @@ class PaymentControllerTest : BaseControllerTest() {
         val expectDefault = listOf(false, false, false)
 
         mockMvc.perform(
-            get("${endPoint}/method")
+            get("$endPoint/method")
                 .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].type", `is`(expectType)))
@@ -561,29 +580,87 @@ class PaymentControllerTest : BaseControllerTest() {
     }
 
     private fun insertMethods(user: User) {
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "23452345", CREDIT, PERSONAL), true, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey3", TOSS_PAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "34563456", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey4", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "45674567", CREDIT, CORPORATE), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "56785678", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "67896789", CREDIT, PERSONAL), false, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(
+                user,
+                "dummyKey1",
+                TOSSPAYMENTS,
+                CARD,
+                Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL),
+                false,
+                Instant.now(),
+            ),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey2", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "23452345", CREDIT, PERSONAL), true, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(
+                user,
+                "dummyKey3",
+                TOSSPAYMENTS,
+                CARD,
+                Card(SAMSUNG, SAMSUNG, "34563456", CREDIT, PERSONAL),
+                false,
+                Instant.now(),
+            ),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(
+                user,
+                "dummyKey4",
+                TOSSPAYMENTS,
+                CARD,
+                Card(KOOKMIN, KOOKMIN, "45674567", CREDIT, CORPORATE),
+                false,
+                Instant.now(),
+            ),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey5", TOSSPAYMENTS, CARD, Card(BC, BC, "56785678", CREDIT, PERSONAL), false, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(
+                user,
+                "dummyKey6",
+                TOSSPAYMENTS,
+                CARD,
+                Card(HYUNDAI, HYUNDAI, "67896789", CREDIT, PERSONAL),
+                false,
+                Instant.now(),
+            ),
+        )
     }
 
     @DisplayName("기본 결제 수단 변경")
     @Test
     fun changeDefaultMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method1 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val method2 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val method1 =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val method2 =
+            paymentMethodRepository.save(
+                PaymentMethod(
+                    user,
+                    "dummyKey2",
+                    TOSSPAYMENTS,
+                    CARD,
+                    Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
+                    false,
+                    Instant.now(),
+                ),
+            )
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             post("$endPoint/method/${method2.id}/default")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
@@ -596,17 +673,20 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("결제 수단 제거")
     @Test
     fun removeMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()))
+        val method =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()),
+            )
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             delete("$endPoint/method/${method.id}")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
@@ -617,18 +697,32 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("결제 수단 제거 TC2")
     @Test
     fun removeMethodTc2() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val anotherMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val defaultMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val anotherMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(
+                    user,
+                    "dummyKey2",
+                    TOSSPAYMENTS,
+                    CARD,
+                    Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
+                    false,
+                    Instant.now(),
+                ),
+            )
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             delete("$endPoint/method/${defaultMethod.id}")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
@@ -641,21 +735,35 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("결제 수단 제거 예외")
     @Test
     fun removeMethodException() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val vendingMachine = machineRepository.save(Machine(BaseServiceTest.MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100, null))
+        val defaultMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val vendingMachine =
+            machineRepository.save(
+                Machine(
+                    BaseServiceTest.MACHINE_NO,
+                    "Test machine",
+                    MachineType.VENDING,
+                    Address(),
+                    Location(37.508855, 127.059479),
+                    100,
+                    null,
+                ),
+            )
         val cup = cupRepository.save(Cup(BaseServiceTest.CUP_RFID))
         rentalRepository.save(Rental(user, cup, vendingMachine, true, 10))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             delete("$endPoint/method/${defaultMethod.id}")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED.code)))
@@ -666,15 +774,18 @@ class PaymentControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = "010-0000-0000", role = Role.USER)
     @Test
     fun removeMethodExceptionTc2() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val method =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
 
-        //when, then
+        // when, then
         mockMvc.perform(
             delete("$endPoint/method/${method.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("code", `is`(ErrorCode.ACCESS_DENIED.code)))
@@ -697,10 +808,10 @@ class PaymentControllerTest : BaseControllerTest() {
         val expectDiscountPriceValue = listOf(900, 2000, 3600)
 
         mockMvc.perform(
-            get("${endPoint}/category")
+            get("$endPoint/category")
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("pageable.totalElements", `is`(5)))
@@ -713,7 +824,7 @@ class PaymentControllerTest : BaseControllerTest() {
     @DisplayName("결제 카테고리 목록 조회 TC2")
     @Test
     fun getAllCategoriesTc2() {
-        //given
+        // given
         val group = groupRepository.save(Group("Group", GroupType.UNIVERSITY, 20))
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.updateGroup(group)
@@ -732,11 +843,11 @@ class PaymentControllerTest : BaseControllerTest() {
         val expectDiscountPriceValue = listOf(720, 1600, 2880)
 
         mockMvc.perform(
-            get("${endPoint}/category")
+            get("$endPoint/category")
                 .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("pageable.totalElements", `is`(5)))

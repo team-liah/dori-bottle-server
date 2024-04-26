@@ -3,17 +3,18 @@ package com.liah.doribottle.service.payment
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
 import com.liah.doribottle.common.error.exception.PaymentCancelException
+import com.liah.doribottle.config.properties.AppProperties
 import com.liah.doribottle.service.payment.dto.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service
-class TossPaymentsApiClient(
-    @Value("\${app.toss.payments.baseUrl}") private val baseUrl: String,
-    @Value("\${app.toss.payments.secretKey}") private val secretKey: String
+class TosspaymentsApiClient(
+    appProperties: AppProperties
 ) {
+    private val baseUrl = appProperties.tosspayments.baseUrl
+    private val secretKey = appProperties.tosspayments.secretKey
     private val billingKeyIssueRequestUri = "${baseUrl}/v1/billing/authorizations/issue"
     private fun billingExecuteRequestUri(billingKey: String) = "${baseUrl}/v1/billing/${billingKey}"
     private fun paymentCancelRequestUri(paymentKey: String) = "${baseUrl}/v1/payments/${paymentKey}/cancel"
@@ -21,8 +22,8 @@ class TossPaymentsApiClient(
     fun issueBillingKey(
         authKey: String,
         customerKey: String
-    ): TossBillingKeyIssueResponse? {
-        val request = TossBillingKeyIssueRequest(
+    ): TosspaymentsBillingKeyIssueResponse? {
+        val request = TosspaymentsBillingKeyIssueRequest(
             authKey = authKey,
             customerKey = customerKey
         )
@@ -34,7 +35,7 @@ class TossPaymentsApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .retrieve()
-            .bodyToMono(TossBillingKeyIssueResponse::class.java)
+            .bodyToMono(TosspaymentsBillingKeyIssueResponse::class.java)
             .doOnError { throw BillingKeyIssuanceException() }
             .block()
     }
@@ -45,8 +46,8 @@ class TossPaymentsApiClient(
         amount: Long,
         orderId: String,
         orderName: String
-    ): TossPaymentResponse? {
-        val request = TossBillingExecuteRequest(
+    ): TosspaymentsResponse? {
+        val request = TosspaymentsBillingExecuteRequest(
             customerKey = customerKey,
             amount = amount,
             orderId = orderId,
@@ -60,7 +61,7 @@ class TossPaymentsApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .retrieve()
-            .bodyToMono(TossPaymentResponse::class.java)
+            .bodyToMono(TosspaymentsResponse::class.java)
             .doOnError { throw BillingExecuteException() }
             .block()
     }
@@ -68,8 +69,8 @@ class TossPaymentsApiClient(
     fun cancelPayment(
         paymentKey: String,
         cancelReason: String
-    ): TossPaymentResponse? {
-        val request = TossPaymentCancelRequest(
+    ): TosspaymentsResponse? {
+        val request = TosspaymentsPaymentCancelRequest(
             cancelReason = cancelReason
         )
 
@@ -80,7 +81,7 @@ class TossPaymentsApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .retrieve()
-            .bodyToMono(TossPaymentResponse::class.java)
+            .bodyToMono(TosspaymentsResponse::class.java)
             .doOnError { throw PaymentCancelException() }
             .block()
     }

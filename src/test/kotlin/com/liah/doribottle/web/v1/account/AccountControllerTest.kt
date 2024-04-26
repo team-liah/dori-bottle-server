@@ -182,7 +182,7 @@ class AccountControllerTest : BaseControllerTest() {
     fun getPreAuthToken() {
         //given
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         //when, then
