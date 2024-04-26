@@ -26,14 +26,18 @@ data class AppProperties(
     }
 
     data class Ncloud(
+        val baseUrl: String,
+        val accessKey: String,
+        val secretKey: String,
         val notification: Notification,
     ) {
         data class Notification(
             val sms: Sms,
         ) {
             data class Sms(
-                val baseUrl: String,
+                val servicePath: String,
                 val serviceId: String,
+                val callingNumber: String
             )
         }
     }
