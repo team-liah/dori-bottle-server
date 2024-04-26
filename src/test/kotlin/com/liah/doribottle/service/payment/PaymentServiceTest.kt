@@ -10,7 +10,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.Payment
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
-import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSSPAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentResult
 import com.liah.doribottle.domain.payment.PaymentStatus.*
@@ -53,20 +53,28 @@ import java.time.temporal.ChronoUnit
 class PaymentServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var paymentService: PaymentService
+
     @Autowired
     private lateinit var paymentRepository: PaymentRepository
+
     @Autowired
     private lateinit var paymentMethodRepository: PaymentMethodRepository
+
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
+
     @Autowired
     private lateinit var userRepository: UserRepository
+
     @Autowired
     private lateinit var pointRepository: PointRepository
+
     @Autowired
     private lateinit var rentalRepository: RentalRepository
+
     @Autowired
     private lateinit var machineRepository: MachineRepository
+
     @Autowired
     private lateinit var cupRepository: CupRepository
 
@@ -75,16 +83,16 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 생성")
     @Test
     fun create() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         clear()
 
-        //when
+        // when
         val id = paymentService.create(user.id, 1000, SAVE_POINT, card)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(id)
         assertThat(findPayment?.user).isEqualTo(user)
         assertThat(findPayment?.price).isEqualTo(1000)
@@ -102,16 +110,16 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 단건 조회")
     @Test
     fun get() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val payment = paymentRepository.save(Payment(user, 3000, SAVE_POINT, card))
         clear()
 
-        //when
+        // when
         val result = paymentService.get(payment.id)
 
-        //then
+        // then
         assertThat(result.user.id).isEqualTo(user.id)
         assertThat(result.price).isEqualTo(3000)
         assertThat(result.type).isEqualTo(SAVE_POINT)
@@ -128,15 +136,15 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 내역 조회")
     @Test
     fun getAll() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         insertPayments(user)
         clear()
 
-        //when
+        // when
         val result = paymentService.getAll(user.id, null, setOf(PROCEEDING), null, null, Pageable.ofSize(3))
 
-        //then
+        // then
         assertThat(result.totalElements).isEqualTo(6)
         assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
@@ -163,7 +171,7 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트: 포인트 적립")
     @Test
     fun updateResult() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val payment = paymentRepository.save(Payment(user, 3000, SAVE_POINT, card))
@@ -171,11 +179,11 @@ class PaymentServiceTest : BaseServiceTest() {
         val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 30))
         clear()
 
-        //when
+        // when
         paymentService.updateResult(payment.id, result, point.id)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(payment.id)
         assertThat(findPayment?.user).isEqualTo(user)
         assertThat(findPayment?.price).isEqualTo(3000)
@@ -193,18 +201,18 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트 TC2: 컵 분실, SUCCEEDED")
     @Test
     fun updateResultTc2() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val payment = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
         val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", null)
         clear()
 
-        //when
+        // when
         paymentService.updateResult(payment.id, result, null)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(payment.id)
         assertThat(findPayment?.user).isEqualTo(user)
         assertThat(findPayment?.price).isEqualTo(5000)
@@ -222,17 +230,17 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트 TC3: 컵 분실, FAILED")
     @Test
     fun updateResultTc3() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val payment = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
         clear()
 
-        //when
+        // when
         paymentService.updateResult(payment.id, null, null)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(payment.id)
         assertThat(findPayment?.user).isEqualTo(user)
         assertThat(findPayment?.price).isEqualTo(5000)
@@ -250,7 +258,7 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트 TC4: 포인트 결제 취소")
     @Test
     fun updateResultTc4() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 30))
@@ -260,11 +268,11 @@ class PaymentServiceTest : BaseServiceTest() {
         val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", "dummyCancelKey")
         clear()
 
-        //when
+        // when
         paymentService.updateResult(payment.id, result, point.id)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(payment.id)
 
         assertThat(findPayment?.user).isEqualTo(user)
@@ -294,7 +302,7 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트 TC5: 컵 분실 결제 취소")
     @Test
     fun updateResultTc5() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val payment = Payment(user, 5000, LOST_CUP, card)
@@ -303,11 +311,11 @@ class PaymentServiceTest : BaseServiceTest() {
         val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", "dummyCancelKey")
         clear()
 
-        //when
+        // when
         paymentService.updateResult(payment.id, result, null)
         clear()
 
-        //then
+        // then
         val findPayment = paymentRepository.findByIdOrNull(payment.id)
 
         assertThat(findPayment?.user).isEqualTo(user)
@@ -328,46 +336,48 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 결과 업데이트 예외")
     @Test
     fun updateResultException() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
         val paymentToSavePoint = paymentRepository.save(Payment(user, 5000, SAVE_POINT, card))
         val paymentToLostCup = paymentRepository.save(Payment(user, 5000, LOST_CUP, card))
         clear()
 
-        //when, then
-        val exception1 = assertThrows<IllegalArgumentException> {
-            val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", null)
-            paymentService.updateResult(paymentToSavePoint.id, result, null)
-        }
+        // when, then
+        val exception1 =
+            assertThrows<IllegalArgumentException> {
+                val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", null)
+                paymentService.updateResult(paymentToSavePoint.id, result, null)
+            }
         assertThat(exception1.message).isEqualTo("Null point is not allowed if payment type is SAVE_POINT")
 
-        val exception2 = assertThrows<IllegalArgumentException> {
-            val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", null)
-            val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 30))
-            paymentService.updateResult(paymentToLostCup.id, result, point.id)
-        }
+        val exception2 =
+            assertThrows<IllegalArgumentException> {
+                val result = PaymentResultDto("dummyPaymentKey", Instant.now(), "", null)
+                val point = pointRepository.save(Point(user.id, PAY, SAVE_PAY, 30))
+                paymentService.updateResult(paymentToLostCup.id, result, point.id)
+            }
         assertThat(exception2.message).isEqualTo("Point is not allowed if payment type is not SAVE_POINT")
     }
 
     @DisplayName("결제 수단 등록")
     @Test
     fun registerMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val billingInfo = BillingInfo("dummyKey", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
+        val billingInfo = BillingInfo("dummyKey", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
         clear()
 
-        //when
+        // when
         val id = paymentService.registerMethod(user.id, billingInfo)
         clear()
 
-        //then
+        // then
         val findMethod = paymentMethodRepository.findByIdOrNull(id)
 
         assertThat(findMethod?.user).isEqualTo(user)
         assertThat(findMethod?.billingKey).isEqualTo("dummyKey")
-        assertThat(findMethod?.providerType).isEqualTo(TOSS_PAYMENTS)
+        assertThat(findMethod?.providerType).isEqualTo(TOSSPAYMENTS)
         assertThat(findMethod?.type).isEqualTo(CARD)
         assertThat(findMethod?.default).isEqualTo(true)
         assertThat(findMethod?.card?.issuerProvider).isEqualTo(HYUNDAI)
@@ -380,22 +390,24 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 등록 TC2")
     @Test
     fun registerMethodTc2() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val billingInfo = BillingInfo("dummyKey2", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+        )
+        val billingInfo = BillingInfo("dummyKey2", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
         clear()
 
-        //when
+        // when
         val id = paymentService.registerMethod(user.id, billingInfo)
         clear()
 
-        //then
+        // then
         val findMethod = paymentMethodRepository.findByIdOrNull(id)
 
         assertThat(findMethod?.user).isEqualTo(user)
         assertThat(findMethod?.billingKey).isEqualTo("dummyKey2")
-        assertThat(findMethod?.providerType).isEqualTo(TOSS_PAYMENTS)
+        assertThat(findMethod?.providerType).isEqualTo(TOSSPAYMENTS)
         assertThat(findMethod?.type).isEqualTo(CARD)
         assertThat(findMethod?.default).isEqualTo(false)
         assertThat(findMethod?.card?.issuerProvider).isEqualTo(HYUNDAI)
@@ -408,19 +420,22 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 조회")
     @Test
     fun getMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val method =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
         clear()
 
-        //when
+        // when
         val result = paymentService.getMethod(method.id)
         clear()
 
-        //then
+        // then
         assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.billingKey).isEqualTo("dummyKey")
-        assertThat(result.providerType).isEqualTo(TOSS_PAYMENTS)
+        assertThat(result.providerType).isEqualTo(TOSSPAYMENTS)
         assertThat(result.type).isEqualTo(CARD)
         assertThat(result.card.issuerProvider).isEqualTo(KOOKMIN)
         assertThat(result.card.acquirerProvider).isEqualTo(KOOKMIN)
@@ -433,15 +448,15 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 목록 조회")
     @Test
     fun getAllMethods() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         insertMethods(user)
         clear()
 
-        //when
+        // when
         val result = paymentService.getAllMethods(user.id, Pageable.ofSize(3))
 
-        //then
+        // then
         assertThat(result)
             .extracting("billingKey")
             .containsExactly("dummyKey1", "dummyKey2", "dummyKey3")
@@ -454,28 +469,54 @@ class PaymentServiceTest : BaseServiceTest() {
     }
 
     private fun insertMethods(user: User) {
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "1", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "2", CREDIT, PERSONAL), true, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey3", TOSS_PAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "3", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey4", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4", CREDIT, CORPORATE), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "5", CREDIT, PERSONAL), false, Instant.now()))
-        paymentMethodRepository.save(PaymentMethod(user,"dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "1", CREDIT, PERSONAL), false, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey2", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "2", CREDIT, PERSONAL), true, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey3", TOSSPAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "3", CREDIT, PERSONAL), false, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey4", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4", CREDIT, CORPORATE), false, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey5", TOSSPAYMENTS, CARD, Card(BC, BC, "5", CREDIT, PERSONAL), false, Instant.now()),
+        )
+        paymentMethodRepository.save(
+            PaymentMethod(user, "dummyKey6", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()),
+        )
     }
 
     @DisplayName("기본 결제 수단 변경")
     @Test
     fun changeDefaultMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method1 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val method2 = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val method1 =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val method2 =
+            paymentMethodRepository.save(
+                PaymentMethod(
+                    user,
+                    "dummyKey2",
+                    TOSSPAYMENTS,
+                    CARD,
+                    Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
+                    false,
+                    Instant.now(),
+                ),
+            )
         clear()
 
-        //when
+        // when
         paymentService.changeDefaultMethod(method2.id, user.id)
         clear()
 
-        //then
+        // then
         val findMethod1 = paymentMethodRepository.findByIdOrNull(method1.id)
         val findMethod2 = paymentMethodRepository.findByIdOrNull(method2.id)
         assertThat(findMethod1?.default).isFalse()
@@ -485,16 +526,19 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 제거")
     @Test
     fun removeMethod() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val method = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
+        val method =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
         clear()
 
-        //when
+        // when
         paymentService.removeMethod(method.id)
         clear()
 
-        //then
+        // then
         val findMethod = paymentMethodRepository.findByIdOrNull(method.id)
         assertThat(findMethod).isNull()
     }
@@ -502,17 +546,31 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 제거 - TC2")
     @Test
     fun removeMethodTc2() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val anotherMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), false, Instant.now()))
+        val defaultMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val anotherMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(
+                    user,
+                    "dummyKey2",
+                    TOSSPAYMENTS,
+                    CARD,
+                    Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
+                    false,
+                    Instant.now(),
+                ),
+            )
         clear()
 
-        //when
+        // when
         paymentService.removeMethod(defaultMethod.id)
         clear()
 
-        //then
+        // then
         val findDefaultMethod = paymentMethodRepository.findByIdOrNull(defaultMethod.id)
         val findAnotherMethod = paymentMethodRepository.findByIdOrNull(anotherMethod.id)
         assertThat(findDefaultMethod).isNull()
@@ -522,32 +580,39 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 수단 제거 예외")
     @Test
     fun removeMethodException() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val defaultMethod = paymentMethodRepository.save(PaymentMethod(user,"dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()))
-        val vendingMachine = machineRepository.save(Machine(MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100, null))
+        val defaultMethod =
+            paymentMethodRepository.save(
+                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            )
+        val vendingMachine =
+            machineRepository.save(
+                Machine(MACHINE_NO, "Test machine", MachineType.VENDING, Address(), Location(37.508855, 127.059479), 100, null),
+            )
         val cup = cupRepository.save(Cup(CUP_RFID))
         rentalRepository.save(Rental(user, cup, vendingMachine, true, 10))
         clear()
 
-        //when, then
-        val exception = assertThrows<BusinessException> {
-            paymentService.removeMethod(defaultMethod.id)
-        }
+        // when, then
+        val exception =
+            assertThrows<BusinessException> {
+                paymentService.removeMethod(defaultMethod.id)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
     }
 
     @DisplayName("결제 카테고리 등록")
     @Test
     fun registerCategory() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
 
-        //when
+        // when
         val id = paymentService.registerCategory(10, 1000, 10, after10Days, after10Days)
         clear()
 
-        //then
+        // then
         val findCategory = paymentCategoryRepository.findByIdOrNull(id)
 
         assertThat(findCategory?.amounts).isEqualTo(10)
@@ -560,17 +625,18 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 카테고리 상세 조회")
     @Test
     fun getCategory() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
-        val category = paymentCategoryRepository.save(
-            PaymentCategory(10, 1000, 10, after10Days, after10Days)
-        )
+        val category =
+            paymentCategoryRepository.save(
+                PaymentCategory(10, 1000, 10, after10Days, after10Days),
+            )
         clear()
 
-        //when
+        // when
         val categoryDto = paymentService.getCategory(category.id)
 
-        //then
+        // then
         assertThat(categoryDto.amounts).isEqualTo(10)
         assertThat(categoryDto.price).isEqualTo(1000)
         assertThat(categoryDto.discountRate).isEqualTo(10)
@@ -581,17 +647,18 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 카테고리 목록 조회")
     @Test
     fun getAllCategories() {
-        //given
+        // given
         insertCategories()
         clear()
 
-        //when
-        val result = paymentService.getAllCategories(
-            expired = false,
-            pageable = Pageable.ofSize(3)
-        )
+        // when
+        val result =
+            paymentService.getAllCategories(
+                expired = false,
+                pageable = Pageable.ofSize(3),
+            )
 
-        //then
+        // then
         assertThat(result)
             .extracting("amounts")
             .containsExactly(10L, 20L, 30L)
@@ -603,17 +670,17 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 카테고리 수정")
     @Test
     fun updateCategory() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
         val after20Days = Instant.now().plus(20, ChronoUnit.DAYS)
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, after10Days, after10Days))
         clear()
 
-        //when
+        // when
         paymentService.updateCategory(category.id, 20, 2000, 20, after20Days, after20Days)
         clear()
 
-        //then
+        // then
         val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
         assertThat(findCategory?.amounts).isEqualTo(20)
         assertThat(findCategory?.price).isEqualTo(2000)
@@ -625,18 +692,19 @@ class PaymentServiceTest : BaseServiceTest() {
     @DisplayName("결제 카테고리 제거")
     @Test
     fun removeCategory() {
-        //given
+        // given
         val after10Days = Instant.now().plus(10, ChronoUnit.DAYS)
-        val category = paymentCategoryRepository.save(
-            PaymentCategory(10, 1000, 10, after10Days, after10Days)
-        )
+        val category =
+            paymentCategoryRepository.save(
+                PaymentCategory(10, 1000, 10, after10Days, after10Days),
+            )
         clear()
 
-        //when
+        // when
         paymentService.removeCategory(category.id)
         clear()
 
-        //then
+        // then
         val findCategory = paymentCategoryRepository.findByIdOrNull(category.id)
         assertThat(findCategory).isNull()
     }

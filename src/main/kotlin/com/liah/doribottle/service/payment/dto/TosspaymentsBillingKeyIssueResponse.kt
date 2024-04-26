@@ -8,24 +8,24 @@ import com.liah.doribottle.domain.payment.card.CardType
 import com.liah.doribottle.extension.findBy
 import java.time.Instant
 
-data class TossBillingKeyIssueResponse(
+data class TosspaymentsBillingKeyIssueResponse(
     val mId: String,
     val customerKey: String,
     val authenticatedAt: Instant,
     val method: String,
     val billingKey: String,
-    val card: TossCardResponse
+    val card: TosspaymentsBillingCardResponse
 ) {
     fun toBillingInfo() = BillingInfo(
         billingKey = billingKey,
-        providerType = PaymentMethodProviderType.TOSS_PAYMENTS,
+        providerType = PaymentMethodProviderType.TOSSPAYMENTS,
         type = (PaymentMethodType::title findBy method)!!,
         cardDto = card.toDto(),
         authenticatedDate = authenticatedAt
     )
 }
 
-data class TossCardResponse(
+data class TosspaymentsBillingCardResponse(
     val issuerCode: String,
     val acquirerCode: String,
     val number: String,

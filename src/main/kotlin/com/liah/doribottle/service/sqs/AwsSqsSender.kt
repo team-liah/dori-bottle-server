@@ -1,17 +1,19 @@
 package com.liah.doribottle.service.sqs
 
+import com.liah.doribottle.config.properties.AppProperties
 import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class AwsSqsSender(
-    private val sqsTemplate: SqsTemplate,
-    @Value("\${app.aws.sqs.queueName}") private val queueName: String
+    appProperties: AppProperties,
+    private val sqsTemplate: SqsTemplate
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    private val queueName = appProperties.aws.sqs.queueName
 
     fun send(message: PointSaveMessage?) {
         message?.let {

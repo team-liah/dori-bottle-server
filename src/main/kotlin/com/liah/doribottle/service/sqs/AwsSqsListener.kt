@@ -12,7 +12,7 @@ class AwsSqsListener (
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @SqsListener("\${app.aws.sqs.queueName}")
+    @SqsListener("\${app.aws.sqs.queue-name}")
     fun listen(message: PointSaveMessage) {
         log.info("Receive point-save-message : $message")
         pointService.save(message.userId!!, message.saveType!!, message.eventType!!, message.saveAmounts!!)

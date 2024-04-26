@@ -1,20 +1,22 @@
 package com.liah.doribottle.service.sms
 
-import com.liah.doribottle.service.sms.dto.ToastTemplate
 import org.springframework.stereotype.Service
 
 @Service
 class SmsService(
-    private val toastApiClient: ToastApiClient
+    private val ncloudApiClient: NcloudApiClient
 ) {
     fun sendAuthSms(
         phoneNumber: String,
         authCode: String
     ) {
-        toastApiClient.sendSms(
-            template = ToastTemplate.AUTH,
-            recipientNo = phoneNumber.replace("-", ""),
-            templateParameter = mapOf("authCode" to authCode)
+        ncloudApiClient.sendSms(
+            to = phoneNumber.replace("-", ""),
+            content = smsAuthCodeTemplate(authCode)
         )
+    }
+
+    private fun smsAuthCodeTemplate(authCode: String): String {
+        return "[도리보틀] 인증번호 [$authCode] *타인에게 절대 알리지 마세요."
     }
 }

@@ -32,27 +32,29 @@ logging.level:
 app:
   auth:
     jwt:
-      secret: ${JWT_SECRET}
-      expiredMs: 3600000 # 1hour
-      preAuthExpiredMs: 300000 # 5minute
-      systemExpiredMs: 3153600000000 # 100year
-    refreshToken:
-      expiredMs: 1209600000 # 2weeks
-  toast:
-    sms:
-      baseUrl: https://api-sms.cloud.toast.com/
-      appKey: ${TOAST_APP_KEY}
-      secretKey: ${TOAST_SECRET_KEY}
-      sendNo: ${TOAST_SEND_NO}
-  toss:
-    payments:
-      baseUrl: https://api.tosspayments.com/
-      secretKey: ${TOSS_PAYMENTS_SECRET_KEY}
+      base64-secret: ${JWT_SECRET}
+      expired-ms: 3600000 # 1hour
+      pre-auth-expired-ms: 300000 # 5minute
+      system-expired-ms: 3153600000000 # 100year
+    refresh-jwt:
+      expired-ms: 1209600000 # 2weeks
+  ncloud:
+    base-url: https://sens.apigw.ntruss.com
+    access-key: ${NCLOUD_ACCESS_KEY}
+    secret-key: ${NCLOUD_SECRET_KEY}
+    notification:
+      sms:
+        service-path: /sms/v2/services
+        service-id: ${NCLOUD_SMS_ID}
+        calling-number: ${NCLOUD_SMS_CALLING_NUMBER}
+  tosspayments:
+    base-url: https://api.tosspayments.com/
+    secret-key: ${TOSS_PAYMENTS_SECRET_KEY}
   aws:
     sqs:
-      queueName: point-save-queue.fifo
+      queue-name: point-save-queue.fifo
     s3:
-      bucket: doribottle-asset
+      bucket-name: doribottle-asset
   schedule:
     enabled: true
 

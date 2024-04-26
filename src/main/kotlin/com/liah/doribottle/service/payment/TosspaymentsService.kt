@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class TossPaymentsService(
-    private val tossPaymentsApiClient: TossPaymentsApiClient
+class TosspaymentsService(
+    private val tosspaymentsApiClient: TosspaymentsApiClient
 ) {
     fun issueBillingKey(
         authKey: String,
         userId: UUID
-    ) = tossPaymentsApiClient.issueBillingKey(
+    ) = tosspaymentsApiClient.issueBillingKey(
         authKey = authKey,
         customerKey = userId.toString()
     )?.toBillingInfo() ?: throw BillingKeyIssuanceException()
@@ -25,7 +25,7 @@ class TossPaymentsService(
         price: Long,
         paymentId: UUID,
         paymentType: PaymentType
-    ) = tossPaymentsApiClient.executeBilling(
+    ) = tosspaymentsApiClient.executeBilling(
         billingKey = billingKey,
         customerKey = userId.toString(),
         amount = price,
@@ -36,7 +36,7 @@ class TossPaymentsService(
     fun cancelPayment(
         paymentKey: String,
         cancelReason: String
-    ) = tossPaymentsApiClient.cancelPayment(
+    ) = tosspaymentsApiClient.cancelPayment(
         paymentKey = paymentKey,
         cancelReason = cancelReason
     )?.toPaymentResultDto() ?: throw PaymentCancelException()
