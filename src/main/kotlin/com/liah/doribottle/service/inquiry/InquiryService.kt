@@ -27,8 +27,8 @@ class InquiryService(
     fun register(
         userId: UUID,
         type: InquiryType,
-        bankAccount: BankAccountDto?,
-        content: String?
+        bankAccount: BankAccountDto? = null,
+        content: String? = null
     ): UUID {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
@@ -74,7 +74,7 @@ class InquiryService(
 
     fun succeed(
         id: UUID,
-        answer: String?
+        answer: String? = null
     ) {
         val inquiry = inquiryRepository.findByIdOrNull(id)
             ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)

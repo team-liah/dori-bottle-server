@@ -35,7 +35,7 @@ class MachineServiceTest : BaseServiceTest() {
         val location = LocationDto(37.508855, 127.059479)
 
         //when
-        val id = machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100)
+        val id = machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100, null)
         clear()
 
         //then
@@ -56,12 +56,12 @@ class MachineServiceTest : BaseServiceTest() {
         //given
         val address = Address("12345", "삼성로", null)
         val location = Location(37.508855, 127.059479)
-        machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
+        machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100, null))
         clear()
 
         //when, then
         val exception = assertThrows<BusinessException> {
-            machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address.toDto(), location.toDto(), 100)
+            machineService.register(MACHINE_NO, MACHINE_NAME, VENDING, address.toDto(), location.toDto(), 100, null)
         }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.MACHINE_ALREADY_REGISTERED)
     }
@@ -72,7 +72,7 @@ class MachineServiceTest : BaseServiceTest() {
         //given
         val address = Address("12345", "삼성로", null)
         val location = Location(37.508855, 127.059479)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100, null))
         clear()
 
         //when
@@ -156,7 +156,7 @@ class MachineServiceTest : BaseServiceTest() {
         insertMachines()
         clear()
 
-        val result = machineService.getAll()
+        val result = machineService.getAllSimple(pageable = Pageable.unpaged())
 
         assertThat(result)
             .extracting("type")
@@ -170,12 +170,12 @@ class MachineServiceTest : BaseServiceTest() {
     }
 
     fun insertMachines() {
-        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
-        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479), 100))
-        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), Location(37.508355, 127.051479), 100))
-        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), Location(37.508455, 127.053479), 100))
-        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), Location(37.518855, 127.029479), 100))
-        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), Location(37.503855, 127.059179), 100))
+        machineRepository.save(Machine("0000001", MACHINE_NAME, VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        machineRepository.save(Machine("0000002", MACHINE_NAME, VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479), 100, null))
+        machineRepository.save(Machine("0000003", MACHINE_NAME, VENDING, Address("00003", "삼성로", null), Location(37.508355, 127.051479), 100, null))
+        machineRepository.save(Machine("0000004", MACHINE_NAME, VENDING, Address("00004", "마장로", null), Location(37.508455, 127.053479), 100, null))
+        machineRepository.save(Machine("0000005", MACHINE_NAME, COLLECTION, Address("00005", "도산대로", null), Location(37.518855, 127.029479), 100, null))
+        machineRepository.save(Machine("0000006", MACHINE_NAME, VENDING, Address("00006", "도산대로", null), Location(37.503855, 127.059179), 100, null))
     }
 
     @DisplayName("자판기 정보 수정")
@@ -184,13 +184,13 @@ class MachineServiceTest : BaseServiceTest() {
         //given
         val address = Address("12345", "삼성로", null)
         val location = Location(37.508855, 127.059479)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100, null))
         clear()
 
         //when
         val newAddress = AddressDto("00000", "마장로", null)
         val newLocation = LocationDto(37.508855, 127.029479)
-        machineService.update(machine.id, "new name", newAddress, newLocation, 200, 10, MALFUNCTION)
+        machineService.update(machine.id, "new name", newAddress, newLocation, 200, 10, MALFUNCTION, null)
         clear()
 
         //then
@@ -214,7 +214,7 @@ class MachineServiceTest : BaseServiceTest() {
         //given
         val address = Address("12345", "삼성로", null)
         val location = Location(37.508855, 127.059479)
-        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100))
+        val machine = machineRepository.save(Machine(MACHINE_NO, MACHINE_NAME, VENDING, address, location, 100, null))
         clear()
 
         //when

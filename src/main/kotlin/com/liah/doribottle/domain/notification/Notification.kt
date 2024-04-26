@@ -11,28 +11,22 @@ import java.util.*
     indexes = [Index(name = "INDEX_NOTIFICATION_USER_ID", columnList = "userId")]
 )
 class Notification(
-    userId: UUID,
-    type: NotificationType,
-    title: String,
-    content: String,
-    targetId: UUID?
-) : PrimaryKeyEntity() {
     @Column(nullable = false)
-    val userId: UUID = userId
+    val userId: UUID,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: NotificationType = type
+    val type: NotificationType,
 
     @Column(nullable = false)
-    val title: String = title
+    val title: String,
 
     @Column(nullable = false)
-    val content: String = content
+    val content: String,
 
     @Column
-    val targetId: UUID? = targetId
-
+    val targetId: UUID? = null
+) : PrimaryKeyEntity() {
     @Column(name = "`read`", nullable = false)
     var read: Boolean = false
         protected set

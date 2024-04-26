@@ -15,15 +15,16 @@ import jakarta.persistence.FetchType.LAZY
     ]
 )
 class Post(
-    author: Admin,
-    type: PostType,
-    title: String,
-    content: String
-) : PrimaryKeyEntity() {
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "admin_id", nullable = false)
-    val author: Admin = author
+    val author: Admin,
 
+    type: PostType,
+
+    title: String,
+
+    content: String
+) : PrimaryKeyEntity() {
     @Column(nullable = false)
     var type: PostType = type
         protected set

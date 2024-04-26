@@ -4,8 +4,7 @@ import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.config.security.RefreshToken
 import com.liah.doribottle.config.security.RefreshTokenRepository
 import com.liah.doribottle.config.security.WithMockDoriUser
-import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.inquiry.InquiryStatus
 import com.liah.doribottle.domain.payment.PaymentMethod
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
@@ -124,8 +123,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 - Unauthorized")
@@ -140,7 +139,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isUnauthorized)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -148,7 +147,7 @@ class AccountControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun refreshAuth() {
-        val cookie = Cookie(REFRESH_TOKEN, userRefreshToken.refreshToken)
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, userRefreshToken.refreshToken)
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -157,15 +156,15 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, notNullValue()))
     }
 
     @DisplayName("인증 새로고침 - Unauthorized")
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun refreshAuthException() {
-        val cookie = Cookie(REFRESH_TOKEN, UUID.randomUUID().toString())
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, UUID.randomUUID().toString())
 
         mockMvc.perform(
             post("$endPoint/refresh-auth")
@@ -174,7 +173,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isUnauthorized)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
             .andExpect(jsonPath("message", `is`(ErrorCode.UNAUTHORIZED.message)))
     }
 
@@ -256,7 +255,7 @@ class AccountControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = USER_LOGIN_ID, role = Role.USER)
     @Test
     fun logout() {
-        val cookie = Cookie(REFRESH_TOKEN, userRefreshToken.refreshToken)
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, userRefreshToken.refreshToken)
 
         mockMvc.perform(
             post("$endPoint/logout")
@@ -265,8 +264,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
-            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, emptyOrNullString()))
     }
 
     @DisplayName("회원가입")
@@ -274,7 +273,7 @@ class AccountControllerTest : BaseControllerTest() {
     @Test
     fun register() {
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
-        val cookie = Cookie(REFRESH_TOKEN, guestRefreshToken.refreshToken)
+        val cookie = Cookie(AuthorityConstant.REFRESH_TOKEN, guestRefreshToken.refreshToken)
         val body = RegisterRequest("Tester 2", MALE, "19970101", true, true, false)
 
         mockMvc.perform(
@@ -285,8 +284,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, notNullValue()))
-            .andExpect(cookie().value(REFRESH_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, notNullValue()))
 
         verify(mockAwsSqsSender, times(1)).send(any<PointSaveMessage>())
     }
@@ -314,8 +313,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
-            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, emptyOrNullString()))
 
         val findUser = userRepository.findByIdOrNull(user.id)
 
@@ -361,8 +360,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
-            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, emptyOrNullString()))
 
         val findUser = userRepository.findByIdOrNull(user.id)
 
@@ -404,8 +403,8 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
-            .andExpect(cookie().value(REFRESH_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.REFRESH_TOKEN, emptyOrNullString()))
 
         val findUser = userRepository.findByIdOrNull(user.id)
 
@@ -492,7 +491,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .content(body.convertAnyToString())
         )
             .andExpect(status().isOk)
-            .andExpect(cookie().value(ACCESS_TOKEN, emptyOrNullString()))
+            .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
     }
 
     @DisplayName("로그인 ID 변경 예외")

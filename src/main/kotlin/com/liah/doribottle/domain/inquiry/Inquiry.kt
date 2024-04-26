@@ -23,7 +23,7 @@ class Inquiry(
     val bankAccount: BankAccount?,
 
     @Column
-    val content: String?,
+    val content: String? = null,
 ) : PrimaryKeyEntity() {
     @Column
     var answer: String? = null

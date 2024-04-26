@@ -35,16 +35,17 @@ app:
       base64-secret: ${JWT_SECRET}
       expired-ms: 3600000 # 1hour
       pre-auth-expired-ms: 300000 # 5minute
+      system-expired-ms: 3153600000000 # 100year
     refresh-jwt:
       expired-ms: 1209600000 # 2weeks
   ncloud:
     notification:
       sms:
-        baseUrl: https://sens.apigw.ntruss.com/sms/v2/services
-        serviceId: test
+        base-url: https://sens.apigw.ntruss.com/sms/v2/services
+        service-id: test
   tosspayments:
-    baseUrl: https://api.tosspayments.com/
-    secretKey: ${TOSS_PAYMENTS_SECRET_KEY}
+    base-url: https://api.tosspayments.com/
+    secret-key: ${TOSS_PAYMENTS_SECRET_KEY}
   aws:
     sqs:
       queue-name: point-save-queue.fifo

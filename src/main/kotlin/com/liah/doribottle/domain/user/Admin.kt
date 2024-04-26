@@ -1,6 +1,9 @@
 package com.liah.doribottle.domain.user
 
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.common.SoftDeleteEntity
+import com.liah.doribottle.extension.isSystem
 import com.liah.doribottle.service.user.dto.AdminDto
 import com.liah.doribottle.service.user.dto.AdminSimpleDto
 import jakarta.persistence.*
@@ -16,9 +19,10 @@ class Admin(
     loginPassword: String,
     name: String,
     role: Role,
-    email: String?,
-    phoneNumber: String?,
-    description: String?
+    email: String? = null,
+    phoneNumber: String? = null,
+    description: String? = null,
+    gender: Gender? = null
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -34,10 +38,7 @@ class Admin(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var role: Role = role.validateAdmin()
-        set(value) {
-            field = value.validateAdmin()
-        }
+    val role: Role = role.validateAdmin()
 
     @Column
     var email: String? = email
@@ -51,7 +52,15 @@ class Admin(
     var description: String? = description
         protected set
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    var gender: Gender? = gender
+        protected set
+
     override fun delete() {
+        if (this.isSystem())
+            throw BusinessException(ErrorCode.SYSTEM_DELETE_NOT_ALLOWED)
+
         this.loginId = "Deleted ${UUID.randomUUID()}"
         super.delete()
     }
@@ -59,17 +68,17 @@ class Admin(
     fun update(
         loginId: String,
         name: String,
-        role: Role,
         email: String?,
         phoneNumber: String?,
-        description: String?
+        description: String?,
+        gender: Gender?
     ) {
         this.loginId = loginId
         this.name = name
-        this.role = role
         this.email = email
         this.phoneNumber = phoneNumber
         this.description = description
+        this.gender = gender
     }
 
     fun updatePassword(

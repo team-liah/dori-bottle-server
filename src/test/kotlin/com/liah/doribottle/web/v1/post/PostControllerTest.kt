@@ -65,7 +65,7 @@ class PostControllerTest : BaseControllerTest() {
     }
 
     fun insertPosts() {
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         postRepository.save(Post(admin, NOTICE, "공지글 1", "공지글 1 내용"))
         postRepository.save(Post(admin, FAQ, "FAQ 1", "FAQ 1 내용"))
         postRepository.save(Post(admin, NOTICE, "공지글 2", "공지글 2 내용"))
@@ -79,7 +79,7 @@ class PostControllerTest : BaseControllerTest() {
     @Test
     fun get() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
 
         //then

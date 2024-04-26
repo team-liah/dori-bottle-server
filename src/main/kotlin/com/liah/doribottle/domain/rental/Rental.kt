@@ -2,6 +2,7 @@ package com.liah.doribottle.domain.rental
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.cup.Cup
 import com.liah.doribottle.domain.machine.Machine
@@ -24,17 +25,23 @@ import java.time.temporal.ChronoUnit
     ]
 )
 class Rental(
-    user: User,
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: User,
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "cup_id", nullable = false)
+    val cup: Cup,
+
     fromMachine: Machine,
-    withIce: Boolean,
+
+    @Column(nullable = false)
+    val withIce: Boolean,
+
     hourLimit: Long
 ) : PrimaryKeyEntity() {
     @Column(nullable = false)
     val no: String = generateRandomString(8)
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: User = user
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "from_machine_id", nullable = false)
@@ -43,19 +50,12 @@ class Rental(
         else throw IllegalArgumentException("Non VendingMachine is not allowed.")
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cup_id")
-    var cup: Cup? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_machine_id")
     var toMachine: Machine? = null
         protected set
 
     @Column(nullable = false)
-    val withIce: Boolean = withIce
-
-    @Column(nullable = false)
-    var cost: Long = if (withIce) 2 else 1
+    var cost: Long = if (this.withIce) DoriConstant.RENT_ICE_CUP_AMOUNTS else DoriConstant.RENT_CUP_AMOUNTS
         protected set
 
     @Column
@@ -68,15 +68,12 @@ class Rental(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: RentalStatus = PROCEEDING
+    var status: RentalStatus = CONFIRMED
         protected set
 
-    fun confirm(cup: Cup) {
-        this.cup = cup
-        this.status = CONFIRMED
-
-        fromMachine.increaseCupAmounts(-1)
-        cup.loan()
+    init {
+        this.cup.loan()
+        this.fromMachine.increaseCupAmounts(-1)
     }
 
     fun `return`(
@@ -92,7 +89,7 @@ class Rental(
             succeed()
         }
 
-        cup?.`return`()
+        cup.`return`()
     }
 
     private fun succeed() {
@@ -105,15 +102,15 @@ class Rental(
             throw IllegalArgumentException("Cup return has already been succeeded.")
 
         this.status = FAILED
-        cup?.lost()
+        cup.lost()
     }
 
     fun cancel() {
-        if (this.status != PROCEEDING && toMachine == null)
+        if (toMachine == null)
             throw BusinessException(ErrorCode.RENTAL_CANCEL_NOT_ALLOWED)
 
         this.status = CANCELED
     }
 
-    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup?.toDto(), fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
+    fun toDto() = RentalDto(id, no, user.toSimpleDto(), cup.toDto(), fromMachine.toDto(), toMachine?.toDto(), withIce, cost, succeededDate, expiredDate, status, createdDate, lastModifiedDate)
 }

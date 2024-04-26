@@ -7,7 +7,7 @@ data class AppProperties(
     val auth: AuthProperties,
     val ncloud: Ncloud,
     val tosspayments: Tosspayments,
-    val aws: Aws
+    val aws: Aws,
 ) {
     data class AuthProperties(
         val jwt: Jwt,
@@ -16,11 +16,12 @@ data class AppProperties(
         data class Jwt(
             val base64Secret: String,
             val expiredMs: Long,
-            val preAuthExpiredMs: Long
+            val preAuthExpiredMs: Long,
+            val systemExpiredMs: Long,
         )
 
         data class RefreshJwt(
-            val expiredMs: Long
+            val expiredMs: Long,
         )
     }
 
@@ -28,7 +29,7 @@ data class AppProperties(
         val notification: Notification,
     ) {
         data class Notification(
-            val sms: Sms
+            val sms: Sms,
         ) {
             data class Sms(
                 val baseUrl: String,
@@ -39,19 +40,19 @@ data class AppProperties(
 
     data class Tosspayments(
         val baseUrl: String,
-        val secretKey: String
+        val secretKey: String,
     )
 
     data class Aws(
         val sqs: Sqs,
-        val s3: S3
+        val s3: S3,
     ) {
         data class Sqs(
-            val queueName: String
+            val queueName: String,
         )
 
         data class S3(
-            val bucketName: String
+            val bucketName: String,
         )
     }
 }

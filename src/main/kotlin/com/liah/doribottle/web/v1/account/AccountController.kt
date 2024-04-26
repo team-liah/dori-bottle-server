@@ -2,8 +2,7 @@ package com.liah.doribottle.web.v1.account
 
 import com.liah.doribottle.common.error.exception.UnauthorizedException
 import com.liah.doribottle.config.properties.AppProperties
-import com.liah.doribottle.constant.ACCESS_TOKEN
-import com.liah.doribottle.constant.REFRESH_TOKEN
+import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.inquiry.InquiryType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.event.dummy.DummyInitEvent
@@ -28,9 +27,8 @@ class AccountController(
     private val smsService: SmsService,
     private val pointService: PointService,
     private val inquiryService: InquiryService,
-
     // TODO: Remove
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     private val jwtExpiredMs = appProperties.auth.jwt.expiredMs
     private val refreshJwtExpiredMs = appProperties.auth.refreshJwt.expiredMs
@@ -38,7 +36,7 @@ class AccountController(
     @Operation(summary = "인증 SMS 발송 요청")
     @PostMapping("/auth/send-sms")
     fun sendAuthSms(
-        @Valid @RequestBody request: SendSmsRequest
+        @Valid @RequestBody request: SendSmsRequest,
     ) {
         val authCode = generateRandomNumberString()
         accountService.saveOrUpdatePassword(request.loginId!!, authCode)
@@ -49,23 +47,26 @@ class AccountController(
     @Operation(summary = "인증")
     @PostMapping("/auth")
     fun auth(
-        @Valid @RequestBody request: AuthRequest
+        @Valid @RequestBody request: AuthRequest,
     ): ResponseEntity<AuthResponse> {
-        val result = accountService.auth(
-            loginId = request.loginId!!,
-            loginPassword = request.loginPassword!!
-        )
+        val result =
+            accountService.auth(
+                loginId = request.loginId!!,
+                loginPassword = request.loginPassword!!,
+            )
 
-        val accessTokenCookie = createCookie(
-            name = ACCESS_TOKEN,
-            value = result.accessToken,
-            expiredMs = jwtExpiredMs
-        )
-        val refreshTokenCookie = createCookie(
-            name = REFRESH_TOKEN,
-            value = result.refreshToken,
-            expiredMs = refreshJwtExpiredMs
-        )
+        val accessTokenCookie =
+            createCookie(
+                name = AuthorityConstant.ACCESS_TOKEN,
+                value = result.accessToken,
+                expiredMs = jwtExpiredMs,
+            )
+        val refreshTokenCookie =
+            createCookie(
+                name = AuthorityConstant.REFRESH_TOKEN,
+                value = result.refreshToken,
+                expiredMs = refreshJwtExpiredMs,
+            )
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
@@ -75,20 +76,22 @@ class AccountController(
     @Operation(summary = "인증 Refresh")
     @PostMapping("/refresh-auth")
     fun refreshAuth(
-        @CookieValue("refresh_token") refreshToken: String?
+        @CookieValue("refresh_token") refreshToken: String?,
     ): ResponseEntity<AuthResponse> {
         val result = accountService.refreshAuth(refreshToken)
 
-        val accessTokenCookie = createCookie(
-            name = ACCESS_TOKEN,
-            value = result.accessToken,
-            expiredMs = jwtExpiredMs
-        )
-        val refreshTokenCookie = createCookie(
-            name = REFRESH_TOKEN,
-            value = result.refreshToken,
-            expiredMs = refreshJwtExpiredMs
-        )
+        val accessTokenCookie =
+            createCookie(
+                name = AuthorityConstant.ACCESS_TOKEN,
+                value = result.accessToken,
+                expiredMs = jwtExpiredMs,
+            )
+        val refreshTokenCookie =
+            createCookie(
+                name = AuthorityConstant.REFRESH_TOKEN,
+                value = result.refreshToken,
+                expiredMs = refreshJwtExpiredMs,
+            )
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
@@ -103,7 +106,7 @@ class AccountController(
     @PostMapping("/register")
     fun register(
         @CookieValue("refresh_token") refreshToken: String?,
-        @Valid @RequestBody request: RegisterRequest
+        @Valid @RequestBody request: RegisterRequest,
     ): ResponseEntity<AuthResponse> {
         accountService.register(
             loginId = currentUserLoginId()!!,
@@ -112,32 +115,35 @@ class AccountController(
             gender = request.gender,
             agreedTermsOfService = request.agreedTermsOfService!!,
             agreedTermsOfPrivacy = request.agreedTermsOfPrivacy!!,
-            agreedTermsOfMarketing = request.agreedTermsOfMarketing!!
+            agreedTermsOfMarketing = request.agreedTermsOfMarketing!!,
         )
 
-        val result = try {
-            accountService.refreshAuth(refreshToken)
-        } catch (e: UnauthorizedException) {
-            null
-        }
+        val result =
+            try {
+                accountService.refreshAuth(refreshToken)
+            } catch (e: UnauthorizedException) {
+                null
+            }
 
         return if (result == null) {
-            val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
-            val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
+            val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
+            val expiredRefreshTokenCookie = expireCookie(AuthorityConstant.REFRESH_TOKEN)
             ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
                 .build()
         } else {
-            val accessTokenCookie = createCookie(
-                name = ACCESS_TOKEN,
-                value = result.accessToken,
-                expiredMs = jwtExpiredMs
-            )
-            val refreshTokenCookie = createCookie(
-                name = REFRESH_TOKEN,
-                value = result.refreshToken,
-                expiredMs = refreshJwtExpiredMs
-            )
+            val accessTokenCookie =
+                createCookie(
+                    name = AuthorityConstant.ACCESS_TOKEN,
+                    value = result.accessToken,
+                    expiredMs = jwtExpiredMs,
+                )
+            val refreshTokenCookie =
+                createCookie(
+                    name = AuthorityConstant.REFRESH_TOKEN,
+                    value = result.refreshToken,
+                    expiredMs = refreshJwtExpiredMs,
+                )
             ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
                 .body(result.toResponse())
@@ -147,21 +153,22 @@ class AccountController(
     @Operation(summary = "회원 탈퇴")
     @PostMapping("/inactivate")
     fun inactivate(
-        @Valid @RequestBody request: InactivateRequest
+        @Valid @RequestBody request: InactivateRequest,
     ): ResponseEntity<Void> {
         val currentUserId = currentUserId()!!
         accountService.inactivate(currentUserId, request.reason)
 
         if (request.bankAccount != null) {
-            val remainPayPoints = pointService.getAllRemainByUserId(currentUserId)
-                .filter { it.saveType == PointSaveType.PAY }
+            val remainPayPoints =
+                pointService.getAllRemainByUserId(currentUserId)
+                    .filter { it.saveType == PointSaveType.PAY }
             var remainPayAmounts = 0L
             if (remainPayPoints.isNotEmpty()) {
                 remainPayPoints.forEach { point ->
                     remainPayAmounts += point.remainAmounts
                     pointService.expire(
                         id = point.id,
-                        userId = currentUserId
+                        userId = currentUserId,
                     )
                 }
             }
@@ -170,12 +177,12 @@ class AccountController(
                 userId = currentUserId,
                 type = InquiryType.REFUND,
                 bankAccount = request.bankAccount,
-                content = "버블 ${remainPayAmounts}개 환불"
+                content = "버블 ${remainPayAmounts}개 환불",
             )
         }
 
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
-        val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
+        val expiredRefreshTokenCookie = expireCookie(AuthorityConstant.REFRESH_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()
@@ -184,8 +191,8 @@ class AccountController(
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     fun logout(): ResponseEntity<Void> {
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
-        val expiredRefreshTokenCookie = expireCookie(REFRESH_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
+        val expiredRefreshTokenCookie = expireCookie(AuthorityConstant.REFRESH_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString(), expiredRefreshTokenCookie.toString())
             .build()
@@ -194,13 +201,13 @@ class AccountController(
     @Operation(summary = "로그인 ID 변경 SMS 발송 요청")
     @PostMapping("/change-login-id/send-sms")
     fun sendLoginIdChangeSms(
-        @Valid @RequestBody request: SendSmsRequest
+        @Valid @RequestBody request: SendSmsRequest,
     ) {
         val authCode = generateRandomNumberString()
         accountService.createLoginIdChange(
             userId = currentUserId()!!,
             toLoginId = request.loginId!!,
-            authCode = authCode
+            authCode = authCode,
         )
 
         smsService.sendAuthSms(request.loginId, authCode)
@@ -209,44 +216,46 @@ class AccountController(
     @Operation(summary = "로그인ID 변경")
     @PutMapping("/change-login-id")
     fun changeLoginId(
-        @Valid @RequestBody request: LoginIdChangeRequest
+        @Valid @RequestBody request: LoginIdChangeRequest,
     ): ResponseEntity<Void> {
         accountService.changeLoginId(
             userId = currentUserId()!!,
-            authCode = request.authCode!!
+            authCode = request.authCode!!,
         )
 
-        val expiredAccessTokenCookie = expireCookie(ACCESS_TOKEN)
+        val expiredAccessTokenCookie = expireCookie(AuthorityConstant.ACCESS_TOKEN)
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, expiredAccessTokenCookie.toString())
             .build()
     }
 
-    //TODO: Remove
+    // TODO: Remove
     @PostMapping("/dummy-auth")
     fun dummyAuth(): ResponseEntity<AuthResponse> {
         val result = accountService.dummyAuth()
 
-        val accessTokenCookie = createCookie(
-            name = ACCESS_TOKEN,
-            value = result.accessToken,
-            expiredMs = jwtExpiredMs
-        )
-        val refreshTokenCookie = createCookie(
-            name = REFRESH_TOKEN,
-            value = result.refreshToken,
-            expiredMs = refreshJwtExpiredMs
-        )
+        val accessTokenCookie =
+            createCookie(
+                name = AuthorityConstant.ACCESS_TOKEN,
+                value = result.accessToken,
+                expiredMs = jwtExpiredMs,
+            )
+        val refreshTokenCookie =
+            createCookie(
+                name = AuthorityConstant.REFRESH_TOKEN,
+                value = result.refreshToken,
+                expiredMs = refreshJwtExpiredMs,
+            )
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
             .body(result.toResponse())
     }
 
-    //TODO: Remove
+    // TODO: Remove
     @PostMapping("/dummy-data")
     fun dummyData() {
         applicationEventPublisher.publishEvent(
-            DummyInitEvent(true)
+            DummyInitEvent(true),
         )
     }
 }

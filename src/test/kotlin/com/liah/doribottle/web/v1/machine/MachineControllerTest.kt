@@ -51,7 +51,7 @@ class MachineControllerTest : BaseControllerTest() {
     @DisplayName("기기 조회")
     @Test
     fun get() {
-        val machine = machineRepository.save(Machine("0000001", "name", MachineType.VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100))
+        val machine = machineRepository.save(Machine("0000001", "name", MachineType.VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
 
         mockMvc.perform(
             get("${endPoint}/${machine.id}")
@@ -73,11 +73,11 @@ class MachineControllerTest : BaseControllerTest() {
     }
 
     private fun insertMachines() {
-        machineRepository.save(Machine("0000001", "name", MachineType.VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479),  100))
-        machineRepository.save(Machine("0000002", "name", MachineType.VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479),  100))
-        machineRepository.save(Machine("0000003", "name", MachineType.VENDING, Address("00003", "삼성로", null), Location(37.508355, 127.051479),  100))
-        machineRepository.save(Machine("0000004", "name", MachineType.VENDING, Address("00004", "마장로", null), Location(37.508455, 127.053479),  100))
-        machineRepository.save(Machine("0000005", "name", MachineType.COLLECTION, Address("00005", "도산대로", null), Location(37.518855, 127.029479),  100))
-        machineRepository.save(Machine("0000006", "name", MachineType.VENDING, Address("00006", "도산대로", null), Location(37.503855, 127.059179),  100))
+        machineRepository.save(Machine("0000001", "name", MachineType.VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479),  100, null))
+        machineRepository.save(Machine("0000002", "name", MachineType.VENDING, Address("00002", "삼성로", null), Location(37.508955, 127.052479),  100, null))
+        machineRepository.save(Machine("0000003", "name", MachineType.VENDING, Address("00003", "삼성로", null), Location(37.508355, 127.051479),  100, null))
+        machineRepository.save(Machine("0000004", "name", MachineType.VENDING, Address("00004", "마장로", null), Location(37.508455, 127.053479),  100, null))
+        machineRepository.save(Machine("0000005", "name", MachineType.COLLECTION, Address("00005", "도산대로", null), Location(37.518855, 127.029479),  100, null))
+        machineRepository.save(Machine("0000006", "name", MachineType.VENDING, Address("00006", "도산대로", null), Location(37.503855, 127.059179),  100, null))
     }
 }

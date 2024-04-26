@@ -4,12 +4,15 @@ import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.user.Admin
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.extension.systemId
 import com.liah.doribottle.repository.user.AdminRepository
+import com.liah.doribottle.service.user.AdminService
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.admin.vm.AdminPasswordUpdateRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminRegisterRequest
 import com.liah.doribottle.web.admin.admin.vm.AdminUpdateRequest
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -26,6 +29,8 @@ class AdminResourceTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var adminRepository: AdminRepository
+    @Autowired
+    private lateinit var adminService: AdminService
 
     @AfterEach
     internal fun destroy() {
@@ -37,7 +42,7 @@ class AdminResourceTest : BaseControllerTest() {
     @Test
     fun register() {
         //given
-        val body = AdminRegisterRequest(ADMIN_LOGIN_ID, "1234", "admin", Role.ADMIN, null, null, null)
+        val body = AdminRegisterRequest(ADMIN_LOGIN_ID, "1234", "admin", Role.ADMIN, null, null, null, null)
 
         //when, then
         mockMvc.perform(
@@ -54,7 +59,7 @@ class AdminResourceTest : BaseControllerTest() {
     @Test
     fun registerException() {
         //given
-        val body = AdminRegisterRequest(ADMIN_LOGIN_ID, "1234", "admin", Role.ADMIN, null, null, null)
+        val body = AdminRegisterRequest(ADMIN_LOGIN_ID, "1234", "admin", Role.ADMIN, null, null, null, null)
 
         //when, then
         mockMvc.perform(
@@ -89,12 +94,12 @@ class AdminResourceTest : BaseControllerTest() {
     }
 
     private fun insertAdmins() {
-        adminRepository.save(Admin("admin1", "123456", "Tester 1", Role.ADMIN, null, null, null))
-        adminRepository.save(Admin("admin2", "123456", "Tester 2", Role.MACHINE_ADMIN, null, null, null))
-        adminRepository.save(Admin("admin3", "123456", "Tester 3", Role.INSTITUTION, null, null, null))
-        adminRepository.save(Admin("admin4", "123456", "Tester 4", Role.MACHINE_ADMIN, null, null, null))
-        adminRepository.save(Admin("admin5", "123456", "Tester 5", Role.ADMIN, null, null, null))
-        adminRepository.save(Admin("admin6", "123456", "Tester 6", Role.ADMIN, null, null, null))
+        adminRepository.save(Admin("admin1", "123456", "Tester 1", Role.ADMIN, null, null, null, null))
+        adminRepository.save(Admin("admin2", "123456", "Tester 2", Role.MACHINE_ADMIN, null, null, null, null))
+        adminRepository.save(Admin("admin3", "123456", "Tester 3", Role.INSTITUTION, null, null, null, null))
+        adminRepository.save(Admin("admin4", "123456", "Tester 4", Role.MACHINE_ADMIN, null, null, null, null))
+        adminRepository.save(Admin("admin5", "123456", "Tester 5", Role.ADMIN, null, null, null, null))
+        adminRepository.save(Admin("admin6", "123456", "Tester 6", Role.ADMIN, null, null, null, null))
     }
 
     @DisplayName("관리자 목록 조회 예외")
@@ -118,8 +123,8 @@ class AdminResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun update() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
-        val body = AdminUpdateRequest("updated", "1234", Role.MACHINE_ADMIN, null, null, null)
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null, null))
+        val body = AdminUpdateRequest("updated", "1234", null, null, null, null)
 
         mockMvc.perform(
             put("$endPoint/${admin.id}")
@@ -134,7 +139,7 @@ class AdminResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun updatePassword() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null, null))
         val body = AdminPasswordUpdateRequest("updated")
 
         mockMvc.perform(
@@ -150,7 +155,7 @@ class AdminResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun delete() {
-        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin(ADMIN_LOGIN_ID, "123456", "Tester", Role.ADMIN, null, null, null, null))
 
         mockMvc.perform(
             delete("$endPoint/${admin.id}")
@@ -158,5 +163,20 @@ class AdminResourceTest : BaseControllerTest() {
                 .accept(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
+    }
+
+    @DisplayName("시스템 토큰 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getSystemToken() {
+        adminService.register(systemId(), "system", "system", "system", Role.SYSTEM)
+
+        mockMvc.perform(
+            get("$endPoint/system-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("systemToken", notNullValue()))
     }
 }

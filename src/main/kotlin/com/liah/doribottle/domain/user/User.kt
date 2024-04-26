@@ -67,10 +67,6 @@ class User(
     var inviterId: UUID? = null
         protected set
 
-    @Column(name = "`use`", nullable = false)
-    var use: Boolean = false
-        protected set
-
     @Column(nullable = false)
     var active: Boolean = true
         protected set
@@ -140,9 +136,9 @@ class User(
 
     fun update(
         name: String,
-        birthDate: String?,
-        gender: Gender?,
-        description: String?
+        birthDate: String? = null,
+        gender: Gender? = null,
+        description: String? = null
     ) {
         this.name = name
         this.birthDate = birthDate
@@ -175,7 +171,7 @@ class User(
     }
 
     fun updateGroup(
-        group: Group?
+        group: Group? = null
     ) {
         this.group = group
     }
@@ -192,17 +188,13 @@ class User(
         this.invitationCount += 1
     }
 
-    fun use() {
-        this.use = true
-    }
-
     fun imposePenalty(
         penaltyType: PenaltyType,
-        penaltyCause: String?
+        penaltyCause: String? = null
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
 
-        if (penalties.isNotEmpty() && (penalties.size%5) == 0) {
+        if (isBlockBoundary()) {
             block(FIVE_PENALTIES, null)
         }
     }
@@ -210,23 +202,48 @@ class User(
     fun removePenalty(
         penaltyId: UUID
     ) {
-        this.mutablePenalties.removeIf { it.id == penaltyId }
+        val penalty = penalties.find { it.id == penaltyId } ?: return
+
+        if (!penalty.disabled && isBlockBoundary()) {
+            val blockedCause = blockedCauses.find { it.type == FIVE_PENALTIES }
+
+            this.mutableBlockedCauses.remove(blockedCause)
+
+            if (this.blockedCauses.isEmpty()) {
+                this.blocked = false
+            }
+        }
+
+        this.mutablePenalties.remove(penalty)
+    }
+
+    private fun isBlockBoundary(): Boolean {
+        return penalties.isNotEmpty() && (penalties.count { !it.disabled } % 5) == 0
     }
 
     fun block(
         blockedCauseType: BlockedCauseType,
-        blockedCauseDescription: String?
+        blockedCauseDescription: String? = null
     ) {
         this.blocked = true
         this.mutableBlockedCauses.add(BlockedCause(this, blockedCauseType, blockedCauseDescription))
     }
 
     fun unblock(
-        blockedCauseIds: Set<UUID>
+        blockedCauseId: UUID
     ) {
-        this.mutableBlockedCauses.removeAll { blockedCauseIds.contains(it.id) }
+        val blockCause = blockedCauses.find { it.id == blockedCauseId }
 
-        if (this.mutableBlockedCauses.isEmpty()) {
+        this.mutableBlockedCauses.remove(blockCause)
+
+        if (blockCause?.type == FIVE_PENALTIES) {
+            (1..5).forEach { _ ->
+                val penalty = this.penalties.firstOrNull { !it.disabled }
+                penalty?.disable()
+            }
+        }
+
+        if (this.blockedCauses.isEmpty()) {
             this.blocked = false
         }
     }
@@ -236,7 +253,7 @@ class User(
         this.inactivateReason = reason
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, use, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, inactivateReason, use, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
+    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, inactivateReason, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
     fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }

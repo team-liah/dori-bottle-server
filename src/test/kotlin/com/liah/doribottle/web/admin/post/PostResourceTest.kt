@@ -43,7 +43,7 @@ class PostResourceTest : BaseControllerTest() {
     @Test
     fun register() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         val cookie = createAccessTokenCookie(admin.id, admin.loginId, admin.name, admin.role)
         val body = PostRegisterOrUpdateRequest(NOTICE, "공지글", "공지글 내용")
 
@@ -68,7 +68,7 @@ class PostResourceTest : BaseControllerTest() {
     @Test
     fun getAll() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         insertPosts(admin)
 
         val params: MultiValueMap<String, String> = LinkedMultiValueMap()
@@ -111,7 +111,7 @@ class PostResourceTest : BaseControllerTest() {
     @Test
     fun get() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
 
         //then
@@ -133,7 +133,7 @@ class PostResourceTest : BaseControllerTest() {
     @Test
     fun update() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
         val body = PostRegisterOrUpdateRequest(FAQ, "FAQ", "FAQ 내용")
 
@@ -157,7 +157,7 @@ class PostResourceTest : BaseControllerTest() {
     @Test
     fun remove() {
         //given
-        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null))
+        val admin = adminRepository.save(Admin("admin", "1234", "admin", Role.ADMIN, null, null, null, null))
         val post = postRepository.save(Post(admin, NOTICE, "공지글", "공지글 내용"))
 
         mockMvc.perform(

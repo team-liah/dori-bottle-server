@@ -30,7 +30,7 @@ class RentalQueryRepository(
             .selectFrom(rental)
             .innerJoin(rental.user).fetchJoin()
             .innerJoin(rental.fromMachine).fetchJoin()
-            .leftJoin(rental.cup).fetchJoin()
+            .innerJoin(rental.cup).fetchJoin()
             .leftJoin(rental.toMachine).fetchJoin()
             .where(
                 noContains(no),
