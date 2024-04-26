@@ -16,5 +16,7 @@ data class MachineResponse(
     val capacity: Int,
     val cupAmounts: Int,
     val state: MachineState,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val rentCupAmounts: Long?,
+    val rentIceCupAmounts: Long?,
 )

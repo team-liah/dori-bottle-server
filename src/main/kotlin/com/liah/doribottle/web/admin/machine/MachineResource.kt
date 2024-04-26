@@ -19,12 +19,12 @@ import java.util.*
 @RestController
 @RequestMapping("/admin/api/machine")
 class MachineResource(
-    private val machineService: MachineService
+    private val machineService: MachineService,
 ) {
     @Operation(summary = "기기 등록")
     @PostMapping
     fun register(
-        @Valid @RequestBody request: MachineRegisterRequest
+        @Valid @RequestBody request: MachineRegisterRequest,
     ): UUID {
         return machineService.register(
             no = request.no!!,
@@ -33,14 +33,16 @@ class MachineResource(
             address = request.address!!,
             location = request.location!!,
             capacity = request.capacity!!,
-            imageUrl = request.imageUrl
+            imageUrl = request.imageUrl,
+            rentCupAmounts = request.rentCupAmounts,
+            rentIceCupAmounts = request.rentIceCupAmounts,
         )
     }
 
     @Operation(summary = "기기 조회")
     @GetMapping("/{id}")
     fun get(
-        @PathVariable id: UUID
+        @PathVariable id: UUID,
     ): MachineDto {
         return machineService.get(id)
     }
@@ -49,16 +51,17 @@ class MachineResource(
     @GetMapping
     fun getAll(
         @ParameterObject request: MachineSearchRequest,
-        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable
+        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = Sort.Direction.DESC) pageable: Pageable,
     ): CustomPage<MachineDto> {
-        val result = machineService.getAll(
+        val result =
+            machineService.getAll(
                 no = request.no,
                 name = request.name,
                 type = request.type,
                 state = request.state,
                 addressKeyword = request.addressKeyword,
                 deleted = false,
-                pageable = pageable
+                pageable = pageable,
             )
 
         return CustomPage.of(result)
@@ -68,7 +71,7 @@ class MachineResource(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: MachineUpdateRequest
+        @Valid @RequestBody request: MachineUpdateRequest,
     ) {
         machineService.update(
             id = id,
@@ -78,7 +81,9 @@ class MachineResource(
             capacity = request.capacity!!,
             cupAmounts = request.cupAmounts!!,
             state = request.state!!,
-            imageUrl = request.imageUrl
+            imageUrl = request.imageUrl,
+            rentCupAmounts = request.rentCupAmounts,
+            rentIceCupAmounts = request.rentIceCupAmounts,
         )
     }
 
@@ -86,7 +91,7 @@ class MachineResource(
     @PatchMapping("/{id}")
     fun patch(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: MachinePatchRequest
+        @Valid @RequestBody request: MachinePatchRequest,
     ) {
         val machine = machineService.get(id)
         machineService.update(
@@ -97,7 +102,9 @@ class MachineResource(
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state,
-            imageUrl = request.imageUrl ?: machine.imageUrl
+            imageUrl = request.imageUrl ?: machine.imageUrl,
+            rentCupAmounts = request.rentCupAmounts ?: machine.rentCupAmounts,
+            rentIceCupAmounts = request.rentIceCupAmounts ?: machine.rentIceCupAmounts,
         )
     }
 
@@ -105,7 +112,7 @@ class MachineResource(
     @PostMapping("/{id}/patch")
     fun patchPost(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: MachinePatchRequest
+        @Valid @RequestBody request: MachinePatchRequest,
     ) {
         val machine = machineService.get(id)
         machineService.update(
@@ -116,14 +123,16 @@ class MachineResource(
             capacity = request.capacity ?: machine.capacity,
             cupAmounts = request.cupAmounts ?: machine.cupAmounts,
             state = request.state ?: machine.state,
-            imageUrl = request.imageUrl ?: machine.imageUrl
+            imageUrl = request.imageUrl ?: machine.imageUrl,
+            rentCupAmounts = request.rentCupAmounts ?: machine.rentCupAmounts,
+            rentIceCupAmounts = request.rentIceCupAmounts ?: machine.rentIceCupAmounts,
         )
     }
 
     @Operation(summary = "기기 삭제")
     @DeleteMapping("/{id}")
     fun delete(
-        @PathVariable id: UUID
+        @PathVariable id: UUID,
     ) {
         machineService.delete(id)
     }
