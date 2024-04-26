@@ -11,6 +11,8 @@ import com.liah.doribottle.domain.rental.RentalStatus
 import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
+import com.liah.doribottle.extension.getEndDateString
+import com.liah.doribottle.extension.getStartDateString
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.repository.machine.MachineRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
@@ -19,12 +21,15 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.rental.dto.RentalDto
+import com.liah.doribottle.service.rental.dto.RentalStatisticDto
 import com.liah.doribottle.service.task.TaskService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Month
+import java.time.Year
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -38,20 +43,23 @@ class RentalService(
     private val machineRepository: MachineRepository,
     private val paymentMethodRepository: PaymentMethodRepository,
     private val pointService: PointService,
-    private val taskService: TaskService
+    private val taskService: TaskService,
 ) {
     fun rent(
         userId: UUID,
         cupRfid: String,
         fromMachineNo: String,
-        withIce: Boolean
+        withIce: Boolean,
     ): UUID {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val cup = cupRepository.findByRfid(cupRfid)
-            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        val fromMachine = machineRepository.findByNo(fromMachineNo)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(userId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val cup =
+            cupRepository.findByRfid(cupRfid)
+                ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+        val fromMachine =
+            machineRepository.findByNo(fromMachineNo)
+                ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
 
         verifyCanRent(user)
 
@@ -64,8 +72,9 @@ class RentalService(
     }
 
     private fun verifyCanRent(user: User) {
-        if (user.blocked)
+        if (user.blocked) {
             throw ForbiddenException(ErrorCode.BLOCKED_USER_ACCESS_DENIED)
+        }
         paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
             ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
     }
@@ -77,14 +86,17 @@ class RentalService(
 
     fun `return`(
         toMachineNo: String,
-        cupRfid: String
+        cupRfid: String,
     ) {
-        val toMachine = machineRepository.findByNo(toMachineNo)
-            ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
-        val cup = cupRepository.findByRfid(cupRfid)
-            ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
-        val rental = rentalQueryRepository.findLastByCupId(cup.id)
-            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+        val toMachine =
+            machineRepository.findByNo(toMachineNo)
+                ?: throw NotFoundException(ErrorCode.MACHINE_NOT_FOUND)
+        val cup =
+            cupRepository.findByRfid(cupRfid)
+                ?: throw NotFoundException(ErrorCode.CUP_NOT_FOUND)
+        val rental =
+            rentalQueryRepository.findLastByCupId(cup.id)
+                ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.`return`(toMachine)
 
@@ -96,11 +108,10 @@ class RentalService(
         taskService.delete(TaskType.RENTAL_REMIND, rental.id)
     }
 
-    fun fail(
-        id: UUID
-    ) {
-        val rental = rentalRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+    fun fail(id: UUID) {
+        val rental =
+            rentalRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.fail()
 
@@ -109,22 +120,21 @@ class RentalService(
                 userId = rental.user.id,
                 type = NotificationType.LOST_CUP,
                 targetId = rental.id,
-                rental.no
-            )
+                rental.no,
+            ),
         )
     }
 
-    fun cancel(
-        id: UUID
-    ) {
-        val rental = rentalRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+    fun cancel(id: UUID) {
+        val rental =
+            rentalRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         rental.cancel()
 
         pointService.cancel(
             userId = rental.user.id,
-            targetId = rental.id
+            targetId = rental.id,
         )
     }
 
@@ -137,7 +147,7 @@ class RentalService(
         toMachineId: UUID? = null,
         status: RentalStatus? = null,
         expired: Boolean? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<RentalDto> {
         return rentalQueryRepository.getAll(
             no = no,
@@ -147,17 +157,28 @@ class RentalService(
             toMachineId = toMachineId,
             status = status,
             expired = expired,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
     @Transactional(readOnly = true)
-    fun get(
-        id: UUID
-    ): RentalDto {
-        val rental = rentalRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
+    fun get(id: UUID): RentalDto {
+        val rental =
+            rentalRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.RENTAL_NOT_FOUND)
 
         return rental.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun getStatistic(
+        year: Year,
+        month: Month?,
+    ): List<RentalStatisticDto> {
+        return rentalRepository.findStatisticByCreatedDate(
+            groupFormat = if (month == null) "%Y-%m" else "%Y-%m-%d",
+            startDate = getStartDateString(year, month),
+            endDate = getEndDateString(year, month),
+        ).map { dao -> RentalStatisticDto.fromDao(dao) }
     }
 }
