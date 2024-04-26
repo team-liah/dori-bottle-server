@@ -51,6 +51,8 @@ import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
+import java.time.Year
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
 class RentalServiceTest : BaseServiceTest() {
@@ -675,6 +677,45 @@ class RentalServiceTest : BaseServiceTest() {
         assertThat(result.status).isEqualTo(CONFIRMED)
         assertThat(result.fromMachine.id).isEqualTo(vendingMachine.id)
         assertThat(result.withIce).isTrue()
+    }
+
+    @DisplayName("대여 통계 조회")
+    @Test
+    fun getStatisticByCreatedDate() {
+        // given
+        val cup1 = cupRepository.save(Cup("B1:B1:B1:B1"))
+        val cup2 = cupRepository.save(Cup("C1:C1:C1:C1"))
+        val cup3 = cupRepository.save(Cup("D1:D1:D1:D1"))
+        val cup4 = cupRepository.save(Cup("E1:E1:E1:E1"))
+        val cup5 = cupRepository.save(Cup("F1:F1:F1:F1"))
+        val cup6 = cupRepository.save(Cup("G1:G1:G1:G1"))
+        val rental1 = rentalRepository.save(Rental(user, cup1, vendingMachine, true, 24))
+        rental1.`return`(collectionMachine)
+        val rental2 = rentalRepository.save(Rental(user, cup2, vendingMachine, true, 24))
+        rental2.fail()
+        val rental3 = rentalRepository.save(Rental(user, cup3, vendingMachine, true, 24))
+        rental3.fail()
+        val rental4 = rentalRepository.save(Rental(user, cup4, vendingMachine, false, 24))
+        rental4.`return`(collectionMachine)
+        rental4.cancel()
+        val rental5 = rentalRepository.save(Rental(user, cup5, vendingMachine, false, 24))
+        val rental6 = rentalRepository.save(Rental(user, cup6, vendingMachine, false, 24))
+
+        val now = YearMonth.now()
+        clear()
+
+        val result =
+            rentalService.getStatistic(
+                year = Year.of(now.year),
+                month = now.month,
+            )
+
+        assertThat(result.size).isEqualTo(1)
+        assertThat(result.first().totalPointAmount).isEqualTo(4L)
+        assertThat(result.first().confirmedCount).isEqualTo(2)
+        assertThat(result.first().succeededCount).isEqualTo(1)
+        assertThat(result.first().failedCount).isEqualTo(2)
+        assertThat(result.first().canceledCount).isEqualTo(1)
     }
 
     private fun insertRentals() {
