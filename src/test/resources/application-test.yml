@@ -44,10 +44,14 @@ app:
     refresh-jwt:
       expired-ms: 1209600000 # 2weeks
   ncloud:
+    base-url: https://sens.apigw.ntruss.com
+    access-key: dummyKey
+    secret-key: dummyKey
     notification:
       sms:
-        base-url: https://sens.apigw.ntruss.com/sms/v2
-        service-id: test
+        service-path: /sms/v2/services
+        service-id: dummyValue
+        calling-number: dummyValue
   tosspayments:
     base-url: https://api.tosspayments.com/
     secret-key: dummyKey

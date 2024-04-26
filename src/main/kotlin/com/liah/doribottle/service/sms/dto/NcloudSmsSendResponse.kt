@@ -1,10 +1,10 @@
 package com.liah.doribottle.service.sms.dto
 
-import java.time.Instant
+import java.time.LocalDateTime
 
 data class NcloudSmsSendResponse(
     val requestId: String,
-    val requestTime: Instant,
+    val requestTime: LocalDateTime,
     val statusCode: String,
     val statusName: String,
 )
