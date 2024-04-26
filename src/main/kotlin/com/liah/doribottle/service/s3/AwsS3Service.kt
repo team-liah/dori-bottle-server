@@ -6,17 +6,19 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder
 import com.amazonaws.util.IOUtils
+import com.liah.doribottle.config.properties.AppProperties
 import com.liah.doribottle.service.s3.dto.AwsS3UploadResultDto
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
 class AwsS3Service(
-    private val amazonS3: AmazonS3,
-    @Value("\${app.aws.s3.bucket}") private val bucket: String
+    appProperties: AppProperties,
+    private val amazonS3: AmazonS3
 ) {
+    val bucketName = appProperties.aws.s3.bucketName
+
     fun uploadWithPublicRead(file: MultipartFile, path: String): AwsS3UploadResultDto {
         val saveFileName = "${UUID.randomUUID()}"
         val key = "${path}/$saveFileName"
@@ -26,7 +28,7 @@ class AwsS3Service(
             .build()
 
         val request = PutObjectRequest(
-            bucket,
+            bucketName,
             key,
             file.inputStream,
             ObjectMetadata().apply {
@@ -40,7 +42,7 @@ class AwsS3Service(
 
         return AwsS3UploadResultDto(
             key = key,
-            url = amazonS3.getUrl(bucket, key).toString()
+            url = amazonS3.getUrl(bucketName, key).toString()
         )
     }
 }

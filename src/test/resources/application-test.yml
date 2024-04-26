@@ -37,27 +37,29 @@ logging.level:
 app:
   auth:
     jwt:
-      secret: dummyKeyC928D0F74BF2705749E0A843A4E716D0F147D6C6476534C3B1FBC4717C9B4539
-      expiredMs: 3600000 # 1hour
-      preAuthExpiredMs: 300000 # 5minute
-      systemExpiredMs: 3153600000000 # 100year
-    refreshToken:
-      expiredMs: 1209600000 # 2weeks
-  toast:
-    sms:
-      baseUrl: https://api-sms.cloud.toast.com/
-      appKey: dummyKey
-      secretKey: dummyKey
-      sendNo: dummyNo
-  toss:
-    payments:
-      baseUrl: https://api.tosspayments.com/
-      secretKey: dummyKey
+      base64-secret: dummyKeyC928D0F74BF2705749E0A843A4E716D0F147D6C6476534C3B1FBC4717C9B4539
+      expired-ms: 3600000 # 1hour
+      pre-auth-expired-ms: 300000 # 5minute
+      system-expired-ms: 3153600000000 # 100year
+    refresh-jwt:
+      expired-ms: 1209600000 # 2weeks
+  ncloud:
+    base-url: https://sens.apigw.ntruss.com
+    access-key: dummyKey
+    secret-key: dummyKey
+    notification:
+      sms:
+        service-path: /sms/v2/services
+        service-id: dummyValue
+        calling-number: dummyValue
+  tosspayments:
+    base-url: https://api.tosspayments.com/
+    secret-key: dummyKey
   aws:
     sqs:
-      queueName: dummyQueue
+      queue-name: dummyQueue
     s3:
-      bucket: dummyBucket
+      bucket-name: dummyBucket
   schedule:
     enabled: false
 

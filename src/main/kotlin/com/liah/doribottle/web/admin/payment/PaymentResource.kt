@@ -5,7 +5,7 @@ import com.liah.doribottle.common.error.exception.NotFoundException
 import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.service.payment.PaymentService
-import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentDto
 import com.liah.doribottle.service.payment.dto.PaymentStatisticDto
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
@@ -29,7 +29,7 @@ import java.util.*
 @RequestMapping("/admin/api/payment")
 class PaymentResource(
     private val paymentService: PaymentService,
-    private val tossPaymentsService: TossPaymentsService
+    private val tosspaymentsService: TosspaymentsService
 ) {
     @Operation(summary = "유저 결제내역 조회")
     @GetMapping
@@ -75,7 +75,7 @@ class PaymentResource(
         val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         runCatching {
-            tossPaymentsService.cancelPayment(
+            tosspaymentsService.cancelPayment(
                 paymentKey = paymentResult.paymentKey,
                 cancelReason = "포인트 적립 취소 (관리자)"
             )

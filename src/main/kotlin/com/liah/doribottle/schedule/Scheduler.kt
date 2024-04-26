@@ -8,7 +8,7 @@ import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.service.notification.NotificationService
 import com.liah.doribottle.service.payment.PaymentService
-import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentMethodDto
 import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.service.task.TaskService
@@ -25,7 +25,7 @@ class Scheduler(
     private val rentalService: RentalService,
     private val paymentService: PaymentService,
     private val userService: UserService,
-    private val tossPaymentsService: TossPaymentsService,
+    private val tosspaymentsService: TosspaymentsService,
     private val notificationService: NotificationService
 ) {
     @SchedulerLock(
@@ -103,7 +103,7 @@ class Scheduler(
         )
 
         runCatching {
-            tossPaymentsService.executeBilling(
+            tosspaymentsService.executeBilling(
                 billingKey = paymentMethod.billingKey,
                 userId = userId,
                 price = DoriConstant.LOST_CUP_PRICE,
