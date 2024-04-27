@@ -35,7 +35,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.task.TaskRepository
 import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.payment.TossPaymentsService
+import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -56,17 +56,25 @@ import java.util.*
 @SpringBootTest
 class SchedulerTest {
     @Autowired private lateinit var scheduler: Scheduler
+
     @Autowired private lateinit var taskRepository: TaskRepository
+
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var blockedCauseRepository: BlockedCauseRepository
+
     @Autowired private lateinit var rentalRepository: RentalRepository
+
     @Autowired private lateinit var paymentRepository: PaymentRepository
+
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+
     @Autowired private lateinit var machineRepository: MachineRepository
+
     @Autowired private lateinit var cupRepository: CupRepository
 
     @MockBean
-    private lateinit var mockTossPaymentsService: TossPaymentsService
+    private lateinit var mockTosspaymentsService: TosspaymentsService
 
     @AfterEach
     internal fun destroy() {
@@ -81,8 +89,11 @@ class SchedulerTest {
     @DisplayName("대여 반납 기간 초과 처리(결제, 상태 변경)")
     @Test
     fun overdueRental() {
-        //given
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        // given
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -97,14 +108,16 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(
+            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+        )
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        //when
+        // when
         scheduler.scheduledTask()
 
-        //then
-        verify(mockTossPaymentsService, times(2))
+        // then
+        verify(mockTosspaymentsService, times(2))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
@@ -139,9 +152,15 @@ class SchedulerTest {
     @DisplayName("대여 반납 기간 초과 처리(결제, 상태 변경) - rentalService.fail 예외")
     @Test
     fun overdueRentalFailException() {
-        //given
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val collectionMachine = machineRepository.save(Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        // given
+        val vendingMachine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val collectionMachine =
+            machineRepository.save(
+                Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -149,6 +168,7 @@ class SchedulerTest {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
+
         paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
         val rental1 = Rental(user, cup1, vendingMachine, true, 0)
         rental1.`return`(collectionMachine)
@@ -159,14 +179,16 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(
+            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+        )
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        //when
+        // when
         scheduler.scheduledTask()
 
-        //then
-        verify(mockTossPaymentsService, times(1))
+        // then
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
@@ -201,8 +223,11 @@ class SchedulerTest {
     @DisplayName("대여 반납 기간 초과 처리(결제, 상태 변경) - paymentService.getDefaultMethod 예외")
     @Test
     fun overdueRentalPaymentMethodException() {
-        //given
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        // given
+        val vendingMachine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
         val cup1 = cupRepository.save(Cup("00 00 00 00"))
         val cup2 = cupRepository.save(Cup("11 11 11 11"))
 
@@ -221,14 +246,22 @@ class SchedulerTest {
         taskRepository.save(Task(rental1.expiredDate, TaskType.RENTAL_OVERDUE, rental1.id))
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user1.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(
+            mockTosspaymentsService.executeBilling(
+                eq(billingKey),
+                eq(user1.id),
+                eq(DoriConstant.LOST_CUP_PRICE),
+                any<UUID>(),
+                eq(LOST_CUP),
+            ),
+        )
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
-        //when
+        // when
         scheduler.scheduledTask()
 
-        //then
-        verify(mockTossPaymentsService, times(1))
+        // then
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user1.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser1 = userRepository.findByIdOrNull(user1.id)
@@ -275,8 +308,11 @@ class SchedulerTest {
     @DisplayName("대여 반납 기간 초과 처리(결제, 상태 변경) - tossPaymentsService.executeBilling 예외")
     @Test
     fun overdueRentalBillingException() {
-        //given
-        val machine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        // given
+        val machine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
         val cup = cupRepository.save(Cup("00 00 00 00"))
 
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
@@ -287,14 +323,16 @@ class SchedulerTest {
 
         taskRepository.save(Task(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id))
 
-        given(mockTossPaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)))
+        given(
+            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+        )
             .willThrow(BillingExecuteException())
 
-        //when
+        // when
         scheduler.scheduledTask()
 
-        //then
-        verify(mockTossPaymentsService, times(1))
+        // then
+        verify(mockTosspaymentsService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser = userRepository.findByIdOrNull(user.id)
