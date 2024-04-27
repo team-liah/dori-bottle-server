@@ -11,6 +11,7 @@ import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
 import com.liah.doribottle.service.inquiry.dto.BankAccountDto
+import com.liah.doribottle.service.inquiry.dto.InquiryTargetDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -21,23 +22,33 @@ import org.springframework.data.repository.findByIdOrNull
 class InquiryServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var inquiryService: InquiryService
+
     @Autowired
     private lateinit var inquiryRepository: InquiryRepository
+
     @Autowired
     private lateinit var userRepository: UserRepository
 
     @DisplayName("문의 등록")
     @Test
     fun register() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         clear()
 
-        //when
-        val id = inquiryService.register(user.id, REFUND, BankAccountDto("국민", "943202-00-120364", "김동준"), "버블 환불")
+        // when
+        val id =
+            inquiryService.register(
+                user.id,
+                REFUND,
+                BankAccountDto("국민", "943202-00-120364", "김동준"),
+                "버블 환불",
+                InquiryTargetDto(1, "Test"),
+                listOf("test"),
+            )
         clear()
 
-        //then
+        // then
         val findInquiry = inquiryRepository.findByIdOrNull(id)
         assertThat(findInquiry?.user?.id).isEqualTo(user.id)
         assertThat(findInquiry?.type).isEqualTo(REFUND)
@@ -45,6 +56,9 @@ class InquiryServiceTest : BaseServiceTest() {
         assertThat(findInquiry?.bankAccount?.accountNumber).isEqualTo("943202-00-120364")
         assertThat(findInquiry?.bankAccount?.accountHolder).isEqualTo("김동준")
         assertThat(findInquiry?.content).isEqualTo("버블 환불")
+        assertThat(findInquiry?.target?.id).isEqualTo(1)
+        assertThat(findInquiry?.target?.classType).isEqualTo("Test")
+        assertThat(findInquiry?.imageUrls).isEqualTo(listOf("test"))
         assertThat(findInquiry?.answer).isNull()
         assertThat(findInquiry?.status).isEqualTo(PROCEEDING)
     }
@@ -52,15 +66,15 @@ class InquiryServiceTest : BaseServiceTest() {
     @DisplayName("문의 목록 조회")
     @Test
     fun getAll() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         insertInquiries(user)
         clear()
 
-        //when
+        // when
         val result = inquiryService.getAll(pageable = Pageable.ofSize(3))
 
-        //then
+        // then
         assertThat(result)
             .extracting("user.id")
             .containsExactly(user.id, user.id, user.id)
@@ -90,15 +104,15 @@ class InquiryServiceTest : BaseServiceTest() {
     @DisplayName("문의 단건 조회")
     @Test
     fun get() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val inquiry = inquiryRepository.save(Inquiry(user, REFUND, BankAccount("국민", "943202-00-120364", "김동준"), "test"))
         clear()
 
-        //when
+        // when
         val result = inquiryService.get(inquiry.id)
 
-        //then
+        // then
         assertThat(result.user.id).isEqualTo(user.id)
         assertThat(result.type).isEqualTo(REFUND)
         assertThat(result.bankAccount?.bank).isEqualTo("국민")
@@ -112,16 +126,16 @@ class InquiryServiceTest : BaseServiceTest() {
     @DisplayName("문의 답변")
     @Test
     fun succeed() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val inquiry = inquiryRepository.save(Inquiry(user, REFUND, BankAccount("국민", "943202-00-120364", "김동준"), "test"))
         clear()
 
-        //when
+        // when
         inquiryService.succeed(inquiry.id, "환불 완료")
         clear()
 
-        //then
+        // then
         val findInquiry = inquiryRepository.findByIdOrNull(inquiry.id)
         assertThat(findInquiry?.user?.id).isEqualTo(user.id)
         assertThat(findInquiry?.type).isEqualTo(REFUND)
