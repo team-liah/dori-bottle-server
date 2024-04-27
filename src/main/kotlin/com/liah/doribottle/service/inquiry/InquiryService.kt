@@ -10,6 +10,7 @@ import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.inquiry.dto.BankAccountDto
 import com.liah.doribottle.service.inquiry.dto.InquiryDto
+import com.liah.doribottle.service.inquiry.dto.InquiryTargetDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -22,25 +23,31 @@ import java.util.*
 class InquiryService(
     private val inquiryRepository: InquiryRepository,
     private val inquiryQueryRepository: InquiryQueryRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     fun register(
         userId: UUID,
         type: InquiryType,
         bankAccount: BankAccountDto? = null,
-        content: String? = null
+        content: String? = null,
+        target: InquiryTargetDto? = null,
+        imageUrls: List<String>? = null,
     ): UUID {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(userId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-        val inquiry = inquiryRepository.save(
-            Inquiry(
-                user = user,
-                type = type,
-                bankAccount = bankAccount?.toEmbeddable(),
-                content = content
+        val inquiry =
+            inquiryRepository.save(
+                Inquiry(
+                    user = user,
+                    type = type,
+                    bankAccount = bankAccount?.toEmbeddable(),
+                    content = content,
+                    target = target?.toEmbeddable(),
+                    imageUrls = imageUrls,
+                ),
             )
-        )
 
         return inquiry.id
     }
@@ -51,33 +58,33 @@ class InquiryService(
         type: InquiryType? = null,
         status: InquiryStatus? = null,
         keyword: String? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<InquiryDto> {
         return inquiryQueryRepository.getAll(
             userId = userId,
             type = type,
             status = status,
             keyword = keyword,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
     @Transactional(readOnly = true)
-    fun get(
-        id: UUID
-    ): InquiryDto {
-        val inquiry = inquiryRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)
+    fun get(id: UUID): InquiryDto {
+        val inquiry =
+            inquiryRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)
 
         return inquiry.toDto()
     }
 
     fun succeed(
         id: UUID,
-        answer: String? = null
+        answer: String? = null,
     ) {
-        val inquiry = inquiryRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)
+        val inquiry =
+            inquiryRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.INQUIRY_NOT_FOUNT)
 
         inquiry.succeed(answer)
     }
