@@ -29,7 +29,7 @@ import java.util.*
 @RequestMapping("/admin/api/payment")
 class PaymentResource(
     private val paymentService: PaymentService,
-    private val tosspaymentsService: TosspaymentsService
+    private val tosspaymentsService: TosspaymentsService,
 ) {
     @Operation(summary = "유저 결제내역 조회")
     @GetMapping
@@ -58,7 +58,6 @@ class PaymentResource(
         return paymentService.get(id)
     }
 
-    // TODO: Test
     @GetMapping("/statistic")
     fun getStatistic(
         @RequestParam(value = "year") year: Year,
