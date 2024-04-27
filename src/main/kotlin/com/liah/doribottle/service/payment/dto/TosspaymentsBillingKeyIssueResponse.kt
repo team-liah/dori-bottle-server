@@ -14,15 +14,16 @@ data class TosspaymentsBillingKeyIssueResponse(
     val authenticatedAt: Instant,
     val method: String,
     val billingKey: String,
-    val card: TosspaymentsBillingCardResponse
+    val card: TosspaymentsBillingCardResponse,
 ) {
-    fun toBillingInfo() = BillingInfo(
-        billingKey = billingKey,
-        providerType = PaymentMethodProviderType.TOSSPAYMENTS,
-        type = (PaymentMethodType::title findBy method)!!,
-        cardDto = card.toDto(),
-        authenticatedDate = authenticatedAt
-    )
+    fun toBillingInfo() =
+        BillingInfo(
+            billingKey = billingKey,
+            providerType = PaymentMethodProviderType.TOSS_PAYMENTS,
+            type = (PaymentMethodType::title findBy method)!!,
+            cardDto = card.toDto(),
+            authenticatedDate = authenticatedAt,
+        )
 }
 
 data class TosspaymentsBillingCardResponse(
@@ -32,11 +33,12 @@ data class TosspaymentsBillingCardResponse(
     val cardType: String,
     val ownerType: String,
 ) {
-    fun toDto() = CardDto(
-        issuerProvider = (CardProvider::code findBy issuerCode)!!,
-        acquirerProvider = (CardProvider::code findBy acquirerCode)!!,
-        number = number,
-        cardType = (CardType::title findBy cardType)!!,
-        cardOwnerType = (CardOwnerType::title findBy ownerType)!!
-    )
+    fun toDto() =
+        CardDto(
+            issuerProvider = (CardProvider::code findBy issuerCode)!!,
+            acquirerProvider = (CardProvider::code findBy acquirerCode)!!,
+            number = number,
+            cardType = (CardType::title findBy cardType)!!,
+            cardOwnerType = (CardOwnerType::title findBy ownerType)!!,
+        )
 }

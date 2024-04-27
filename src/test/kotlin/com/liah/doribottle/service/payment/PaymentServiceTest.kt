@@ -10,7 +10,7 @@ import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.Payment
 import com.liah.doribottle.domain.payment.PaymentCategory
 import com.liah.doribottle.domain.payment.PaymentMethod
-import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSSPAYMENTS
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentResult
 import com.liah.doribottle.domain.payment.PaymentStatus.*
@@ -365,7 +365,7 @@ class PaymentServiceTest : BaseServiceTest() {
     fun registerMethod() {
         // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val billingInfo = BillingInfo("dummyKey", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
+        val billingInfo = BillingInfo("dummyKey", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
         clear()
 
         // when
@@ -377,7 +377,7 @@ class PaymentServiceTest : BaseServiceTest() {
 
         assertThat(findMethod?.user).isEqualTo(user)
         assertThat(findMethod?.billingKey).isEqualTo("dummyKey")
-        assertThat(findMethod?.providerType).isEqualTo(TOSSPAYMENTS)
+        assertThat(findMethod?.providerType).isEqualTo(TOSS_PAYMENTS)
         assertThat(findMethod?.type).isEqualTo(CARD)
         assertThat(findMethod?.default).isEqualTo(true)
         assertThat(findMethod?.card?.issuerProvider).isEqualTo(HYUNDAI)
@@ -393,9 +393,9 @@ class PaymentServiceTest : BaseServiceTest() {
         // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, "dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
         )
-        val billingInfo = BillingInfo("dummyKey2", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
+        val billingInfo = BillingInfo("dummyKey2", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now())
         clear()
 
         // when
@@ -407,7 +407,7 @@ class PaymentServiceTest : BaseServiceTest() {
 
         assertThat(findMethod?.user).isEqualTo(user)
         assertThat(findMethod?.billingKey).isEqualTo("dummyKey2")
-        assertThat(findMethod?.providerType).isEqualTo(TOSSPAYMENTS)
+        assertThat(findMethod?.providerType).isEqualTo(TOSS_PAYMENTS)
         assertThat(findMethod?.type).isEqualTo(CARD)
         assertThat(findMethod?.default).isEqualTo(false)
         assertThat(findMethod?.card?.issuerProvider).isEqualTo(HYUNDAI)
@@ -424,7 +424,7 @@ class PaymentServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(user, "dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
             )
         clear()
 
@@ -435,7 +435,7 @@ class PaymentServiceTest : BaseServiceTest() {
         // then
         assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.billingKey).isEqualTo("dummyKey")
-        assertThat(result.providerType).isEqualTo(TOSSPAYMENTS)
+        assertThat(result.providerType).isEqualTo(TOSS_PAYMENTS)
         assertThat(result.type).isEqualTo(CARD)
         assertThat(result.card.issuerProvider).isEqualTo(KOOKMIN)
         assertThat(result.card.acquirerProvider).isEqualTo(KOOKMIN)
@@ -470,22 +470,22 @@ class PaymentServiceTest : BaseServiceTest() {
 
     private fun insertMethods(user: User) {
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "1", CREDIT, PERSONAL), false, Instant.now()),
+            PaymentMethod(user, "dummyKey1", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "1", CREDIT, PERSONAL), false, Instant.now()),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey2", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "2", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, "dummyKey2", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "2", CREDIT, PERSONAL), true, Instant.now()),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey3", TOSSPAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "3", CREDIT, PERSONAL), false, Instant.now()),
+            PaymentMethod(user, "dummyKey3", TOSS_PAYMENTS, CARD, Card(SAMSUNG, SAMSUNG, "3", CREDIT, PERSONAL), false, Instant.now()),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey4", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4", CREDIT, CORPORATE), false, Instant.now()),
+            PaymentMethod(user, "dummyKey4", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4", CREDIT, CORPORATE), false, Instant.now()),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey5", TOSSPAYMENTS, CARD, Card(BC, BC, "5", CREDIT, PERSONAL), false, Instant.now()),
+            PaymentMethod(user, "dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "5", CREDIT, PERSONAL), false, Instant.now()),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey6", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()),
+            PaymentMethod(user, "dummyKey6", TOSS_PAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "6", CREDIT, PERSONAL), false, Instant.now()),
         )
     }
 
@@ -496,14 +496,22 @@ class PaymentServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method1 =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(
+                    user,
+                    "dummyKey1",
+                    TOSS_PAYMENTS,
+                    CARD,
+                    Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL),
+                    true,
+                    Instant.now(),
+                ),
             )
         val method2 =
             paymentMethodRepository.save(
                 PaymentMethod(
                     user,
                     "dummyKey2",
-                    TOSSPAYMENTS,
+                    TOSS_PAYMENTS,
                     CARD,
                     Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
                     false,
@@ -530,7 +538,7 @@ class PaymentServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(user, "dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
             )
         clear()
 
@@ -550,14 +558,22 @@ class PaymentServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(
+                    user,
+                    "dummyKey1",
+                    TOSS_PAYMENTS,
+                    CARD,
+                    Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL),
+                    true,
+                    Instant.now(),
+                ),
             )
         val anotherMethod =
             paymentMethodRepository.save(
                 PaymentMethod(
                     user,
                     "dummyKey2",
-                    TOSSPAYMENTS,
+                    TOSS_PAYMENTS,
                     CARD,
                     Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
                     false,
@@ -584,7 +600,7 @@ class PaymentServiceTest : BaseServiceTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(user, "dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
             )
         val vendingMachine =
             machineRepository.save(
