@@ -1,6 +1,7 @@
 package com.liah.doribottle.web.v1.rental
 
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.config.security.WithMockDoriUser
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.cup.Cup
@@ -230,6 +231,36 @@ class RentalControllerTest : BaseControllerTest() {
         rentalRepository.save(Rental(user, cupRepository.save(Cup("E1:E1:E1:E1")), vendingMachine, true, 7))
         rentalRepository.save(Rental(user, cupRepository.save(Cup("F1:F1:F1:F1")), vendingMachine, true, 7))
         rentalRepository.save(Rental(user, cupRepository.save(Cup("G1:G1:G1:G1")), vendingMachine, true, 7))
+    }
+
+    @DisplayName("대여 조회")
+    @Test
+    fun get() {
+        val rental = rentalRepository.save(Rental(user, cupRepository.save(Cup("B1:B1:B1:B1")), vendingMachine, true, 7))
+
+        val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
+
+        mockMvc.perform(
+            get("$endPoint/${rental.id}")
+                .cookie(cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @WithMockDoriUser
+    @DisplayName("대여 조회 - Forbidden")
+    @Test
+    fun getException() {
+        val rental = rentalRepository.save(Rental(user, cupRepository.save(Cup("B1:B1:B1:B1")), vendingMachine, true, 7))
+
+        mockMvc.perform(
+            get("$endPoint/${rental.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isForbidden)
     }
 
     @DisplayName("대여 가능 여부 확인")
