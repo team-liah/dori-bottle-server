@@ -48,6 +48,8 @@ import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
+import java.time.Year
+import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
 class PaymentServiceTest : BaseServiceTest() {
@@ -156,6 +158,46 @@ class PaymentServiceTest : BaseServiceTest() {
         assertThat(result)
             .extracting("price")
             .containsExactly(1000L, 2000L, 3000L)
+    }
+
+    @DisplayName("결제 통계 조회")
+    @Test
+    fun getStatistic() {
+        // given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val card = Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL)
+        val payment1 = paymentRepository.save(Payment(user, 1000, SAVE_POINT, card))
+        payment1.updateResult(
+            PaymentResult("dummyPaymentKey", Instant.now(), "", null),
+            pointRepository.save(Point(user.id, PAY, SAVE_PAY, 30)),
+        )
+        val payment2 = paymentRepository.save(Payment(user, 2000, LOST_CUP, card))
+        payment2.updateResult(PaymentResult("dummyPaymentKey", Instant.now(), "", null), null)
+        val payment3 = paymentRepository.save(Payment(user, 3000, UNBLOCK_ACCOUNT, card))
+        payment3.updateResult(PaymentResult("dummyPaymentKey", Instant.now(), "", null), null)
+        val payment4 = paymentRepository.save(Payment(user, 4000, LOST_CUP, card))
+        payment4.updateResult(PaymentResult("dummyPaymentKey", Instant.now(), "", null), null)
+        val payment5 = paymentRepository.save(Payment(user, 5000, UNBLOCK_ACCOUNT, card))
+        payment5.updateResult(PaymentResult("dummyPaymentKey", Instant.now(), "", null), null)
+        val payment6 = paymentRepository.save(Payment(user, 6000, LOST_CUP, card))
+        payment6.updateResult(PaymentResult("dummyPaymentKey", Instant.now(), "", null), null)
+
+        val now = YearMonth.now()
+        clear()
+
+        // when
+        val result =
+            paymentService.getStatistic(
+                year = Year.of(now.year),
+                month = now.month,
+            )
+
+        // then
+        assertThat(result.size).isEqualTo(1)
+        assertThat(result.first().totalAmount).isEqualTo(21000)
+        assertThat(result.first().savePointAmount).isEqualTo(1000)
+        assertThat(result.first().lostCupAmount).isEqualTo(12000)
+        assertThat(result.first().unblockAccountAmount).isEqualTo(8000)
     }
 
     private fun insertPayments(user: User) {
