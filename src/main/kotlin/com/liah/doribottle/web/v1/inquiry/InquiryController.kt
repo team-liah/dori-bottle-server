@@ -16,30 +16,33 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/inquiry")
 class InquiryController(
-    private val inquiryService: InquiryService
+    private val inquiryService: InquiryService,
 ) {
     @Operation(summary = "문의 등록")
     @PostMapping
     fun register(
-        @Valid @RequestBody request: InquiryRegisterRequest
+        @Valid @RequestBody request: InquiryRegisterRequest,
     ) {
         inquiryService.register(
             userId = currentUserId()!!,
             type = request.type!!,
             bankAccount = request.bankAccountDto,
-            content = request.content
+            content = request.content,
+            target = request.target,
+            imageUrls = request.imageUrls,
         )
     }
 
     @Operation(summary = "문의 목록 조회")
     @GetMapping
     fun getAll(
-        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = DESC) pageable: Pageable
+        @ParameterObject @PageableDefault(sort = ["createdDate"], direction = DESC) pageable: Pageable,
     ): CustomPage<InquirySearchResponse> {
-        val result = inquiryService.getAll(
-            userId = currentUserId()!!,
-            pageable = pageable
-        ).map { it.toSearchResponse() }
+        val result =
+            inquiryService.getAll(
+                userId = currentUserId()!!,
+                pageable = pageable,
+            ).map { it.toSearchResponse() }
 
         return CustomPage.of(result)
     }

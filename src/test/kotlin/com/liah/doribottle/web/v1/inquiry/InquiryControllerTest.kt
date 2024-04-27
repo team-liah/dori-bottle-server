@@ -28,6 +28,7 @@ class InquiryControllerTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var inquiryRepository: InquiryRepository
+
     @Autowired
     private lateinit var userRepository: UserRepository
 
@@ -40,19 +41,19 @@ class InquiryControllerTest : BaseControllerTest() {
     @DisplayName("문의 등록")
     @Test
     fun register() {
-        //given
+        // given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        val body = InquiryRegisterRequest(InquiryType.REFUND, null, null)
+        val body = InquiryRegisterRequest(InquiryType.REFUND, null, null, null, null)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             post(endPoint)
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -69,7 +70,15 @@ class InquiryControllerTest : BaseControllerTest() {
         params.add("page", "0")
         params.add("size", "6")
 
-        val expectType = listOf(InquiryType.ETC.name, InquiryType.ETC.name, InquiryType.ETC.name, InquiryType.ETC.name, InquiryType.ETC.name, InquiryType.REFUND.name)
+        val expectType =
+            listOf(
+                InquiryType.ETC.name,
+                InquiryType.ETC.name,
+                InquiryType.ETC.name,
+                InquiryType.ETC.name,
+                InquiryType.ETC.name,
+                InquiryType.REFUND.name,
+            )
         val expectBankAccount = listOf("국민")
         val expectContent = listOf("6", "5", "4", "3", "2", "1")
         mockMvc.perform(
@@ -77,7 +86,7 @@ class InquiryControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].type", `is`(expectType)))

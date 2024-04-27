@@ -12,7 +12,7 @@ import java.util.*
 @Entity
 @Table(
     name = "admin",
-    indexes = [Index(name = "IDX_ADMIN_LOGIN_ID", columnList = "loginId")]
+    indexes = [Index(name = "IDX_ADMIN_LOGIN_ID", columnList = "loginId")],
 )
 class Admin(
     loginId: String,
@@ -22,7 +22,7 @@ class Admin(
     email: String? = null,
     phoneNumber: String? = null,
     description: String? = null,
-    gender: Gender? = null
+    gender: Gender? = null,
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -58,8 +58,9 @@ class Admin(
         protected set
 
     override fun delete() {
-        if (this.isSystem())
+        if (this.isSystem()) {
             throw BusinessException(ErrorCode.SYSTEM_DELETE_NOT_ALLOWED)
+        }
 
         this.loginId = "Deleted ${UUID.randomUUID()}"
         super.delete()
@@ -71,7 +72,7 @@ class Admin(
         email: String?,
         phoneNumber: String?,
         description: String?,
-        gender: Gender?
+        gender: Gender?,
     ) {
         this.loginId = loginId
         this.name = name
@@ -81,12 +82,11 @@ class Admin(
         this.gender = gender
     }
 
-    fun updatePassword(
-        loginPassword: String
-    ) {
+    fun updatePassword(loginPassword: String) {
         this.loginPassword = loginPassword
     }
 
-    fun toDto() = AdminDto(id, loginId, name, role, email, phoneNumber, description, deleted, createdDate, lastModifiedDate)
+    fun toDto() = AdminDto(id, loginId, name, role, email, phoneNumber, description, gender, deleted, createdDate, lastModifiedDate)
+
     fun toSimpleDto() = AdminSimpleDto(id, loginId, name, role)
 }
