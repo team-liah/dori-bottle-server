@@ -57,14 +57,20 @@ class AccountControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/account"
 
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+
     @Autowired private lateinit var pointRepository: PointRepository
+
     @Autowired private lateinit var inquiryRepository: InquiryRepository
+
     @Autowired private lateinit var loginIdChangeRepository: LoginIdChangeRepository
 
     @MockBean
     private lateinit var mockSmsService: SmsService
+
     @MockBean
     private lateinit var mockAwsSqsSender: AwsSqsSender
 
@@ -104,7 +110,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth/send-sms")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
@@ -120,7 +126,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
@@ -136,7 +142,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/auth")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isUnauthorized)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -153,7 +159,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/refresh-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
@@ -170,7 +176,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/refresh-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isUnauthorized)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -180,17 +186,19 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("Dori User Pre Auth Token")
     @Test
     fun getPreAuthToken() {
-        //given
+        // given
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
+        )
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("accessToken", notNullValue()))
@@ -208,7 +216,7 @@ class AccountControllerTest : BaseControllerTest() {
             get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP.code)))
@@ -227,7 +235,7 @@ class AccountControllerTest : BaseControllerTest() {
             get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
@@ -244,7 +252,7 @@ class AccountControllerTest : BaseControllerTest() {
             get("$endPoint/pre-auth")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.code)))
@@ -261,7 +269,7 @@ class AccountControllerTest : BaseControllerTest() {
             post("$endPoint/logout")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -281,7 +289,7 @@ class AccountControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, notNullValue()))
@@ -293,7 +301,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("회원 탈퇴")
     @Test
     fun inactivate() {
-        //given
+        // given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
@@ -304,13 +312,13 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = InactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"), "테스트")
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/inactivate")
+            post("$endPoint/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -342,7 +350,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("회원 탈퇴 TC2")
     @Test
     fun inactivateTc2() {
-        //given
+        // given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
@@ -351,13 +359,13 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = InactivateRequest(BankAccountDto("국민", "94320200120364", "김동준"), "테스트")
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/inactivate")
+            post("$endPoint/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -385,7 +393,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("회원 탈퇴 TC3")
     @Test
     fun inactivateTc3() {
-        //given
+        // given
         val user = User("010-1234-1234", "Tester", "010-1234-1234", Role.USER)
         user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
         userRepository.save(user)
@@ -394,13 +402,13 @@ class AccountControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = InactivateRequest(null, "테스트")
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/inactivate")
+            post("$endPoint/inactivate")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -423,24 +431,24 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("로그인 ID 변경 요청")
     @Test
     fun sendLoginIdChangeSms() {
-        //given
+        // given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1234-1234")
 
-        //when
+        // when
         mockMvc.perform(
             post("$endPoint/change-login-id/send-sms")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
-        //then
+        // then
         verify(mockSmsService, times(1)).sendAuthSms(any<String>(), any<String>())
 
         val findLoginChange = loginIdChangeRepository.findByIdOrNull(user.id.toString())
@@ -450,7 +458,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("로그인 ID 변경 요청 예외")
     @Test
     fun sendLoginIdChangeSmsException() {
-        //given
+        // given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val anotherUser = userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -458,13 +466,13 @@ class AccountControllerTest : BaseControllerTest() {
         doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())
         val body = SendSmsRequest("010-1111-1111")
 
-        //when, then
+        // when, then
         mockMvc.perform(
             post("$endPoint/change-login-id/send-sms")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.USER_ALREADY_REGISTERED.code)))
@@ -474,7 +482,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("로그인 ID 변경")
     @Test
     fun changeLoginId() {
-        //given
+        // given
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
@@ -482,13 +490,13 @@ class AccountControllerTest : BaseControllerTest() {
 
         val body = LoginIdChangeRequest(authCode)
 
-        //when, then
+        // when, then
         mockMvc.perform(
             put("$endPoint/change-login-id")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
             .andExpect(cookie().value(AuthorityConstant.ACCESS_TOKEN, emptyOrNullString()))
@@ -497,7 +505,7 @@ class AccountControllerTest : BaseControllerTest() {
     @DisplayName("로그인 ID 변경 예외")
     @Test
     fun changeLoginIdException() {
-        //given
+        // given
         val authCode = "123456"
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-1111-1111", authCode))
@@ -505,13 +513,13 @@ class AccountControllerTest : BaseControllerTest() {
 
         val body = LoginIdChangeRequest("000000")
 
-        //when, then
+        // when, then
         mockMvc.perform(
             put("$endPoint/change-login-id")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("code", `is`(ErrorCode.LOGIN_ID_NOT_ALLOWED.code)))

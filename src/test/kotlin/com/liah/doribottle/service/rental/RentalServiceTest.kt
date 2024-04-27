@@ -343,7 +343,11 @@ class RentalServiceTest : BaseServiceTest() {
                         "12345",
                         "test",
                     ),
-                    Location(37.508855, 127.059479), 100, null, null, 10L,
+                    Location(37.508855, 127.059479),
+                    100,
+                    null,
+                    null,
+                    10L,
                 ),
             )
         vendingMachine.increaseCupAmounts(10)
