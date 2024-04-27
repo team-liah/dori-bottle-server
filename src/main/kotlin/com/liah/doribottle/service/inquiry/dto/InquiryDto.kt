@@ -13,10 +13,12 @@ data class InquiryDto(
     val type: InquiryType,
     val bankAccount: BankAccountDto?,
     val content: String?,
+    val target: InquiryTargetDto?,
+    val imageUrls: List<String>?,
     val answer: String?,
     val status: InquiryStatus,
     val createdDate: Instant,
-    val lastModifiedDate: Instant
+    val lastModifiedDate: Instant,
 ) {
     fun toSearchResponse(): InquirySearchResponse {
         return InquirySearchResponse(
@@ -24,9 +26,11 @@ data class InquiryDto(
             type = type,
             bankAccount = bankAccount,
             content = content,
+            target = target,
+            imageUrls = imageUrls,
             answer = answer,
             status = status,
-            createdDate = createdDate
+            createdDate = createdDate,
         )
     }
 }

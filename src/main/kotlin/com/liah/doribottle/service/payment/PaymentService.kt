@@ -11,6 +11,8 @@ import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
 import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
 import com.liah.doribottle.domain.payment.PaymentType.SAVE_POINT
 import com.liah.doribottle.event.Events
+import com.liah.doribottle.extension.getEndDateString
+import com.liah.doribottle.extension.getStartDateString
 import com.liah.doribottle.repository.payment.*
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.rental.RentalQueryRepository
@@ -39,16 +41,17 @@ class PaymentService(
     private val userRepository: UserRepository,
     private val pointRepository: PointRepository,
     private val pointService: PointService,
-    private val rentalQueryRepository: RentalQueryRepository
+    private val rentalQueryRepository: RentalQueryRepository,
 ) {
     fun create(
         userId: UUID,
         price: Long,
         type: PaymentType,
-        card: CardDto
+        card: CardDto,
     ): UUID {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(userId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         val payment = paymentRepository.save(Payment(user, price, type, card.toEmbeddable()))
 
@@ -56,11 +59,10 @@ class PaymentService(
     }
 
     @Transactional(readOnly = true)
-    fun get(
-        id: UUID
-    ): PaymentDto {
-        val payment = paymentRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+    fun get(id: UUID): PaymentDto {
+        val payment =
+            paymentRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         return payment.toDto()
     }
@@ -72,7 +74,7 @@ class PaymentService(
         statuses: Set<PaymentStatus>? = null,
         fromApprovedDate: Instant? = null,
         toApprovedDate: Instant? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<PaymentDto> {
         return paymentQueryRepository.getAll(
             userId = userId,
@@ -80,7 +82,7 @@ class PaymentService(
             statuses = statuses,
             fromApprovedDate = fromApprovedDate,
             toApprovedDate = toApprovedDate,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
@@ -88,40 +90,23 @@ class PaymentService(
     @Transactional(readOnly = true)
     fun getStatistic(
         year: Year,
-        month: Month?
+        month: Month?,
     ): List<PaymentStatisticDto> {
         return paymentRepository.findStatisticByApprovedDate(
-            if (month == null) "%Y-%m" else "%Y-%m-%d",
-            calculateStartDate(year, month),
-            calculateEndDate(year, month)
-        ).map { PaymentStatisticDto.fromDao(it) }
-    }
-
-    private fun calculateStartDate(
-        year: Year,
-        month: Month?
-    ): String {
-        return month?.let { "${year.value}${String.format("%02d", it.value)}01" } ?: "${year.value}0101"
-    }
-
-    private fun calculateEndDate(
-        year: Year,
-        month: Month?
-    ): String {
-        return if (month == null || month == Month.DECEMBER) {
-            "${year.plusYears(1).value}0101"
-        } else {
-            "${year.value}${String.format("%02d", month.plus(1).value)}01"
-        }
+            groupFormat = if (month == null) "%Y-%m" else "%Y-%m-%d",
+            startDate = getStartDateString(year, month),
+            endDate = getEndDateString(year, month),
+        ).map { dao -> PaymentStatisticDto.fromDao(dao) }
     }
 
     fun updateResult(
         id: UUID,
         result: PaymentResultDto? = null,
-        pointId: UUID? = null
+        pointId: UUID? = null,
     ) {
-        val payment = paymentRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
+        val payment =
+            paymentRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
         val point = pointId?.let { pointRepository.findByIdOrNull(pointId) }
 
         payment.updateResult(result?.toEmbeddable(), point)
@@ -135,51 +120,51 @@ class PaymentService(
                     type = NotificationType.AUTO_PAYMENT,
                     targetId = payment.id,
                     "${payment.price}",
-                    payment.type.title
-                )
+                    payment.type.title,
+                ),
             )
         }
     }
 
     fun registerMethod(
         userId: UUID,
-        billingInfo: BillingInfo
+        billingInfo: BillingInfo,
     ): UUID {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(userId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
         val defaultMethod = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
 
-        val method = paymentMethodRepository.save(
-            PaymentMethod(
-                user = user,
-                billingKey = billingInfo.billingKey,
-                providerType = billingInfo.providerType,
-                type = billingInfo.type,
-                card = billingInfo.cardDto.toEmbeddable(),
-                authenticatedDate = billingInfo.authenticatedDate,
-                default = defaultMethod == null
+        val method =
+            paymentMethodRepository.save(
+                PaymentMethod(
+                    user = user,
+                    billingKey = billingInfo.billingKey,
+                    providerType = billingInfo.providerType,
+                    type = billingInfo.type,
+                    card = billingInfo.cardDto.toEmbeddable(),
+                    authenticatedDate = billingInfo.authenticatedDate,
+                    default = defaultMethod == null,
+                ),
             )
-        )
 
         return method.id
     }
 
     @Transactional(readOnly = true)
-    fun getMethod(
-        id: UUID
-    ): PaymentMethodDto {
-        val method = paymentMethodRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+    fun getMethod(id: UUID): PaymentMethodDto {
+        val method =
+            paymentMethodRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         return method.toDto()
     }
 
     @Transactional(readOnly = true)
-    fun getDefaultMethod(
-        userId: UUID
-    ): PaymentMethodDto {
-        val method = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+    fun getDefaultMethod(userId: UUID): PaymentMethodDto {
+        val method =
+            paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         return method.toDto()
     }
@@ -187,39 +172,40 @@ class PaymentService(
     @Transactional(readOnly = true)
     fun getAllMethods(
         userId: UUID,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<PaymentMethodDto> {
         return paymentMethodQueryRepository.getAll(
             userId = userId,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
     fun changeDefaultMethod(
         id: UUID,
-        userId: UUID
+        userId: UUID,
     ) {
         val originDefaultMethod = paymentMethodRepository.findFirstByUserIdAndDefault(userId, true)
-        val newDefaultMethod = paymentMethodRepository.findByIdAndUserId(id, userId)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+        val newDefaultMethod =
+            paymentMethodRepository.findByIdAndUserId(id, userId)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         originDefaultMethod?.update(default = false)
         newDefaultMethod.update(default = true)
     }
 
-    fun removeMethod(
-        id: UUID
-    ) {
-        val method = paymentMethodRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
+    fun removeMethod(id: UUID) {
+        val method =
+            paymentMethodRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_METHOD_NOT_FOUND)
 
         if (method.default) {
             val anotherMethod = paymentMethodRepository.findFirstByUserIdAndDefault(method.user.id, false)
 
             if (anotherMethod == null) {
                 val existProceedingRental = rentalQueryRepository.existsConfirmedByUserId(method.user.id)
-                if (existProceedingRental)
+                if (existProceedingRental) {
                     throw BusinessException(ErrorCode.PAYMENT_METHOD_REMOVE_NOT_ALLOWED)
+                }
             } else {
                 changeDefaultMethod(anotherMethod.id, method.user.id)
             }
@@ -233,27 +219,27 @@ class PaymentService(
         price: Long,
         discountRate: Int,
         discountExpiredDate: Instant? = null,
-        expiredDate: Instant? = null
+        expiredDate: Instant? = null,
     ): UUID {
-        val category = paymentCategoryRepository.save(
-            PaymentCategory(
-                amounts = amounts,
-                price = price,
-                discountRate = discountRate,
-                discountExpiredDate = discountExpiredDate,
-                expiredDate = expiredDate
+        val category =
+            paymentCategoryRepository.save(
+                PaymentCategory(
+                    amounts = amounts,
+                    price = price,
+                    discountRate = discountRate,
+                    discountExpiredDate = discountExpiredDate,
+                    expiredDate = expiredDate,
+                ),
             )
-        )
 
         return category.id
     }
 
     @Transactional(readOnly = true)
-    fun getCategory(
-        categoryId: UUID
-    ): PaymentCategoryDto {
-        val category = paymentCategoryRepository.findByIdOrNull(categoryId)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
+    fun getCategory(categoryId: UUID): PaymentCategoryDto {
+        val category =
+            paymentCategoryRepository.findByIdOrNull(categoryId)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
 
         return category.toDto()
     }
@@ -261,11 +247,11 @@ class PaymentService(
     @Transactional(readOnly = true)
     fun getAllCategories(
         expired: Boolean? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<PaymentCategoryDto> {
         return paymentCategoryQueryRepository.getAll(
             expired = expired,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
@@ -275,25 +261,25 @@ class PaymentService(
         price: Long,
         discountRate: Int,
         discountExpiredDate: Instant? = null,
-        expiredDate: Instant? = null
+        expiredDate: Instant? = null,
     ) {
-        val category = paymentCategoryRepository.findByIdOrNull(categoryId)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
+        val category =
+            paymentCategoryRepository.findByIdOrNull(categoryId)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
 
         category.update(
             amounts = amounts,
             price = price,
             discountRate = discountRate,
             discountExpiredDate = discountExpiredDate,
-            expiredDate = expiredDate
+            expiredDate = expiredDate,
         )
     }
 
-    fun removeCategory(
-        categoryId: UUID
-    ) {
-        val category = paymentCategoryRepository.findByIdOrNull(categoryId)
-            ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
+    fun removeCategory(categoryId: UUID) {
+        val category =
+            paymentCategoryRepository.findByIdOrNull(categoryId)
+                ?: throw NotFoundException(ErrorCode.PAYMENT_CATEGORY_NOT_FOUND)
 
         paymentCategoryRepository.delete(category)
     }

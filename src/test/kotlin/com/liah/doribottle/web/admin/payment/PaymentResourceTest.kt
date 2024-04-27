@@ -47,10 +47,13 @@ class PaymentResourceTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var paymentRepository: PaymentRepository
+
     @Autowired
     private lateinit var paymentCategoryRepository: PaymentCategoryRepository
+
     @Autowired
     private lateinit var userRepository: UserRepository
+
     @Autowired
     private lateinit var pointRepository: PointRepository
 
@@ -81,14 +84,16 @@ class PaymentResourceTest : BaseControllerTest() {
 
         val expectUserId = listOf(userC.id.toString(), userB.id.toString(), userB.id.toString(), userA.id.toString())
         val expectPrice = listOf(6000, 4000, 3000, 1000)
-        val expectType = listOf(PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name)
-        val expectStatus = listOf(PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name, PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name)
+        val expectType =
+            listOf(PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name, PaymentType.SAVE_POINT.name)
+        val expectStatus =
+            listOf(PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name, PaymentStatus.CANCELED.name, PaymentStatus.SUCCEEDED.name)
 
         mockMvc.perform(
             get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].user.id", `is`(expectUserId)))
@@ -97,7 +102,11 @@ class PaymentResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
     }
 
-    private fun insertPayments(userA: User, userB: User, userC: User) {
+    private fun insertPayments(
+        userA: User,
+        userB: User,
+        userC: User,
+    ) {
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         val payment1 = Payment(userA, 1000, PaymentType.SAVE_POINT, card)
         val point1 = pointRepository.save(Point(userA.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 10))
@@ -147,9 +156,9 @@ class PaymentResourceTest : BaseControllerTest() {
         paymentRepository.save(payment)
 
         mockMvc.perform(
-            get("${endPoint}/${payment.id}")
+            get("$endPoint/${payment.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("user.id", `is`(user.id.toString())))
@@ -158,11 +167,28 @@ class PaymentResourceTest : BaseControllerTest() {
             .andExpect(jsonPath("status", `is`(payment.status.name)))
     }
 
+    @DisplayName("결제 통계 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getStatistic() {
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("year", "2024")
+        params.add("month", "APRIL")
+
+        mockMvc.perform(
+            get("$endPoint/statistic")
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("포인트 충전 결제 취소")
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun cancel() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         val point = pointRepository.save(Point(user.id, PointSaveType.PAY, PointEventType.SAVE_PAY, 30))
@@ -175,11 +201,11 @@ class PaymentResourceTest : BaseControllerTest() {
         given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)")))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/${payment.id}/cancel")
+            post("$endPoint/${payment.id}/cancel")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
@@ -209,11 +235,11 @@ class PaymentResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = MACHINE_LOGIN_ID, role = Role.MACHINE_ADMIN)
     @Test
     fun cancelException() {
-        //given, when, then
+        // given, when, then
         mockMvc.perform(
-            post("${endPoint}/${UUID.randomUUID()}/cancel")
+            post("$endPoint/${UUID.randomUUID()}/cancel")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isForbidden)
     }
@@ -225,10 +251,10 @@ class PaymentResourceTest : BaseControllerTest() {
         val body = PaymentCategoryRegisterOrUpdateRequest(10, 1000, 10, null, null)
 
         mockMvc.perform(
-            post("${endPoint}/category")
+            post("$endPoint/category")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -249,10 +275,10 @@ class PaymentResourceTest : BaseControllerTest() {
         val expectDiscountPriceValue = listOf(5400, 4500, 3600)
 
         mockMvc.perform(
-            get("${endPoint}/category")
+            get("$endPoint/category")
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].amounts", `is`(expectAmountsValue)))
@@ -268,9 +294,9 @@ class PaymentResourceTest : BaseControllerTest() {
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, null, null))
 
         mockMvc.perform(
-            get("${endPoint}/category/${category.id}")
+            get("$endPoint/category/${category.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("amounts", `is`(category.amounts.toInt())))
@@ -283,16 +309,16 @@ class PaymentResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun updateCategory() {
-        //given
+        // given
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, null, null))
         val body = PaymentCategoryRegisterOrUpdateRequest(20, 2000, 20, null, null)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            put("${endPoint}/category/${category.id}")
+            put("$endPoint/category/${category.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
@@ -309,9 +335,9 @@ class PaymentResourceTest : BaseControllerTest() {
         val category = paymentCategoryRepository.save(PaymentCategory(10, 1000, 10, null, null))
 
         mockMvc.perform(
-            delete("${endPoint}/category/${category.id}")
+            delete("$endPoint/category/${category.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
 
