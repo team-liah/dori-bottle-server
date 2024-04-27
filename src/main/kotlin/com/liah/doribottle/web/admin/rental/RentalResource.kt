@@ -70,7 +70,6 @@ class RentalResource(
         rentalService.cancel(id)
     }
 
-    // TODO: Test
     @GetMapping("/statistic")
     fun getStatistic(
         @RequestParam(value = "year") year: Year,

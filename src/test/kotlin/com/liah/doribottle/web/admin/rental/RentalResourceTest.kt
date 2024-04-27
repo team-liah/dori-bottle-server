@@ -36,10 +36,13 @@ class RentalResourceTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var userRepository: UserRepository
+
     @Autowired
     private lateinit var machineRepository: MachineRepository
+
     @Autowired
     private lateinit var cupRepository: CupRepository
+
     @Autowired
     private lateinit var rentalRepository: RentalRepository
 
@@ -55,7 +58,7 @@ class RentalResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun getAll() {
-        //given
+        // given
         val userA = userRepository.save(User("010-1111-1111", "Tester A", "010-1111-1111", Role.USER))
         val userB = userRepository.save(User("010-2222-2222", "Tester B", "010-2222-2222", Role.USER))
         val userC = userRepository.save(User("010-3333-3333", "Tester C", "010-3333-3333", Role.USER))
@@ -71,14 +74,28 @@ class RentalResourceTest : BaseControllerTest() {
         params.add("size", "5")
 
         val expectUserId = listOf(userC.id.toString(), userC.id.toString(), userB.id.toString(), userB.id.toString(), userA.id.toString())
-        val expectFromMachineId = listOf(vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString(), vendingMachine.id.toString())
-        val expectStatus = listOf(RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString(), RentalStatus.CONFIRMED.toString())
+        val expectFromMachineId =
+            listOf(
+                vendingMachine.id.toString(),
+                vendingMachine.id.toString(),
+                vendingMachine.id.toString(),
+                vendingMachine.id.toString(),
+                vendingMachine.id.toString(),
+            )
+        val expectStatus =
+            listOf(
+                RentalStatus.CONFIRMED.toString(),
+                RentalStatus.CONFIRMED.toString(),
+                RentalStatus.CONFIRMED.toString(),
+                RentalStatus.CONFIRMED.toString(),
+                RentalStatus.CONFIRMED.toString(),
+            )
 
         mockMvc.perform(
             get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].user.id", `is`(expectUserId)))
@@ -90,7 +107,7 @@ class RentalResourceTest : BaseControllerTest() {
         userA: User,
         userB: User,
         userC: User,
-        vendingMachine: Machine
+        vendingMachine: Machine,
     ) {
         rentalRepository.save(Rental(userA, cupRepository.save(Cup("B1:B1:B1:B1")), vendingMachine, true, 7))
         rentalRepository.save(Rental(userA, cupRepository.save(Cup("C1:C1:C1:C1")), vendingMachine, true, 7))
@@ -104,7 +121,7 @@ class RentalResourceTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
     @Test
     fun get() {
-        //given
+        // given
         val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
         val vendingMachine = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null)
         vendingMachine.updateCupAmounts(100)
@@ -112,9 +129,9 @@ class RentalResourceTest : BaseControllerTest() {
         val rental = rentalRepository.save(Rental(user, cupRepository.save(Cup("B1:B1:B1:B1")), vendingMachine, true, 7))
 
         mockMvc.perform(
-            get("${endPoint}/${rental.id}")
+            get("$endPoint/${rental.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("user.id", `is`(user.id.toString())))
@@ -127,17 +144,23 @@ class RentalResourceTest : BaseControllerTest() {
     @Test
     fun `return`() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val collectionMachine = machineRepository.save(Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
+        val vendingMachine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val collectionMachine =
+            machineRepository.save(
+                Machine("0000002", "name", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
         val cup = cupRepository.save(Cup(CUP_RFID))
         rentalRepository.save(Rental(user, cup, vendingMachine, true, 14))
 
         val body = ReturnRequest(collectionMachine.no, CUP_RFID)
         mockMvc.perform(
-            post("${endPoint}/return")
+            post("$endPoint/return")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -147,17 +170,40 @@ class RentalResourceTest : BaseControllerTest() {
     @Test
     fun cancel() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
-        val vendingMachine = machineRepository.save(Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null))
-        val collectionMachine = machineRepository.save(Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 0, null))
+        val vendingMachine =
+            machineRepository.save(
+                Machine("0000001", "name", VENDING, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 100, null),
+            )
+        val collectionMachine =
+            machineRepository.save(
+                Machine("0000002", "name2", COLLECTION, Address("00001", "삼성로", null), Location(37.508855, 127.059479), 0, null),
+            )
         val cup = cupRepository.save(Cup(CUP_RFID))
         val rental = rentalRepository.save(Rental(user, cup, vendingMachine, true, 14))
         rental.`return`(collectionMachine)
         rentalRepository.save(rental)
 
         mockMvc.perform(
-            post("${endPoint}/${rental.id}/cancel")
+            post("$endPoint/${rental.id}/cancel")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isOk)
+    }
+
+    @DisplayName("대여 통계 조회")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getStatistic() {
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("year", "2024")
+        params.add("month", "APRIL")
+
+        mockMvc.perform(
+            get("$endPoint/statistic")
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
     }
