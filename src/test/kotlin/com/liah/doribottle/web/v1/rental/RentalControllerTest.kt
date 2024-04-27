@@ -50,10 +50,15 @@ class RentalControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/rental"
 
     @Autowired private lateinit var rentalRepository: RentalRepository
+
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var machineRepository: MachineRepository
+
     @Autowired private lateinit var cupRepository: CupRepository
+
     @Autowired private lateinit var pointRepository: PointRepository
+
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
 
     private lateinit var user: User
@@ -68,12 +73,17 @@ class RentalControllerTest : BaseControllerTest() {
         guest = userRepository.save(User(GUEST_LOGIN_ID, "사용자", GUEST_LOGIN_ID, Role.GUEST))
 
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
+        )
 
         val machineEntity = Machine("1", "name", VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null)
         machineEntity.updateCupAmounts(100)
         vendingMachine = machineRepository.save(machineEntity)
-        collectionMachine = machineRepository.save(Machine("2", "name", COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
+        collectionMachine =
+            machineRepository.save(
+                Machine("2", "name", COLLECTION, Address("12345", "test"), Location(37.508855, 127.059479), 100, null),
+            )
 
         cup = cupRepository.save(Cup(CUP_RFID))
     }
@@ -101,7 +111,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -119,7 +129,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.LACK_OF_POINT.message)))
@@ -140,7 +150,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("code", `is`(ErrorCode.BLOCKED_USER_ACCESS_DENIED.code)))
@@ -161,7 +171,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("code", `is`(ErrorCode.PAYMENT_METHOD_NOT_FOUND.code)))
@@ -179,7 +189,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
@@ -205,7 +215,7 @@ class RentalControllerTest : BaseControllerTest() {
                 .cookie(cookie)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].userId", `is`(expectUserId)))
@@ -235,7 +245,7 @@ class RentalControllerTest : BaseControllerTest() {
             get("$endPoint/check")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("possible", `is`(expectPossible)))

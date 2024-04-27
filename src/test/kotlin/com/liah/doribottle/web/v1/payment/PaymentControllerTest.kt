@@ -12,7 +12,7 @@ import com.liah.doribottle.domain.group.GroupType
 import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.domain.payment.*
-import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSSPAYMENTS
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentStatus.CANCELED
 import com.liah.doribottle.domain.payment.PaymentStatus.SUCCEEDED
@@ -125,7 +125,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         paymentMethodRepository.save(
-            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
         given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
@@ -178,7 +178,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         paymentMethodRepository.save(
-            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
         given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
@@ -227,7 +227,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val billingKey = "dummyBillingKey"
         paymentMethodRepository.save(
-            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
         given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
@@ -282,7 +282,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         paymentMethodRepository.save(
-            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
         given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
@@ -333,7 +333,7 @@ class PaymentControllerTest : BaseControllerTest() {
 
         val billingKey = "dummyBillingKey"
         paymentMethodRepository.save(
-            PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
         given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
@@ -531,11 +531,11 @@ class PaymentControllerTest : BaseControllerTest() {
         // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
-        val body = PaymentMethodRegisterRequest(TOSSPAYMENTS, "dummyAuthKey")
+        val body = PaymentMethodRegisterRequest(TOSS_PAYMENTS, "dummyAuthKey")
 
         given(mockTosspaymentsService.issueBillingKey("dummyAuthKey", user.id))
             .willReturn(
-                BillingInfo("dummyBillingKey", TOSSPAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now()),
+                BillingInfo("dummyBillingKey", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now()),
             )
 
         // when, then
@@ -584,7 +584,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(
                 user,
                 "dummyKey1",
-                TOSSPAYMENTS,
+                TOSS_PAYMENTS,
                 CARD,
                 Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL),
                 false,
@@ -592,13 +592,21 @@ class PaymentControllerTest : BaseControllerTest() {
             ),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey2", TOSSPAYMENTS, CARD, Card(HYUNDAI, HYUNDAI, "23452345", CREDIT, PERSONAL), true, Instant.now()),
+            PaymentMethod(
+                user,
+                "dummyKey2",
+                TOSS_PAYMENTS,
+                CARD,
+                Card(HYUNDAI, HYUNDAI, "23452345", CREDIT, PERSONAL),
+                true,
+                Instant.now(),
+            ),
         )
         paymentMethodRepository.save(
             PaymentMethod(
                 user,
                 "dummyKey3",
-                TOSSPAYMENTS,
+                TOSS_PAYMENTS,
                 CARD,
                 Card(SAMSUNG, SAMSUNG, "34563456", CREDIT, PERSONAL),
                 false,
@@ -609,7 +617,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(
                 user,
                 "dummyKey4",
-                TOSSPAYMENTS,
+                TOSS_PAYMENTS,
                 CARD,
                 Card(KOOKMIN, KOOKMIN, "45674567", CREDIT, CORPORATE),
                 false,
@@ -617,13 +625,13 @@ class PaymentControllerTest : BaseControllerTest() {
             ),
         )
         paymentMethodRepository.save(
-            PaymentMethod(user, "dummyKey5", TOSSPAYMENTS, CARD, Card(BC, BC, "56785678", CREDIT, PERSONAL), false, Instant.now()),
+            PaymentMethod(user, "dummyKey5", TOSS_PAYMENTS, CARD, Card(BC, BC, "56785678", CREDIT, PERSONAL), false, Instant.now()),
         )
         paymentMethodRepository.save(
             PaymentMethod(
                 user,
                 "dummyKey6",
-                TOSSPAYMENTS,
+                TOSS_PAYMENTS,
                 CARD,
                 Card(HYUNDAI, HYUNDAI, "67896789", CREDIT, PERSONAL),
                 false,
@@ -639,14 +647,22 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method1 =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(
+                    user,
+                    "dummyKey1",
+                    TOSS_PAYMENTS,
+                    CARD,
+                    Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL),
+                    true,
+                    Instant.now(),
+                ),
             )
         val method2 =
             paymentMethodRepository.save(
                 PaymentMethod(
                     user,
                     "dummyKey2",
-                    TOSSPAYMENTS,
+                    TOSS_PAYMENTS,
                     CARD,
                     Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
                     false,
@@ -677,7 +693,15 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), false, Instant.now()),
+                PaymentMethod(
+                    user,
+                    "dummyKey",
+                    TOSS_PAYMENTS,
+                    CARD,
+                    Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL),
+                    false,
+                    Instant.now(),
+                ),
             )
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
@@ -701,14 +725,22 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey1", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(
+                    user,
+                    "dummyKey1",
+                    TOSS_PAYMENTS,
+                    CARD,
+                    Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL),
+                    true,
+                    Instant.now(),
+                ),
             )
         val anotherMethod =
             paymentMethodRepository.save(
                 PaymentMethod(
                     user,
                     "dummyKey2",
-                    TOSSPAYMENTS,
+                    TOSS_PAYMENTS,
                     CARD,
                     Card(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL),
                     false,
@@ -739,7 +771,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val defaultMethod =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(user, "dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
             )
         val vendingMachine =
             machineRepository.save(
@@ -778,7 +810,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         val method =
             paymentMethodRepository.save(
-                PaymentMethod(user, "dummyKey", TOSSPAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
+                PaymentMethod(user, "dummyKey", TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "4321", CREDIT, PERSONAL), true, Instant.now()),
             )
 
         // when, then
