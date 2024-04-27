@@ -53,14 +53,23 @@ import java.util.*
 
 class AccountServiceTest : BaseServiceTest() {
     @Autowired private lateinit var accountService: AccountService
+
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var paymentMethodRepository: PaymentMethodRepository
+
     @Autowired private lateinit var machineRepository: MachineRepository
+
     @Autowired private lateinit var rentalRepository: RentalRepository
+
     @Autowired private lateinit var cupRepository: CupRepository
+
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired private lateinit var loginIdChangeRepository: LoginIdChangeRepository
+
     @Autowired private lateinit var passwordEncoder: PasswordEncoder
+
     @Autowired private lateinit var tokenProvider: TokenProvider
 
     @MockBean
@@ -71,16 +80,16 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("회원가입")
     @Test
     fun register() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val saveUser = userRepository.save(User(loginId, "사용자", loginId, Role.GUEST))
         clear()
 
-        //when
+        // when
         accountService.register(saveUser.loginId, "Tester", "19970224", MALE, true, true, false)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(saveUser.id)
 
         assertThat(findUser?.loginId).isEqualTo(loginId)
@@ -98,14 +107,14 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("비밀번호 업데이트")
     @Test
     fun saveOrUpdatePassword() {
-        //given
+        // given
         val loginPassword = "123456"
 
-        //when
+        // when
         val id = accountService.saveOrUpdatePassword(loginId, loginPassword)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(id)
         assertThat(findUser?.loginId).isEqualTo(loginId)
         assertThat(findUser?.phoneNumber).isEqualTo(loginId)
@@ -117,18 +126,18 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("인증")
     @Test
     fun auth() {
-        //given
+        // given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val loginPassword = "123456"
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         saveUser.updatePassword(encryptedPassword)
         clear()
 
-        //when
+        // when
         val authDto = accountService.auth(loginId, loginPassword)
         clear()
 
-        //then
+        // then
         assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
@@ -138,47 +147,49 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("인증 예외")
     @Test
     fun authException() {
-        //when, then
-        val badCredentialsException = assertThrows<BadCredentialsException> {
-            //given
-            val user = User(loginId, "Tester", loginId, Role.USER)
-            val loginPassword = "123456"
-            val encryptedPassword = passwordEncoder.encode(loginPassword)
-            user.updatePassword(encryptedPassword)
-            userRepository.save(user)
-            clear()
+        // when, then
+        val badCredentialsException =
+            assertThrows<BadCredentialsException> {
+                // given
+                val user = User(loginId, "Tester", loginId, Role.USER)
+                val loginPassword = "123456"
+                val encryptedPassword = passwordEncoder.encode(loginPassword)
+                user.updatePassword(encryptedPassword)
+                userRepository.save(user)
+                clear()
 
-            accountService.auth(loginId, "000000")
-        }
+                accountService.auth(loginId, "000000")
+            }
         assertThat(badCredentialsException.message).isEqualTo("Invalid login password.")
 
-        val disabledException = assertThrows<DisabledException> {
-            //given
-            val user = User("010-0001-0001", "Tester", "010-0001-0001", Role.USER)
-            val loginPassword = "123456"
-            val encryptedPassword = passwordEncoder.encode(loginPassword)
-            user.updatePassword(encryptedPassword)
-            user.inactivate(null)
-            userRepository.save(user)
+        val disabledException =
+            assertThrows<DisabledException> {
+                // given
+                val user = User("010-0001-0001", "Tester", "010-0001-0001", Role.USER)
+                val loginPassword = "123456"
+                val encryptedPassword = passwordEncoder.encode(loginPassword)
+                user.updatePassword(encryptedPassword)
+                user.inactivate(null)
+                userRepository.save(user)
 
-            accountService.auth("010-0001-0001", "123456")
-        }
+                accountService.auth("010-0001-0001", "123456")
+            }
         assertThat(disabledException.message).isEqualTo("Account is disabled.")
     }
 
     @DisplayName("재인증")
     @Test
     fun refreshAuth() {
-        //given
+        // given
         val saveUser = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val saveRefreshToken = refreshTokenRepository.save(RefreshToken(userId = saveUser.id.toString()))
         clear()
 
-        //when
+        // when
         val authDto = accountService.refreshAuth(saveRefreshToken.refreshToken)
         clear()
 
-        //then
+        // then
         assertThat(tokenProvider.validateAccessToken(authDto.accessToken)).isTrue
         assertThat(tokenProvider.extractUserIdFromAccessToken(authDto.accessToken)).isEqualTo(saveUser.id)
         assertThat(tokenProvider.extractUserRoleFromAccessToken(authDto.accessToken)).isEqualTo("ROLE_USER")
@@ -188,16 +199,18 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("인증 토큰")
     @Test
     fun preAuth() {
-        //given
+        // given
         val user = userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(
+            PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
+        )
         val doriUser = DoriUser(user.id, user.loginId, user.name, user.role)
 
-        //when
+        // when
         val accessToken = accountService.preAuth(doriUser)
 
-        //then
+        // then
         assertThat(tokenProvider.validateAccessToken(accessToken)).isTrue
         assertThat(tokenProvider.extractUserIdFromAccessToken(accessToken)).isEqualTo(user.id)
         assertThat(tokenProvider.extractUserRoleFromAccessToken(accessToken)).isEqualTo("ROLE_USER")
@@ -206,32 +219,33 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("인증 토큰 예외")
     @Test
     fun preAuthException() {
-        //when, then
-        val exception = assertThrows<ForbiddenException> {
-            //given
-            val user = User("010-0001-0001", "Tester 1", "010-0001-0001", Role.USER)
-            user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
-            userRepository.save(user)
-            clear()
+        // when, then
+        val exception =
+            assertThrows<ForbiddenException> {
+                // given
+                val user = User("010-0001-0001", "Tester 1", "010-0001-0001", Role.USER)
+                user.block(BlockedCauseType.LOST_CUP_PENALTY, null)
+                userRepository.save(user)
+                clear()
 
-            val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER)
-            accountService.preAuth(doriUser)
-        }
+                val doriUser = DoriUser(user.id, loginId, "Tester", Role.USER)
+                accountService.preAuth(doriUser)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP)
     }
 
     @DisplayName("유저 비활성화")
     @Test
     fun inactivate() {
-        //given
+        // given
         val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
         clear()
 
-        //when
+        // when
         accountService.inactivate(user.id, "테스트")
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.active).isFalse()
@@ -241,32 +255,44 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("유저 비활성화 예외")
     @Test
     fun inactivateException() {
-        //given
+        // given
         val user = userRepository.save(User(loginId, "사용자", loginId, Role.USER))
-        val vendingMachine = machineRepository.save(Machine(MACHINE_NO1, MACHINE_NAME, MachineType.VENDING, Address("12345", "test"), Location(37.508855, 127.059479), 100, null))
+        val vendingMachine =
+            machineRepository.save(
+                Machine(
+                    MACHINE_NO1,
+                    MACHINE_NAME,
+                    MachineType.VENDING,
+                    Address("12345", "test"),
+                    Location(37.508855, 127.059479),
+                    100,
+                    null,
+                ),
+            )
         val cup = cupRepository.save(Cup(CUP_RFID))
         rentalRepository.save(Rental(user, cup, vendingMachine, true, 24))
         clear()
 
-        //when, then
-        val exception = assertThrows<BusinessException> {
-            accountService.inactivate(user.id, null)
-        }
+        // when, then
+        val exception =
+            assertThrows<BusinessException> {
+                accountService.inactivate(user.id, null)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_INACTIVATE_NOT_ALLOWED)
     }
 
     @DisplayName("로그인 아이디 변경 요청 생성")
     @Test
     fun createLoginIdChange() {
-        //given
+        // given
         val userId = UUID.randomUUID()
         val toLoginId = "010-0000-0000"
         val authCode = "123456"
 
-        //when
+        // when
         accountService.createLoginIdChange(userId, toLoginId, authCode)
 
-        //then
+        // then
         val findLoginIdChangeRequest = loginIdChangeRepository.findByIdOrNull(userId.toString())
         assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
         assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo("010-0000-0000")
@@ -276,17 +302,17 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("로그인 아이디 변경 요청 생성 TC2")
     @Test
     fun createLoginIdChangeTc2() {
-        //given
+        // given
         val userId = UUID.randomUUID()
         val toLoginId = "010-0000-0000"
         val authCode1 = "123456"
         val authCode2 = "456789"
 
-        //when
+        // when
         accountService.createLoginIdChange(userId, toLoginId, authCode1)
         accountService.createLoginIdChange(userId, toLoginId, authCode2)
 
-        //then
+        // then
         val findLoginIdChangeRequest = loginIdChangeRepository.findByIdOrNull(userId.toString())
         assertThat(findLoginIdChangeRequest?.userId).isEqualTo(userId.toString())
         assertThat(findLoginIdChangeRequest?.toLoginId).isEqualTo("010-0000-0000")
@@ -296,16 +322,16 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("로그인 아이디 변경 요청 생성 TC3")
     @Test
     fun createLoginIdChangeTc3() {
-        //given
+        // given
         val guest = userRepository.save(User(loginId, "Tester", loginId, Role.GUEST))
         val userId = UUID.randomUUID()
         val authCode = "123456"
         clear()
 
-        //when
+        // when
         accountService.createLoginIdChange(userId, loginId, authCode)
 
-        //then
+        // then
         val findLoginIdChangeRequest = loginIdChangeRepository.findByIdOrNull(userId.toString())
         val findGuest = userRepository.findByIdOrNull(guest.id)
 
@@ -319,29 +345,30 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("로그인 아이디 변경 요청 생성 예외")
     @Test
     fun createLoginIdChangeException() {
-        //given
+        // given
         userRepository.save(User(loginId, "Tester", loginId, Role.USER))
         val userId = UUID.randomUUID()
         val authCode = "123456"
         clear()
 
-        //when, then
-        val exception = assertThrows<BusinessException> {
-            accountService.createLoginIdChange(userId, loginId, authCode)
-        }
+        // when, then
+        val exception =
+            assertThrows<BusinessException> {
+                accountService.createLoginIdChange(userId, loginId, authCode)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_ALREADY_REGISTERED)
     }
 
     @DisplayName("로그인 아이디 변경")
     @Test
     fun changeLoginId() {
-        //given
+        // given
         val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
         val authCode = "123456"
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-0000-0000", authCode))
         clear()
 
-        //when
+        // when
         accountService.changeLoginId(user.id, authCode)
         clear()
 
@@ -355,16 +382,17 @@ class AccountServiceTest : BaseServiceTest() {
     @DisplayName("로그인 아이디 변경 예외")
     @Test
     fun changeLoginIdException() {
-        //given
+        // given
         val user = userRepository.save(User("010-1111-1111", "Tester", "010-1111-1111", Role.USER))
         val authCode = "123456"
         loginIdChangeRepository.save(LoginIdChange(user.id.toString(), 300, "010-0000-0000", authCode))
         clear()
 
-        //when
-        val exception = assertThrows<BusinessException> {
-            accountService.changeLoginId(user.id, "000000")
-        }
+        // when
+        val exception =
+            assertThrows<BusinessException> {
+                accountService.changeLoginId(user.id, "000000")
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.LOGIN_ID_NOT_ALLOWED)
     }
 }

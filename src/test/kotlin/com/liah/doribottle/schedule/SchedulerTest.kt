@@ -12,7 +12,7 @@ import com.liah.doribottle.domain.machine.Machine
 import com.liah.doribottle.domain.machine.MachineType.COLLECTION
 import com.liah.doribottle.domain.machine.MachineType.VENDING
 import com.liah.doribottle.domain.payment.PaymentMethod
-import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSSPAYMENTS
+import com.liah.doribottle.domain.payment.PaymentMethodProviderType.TOSS_PAYMENTS
 import com.liah.doribottle.domain.payment.PaymentMethodType.CARD
 import com.liah.doribottle.domain.payment.PaymentStatus
 import com.liah.doribottle.domain.payment.PaymentType.LOST_CUP
@@ -101,7 +101,7 @@ class SchedulerTest {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
         val rental1 = rentalRepository.save(Rental(user, cup1, machine, true, 0))
         val rental2 = rentalRepository.save(Rental(user, cup2, machine, true, 0))
 
@@ -169,7 +169,7 @@ class SchedulerTest {
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
 
-        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
         val rental1 = Rental(user, cup1, vendingMachine, true, 0)
         rental1.`return`(collectionMachine)
         rentalRepository.save(rental1)
@@ -235,7 +235,7 @@ class SchedulerTest {
         val billingKey = "dummyBillingKey"
         val paymentKey = "dummyPaymentKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user1, billingKey, TOSSPAYMENTS, CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user1, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
         val rental1 = Rental(user1, cup1, vendingMachine, true, 0)
         rentalRepository.save(rental1)
 
@@ -318,7 +318,7 @@ class SchedulerTest {
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
         val billingKey = "dummyBillingKey"
         val card = Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL)
-        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSSPAYMENTS, CARD, card, true, Instant.now()))
+        paymentMethodRepository.save(PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, card, true, Instant.now()))
         val rental = rentalRepository.save(Rental(user, cup, machine, true, 0))
 
         taskRepository.save(Task(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id))

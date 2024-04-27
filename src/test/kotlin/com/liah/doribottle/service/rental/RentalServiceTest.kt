@@ -88,7 +88,7 @@ class RentalServiceTest : BaseServiceTest() {
 
         val card = Card(CardProvider.HYUNDAI, CardProvider.HYUNDAI, "1234", CardType.CREDIT, CardOwnerType.PERSONAL)
         paymentMethodRepository.save(
-            PaymentMethod(user, "key", PaymentMethodProviderType.TOSSPAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
+            PaymentMethod(user, "key", PaymentMethodProviderType.TOSS_PAYMENTS, PaymentMethodType.CARD, card, true, Instant.now()),
         )
 
         cup = cupRepository.save(Cup(CUP_RFID))
@@ -341,7 +341,11 @@ class RentalServiceTest : BaseServiceTest() {
                         "12345",
                         "test",
                     ),
-                    Location(37.508855, 127.059479), 100, null, null, 10L,
+                    Location(37.508855, 127.059479),
+                    100,
+                    null,
+                    null,
+                    10L,
                 ),
             )
         vendingMachine.increaseCupAmounts(10)
