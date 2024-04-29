@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import java.util.*
 
 class InquiryServiceTest : BaseServiceTest() {
     @Autowired
@@ -34,6 +35,7 @@ class InquiryServiceTest : BaseServiceTest() {
     fun register() {
         // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val targetDto = InquiryTargetDto(UUID.randomUUID(), "Test")
         clear()
 
         // when
@@ -43,7 +45,7 @@ class InquiryServiceTest : BaseServiceTest() {
                 REFUND,
                 BankAccountDto("국민", "943202-00-120364", "김동준"),
                 "버블 환불",
-                InquiryTargetDto(1, "Test"),
+                targetDto,
                 listOf("test"),
             )
         clear()
@@ -56,8 +58,8 @@ class InquiryServiceTest : BaseServiceTest() {
         assertThat(findInquiry?.bankAccount?.accountNumber).isEqualTo("943202-00-120364")
         assertThat(findInquiry?.bankAccount?.accountHolder).isEqualTo("김동준")
         assertThat(findInquiry?.content).isEqualTo("버블 환불")
-        assertThat(findInquiry?.target?.id).isEqualTo(1)
-        assertThat(findInquiry?.target?.classType).isEqualTo("Test")
+        assertThat(findInquiry?.target?.id).isEqualTo(targetDto.id)
+        assertThat(findInquiry?.target?.classType).isEqualTo(targetDto.classType)
         assertThat(findInquiry?.imageUrls).isEqualTo(listOf("test"))
         assertThat(findInquiry?.answer).isNull()
         assertThat(findInquiry?.status).isEqualTo(PROCEEDING)

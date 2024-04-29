@@ -20,7 +20,7 @@ interface RentalRepository : JpaRepository<Rental, UUID> {
     @Query(
         value =
             "select date_format(convert_tz(r.created_date, '+00:00', '+09:00'), :groupFormat) date, " +
-                "sum(if(r.status = 'CONFIRMED' or r.status = 'SUCCEEDED', r.cost, 0)) totalPointAmount, " +
+                "sum(if(r.status != 'CANCELED', r.cost, 0)) totalPointAmount, " +
                 "sum(if(r.status = 'CONFIRMED', 1, 0)) confirmedCount, " +
                 "sum(if(r.status = 'SUCCEEDED', 1, 0)) succeededCount, " +
                 "sum(if(r.status = 'FAILED', 1, 0)) failedCount, " +
