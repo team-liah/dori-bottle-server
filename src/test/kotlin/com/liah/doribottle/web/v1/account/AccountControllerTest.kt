@@ -460,7 +460,8 @@ class AccountControllerTest : BaseControllerTest() {
     fun sendLoginIdChangeSmsException() {
         // given
         val user = userRepository.save(User("010-0000-0000", "Tester", "010-0000-0000", Role.USER))
-        val anotherUser = userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
+        // another user
+        userRepository.save(User("010-1111-1111", "Another Tester", "010-1111-1111", Role.USER))
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         doNothing().`when`(mockSmsService).sendAuthSms(any<String>(), any<String>())

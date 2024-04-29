@@ -702,8 +702,8 @@ class RentalServiceTest : BaseServiceTest() {
         val rental4 = rentalRepository.save(Rental(user, cup4, vendingMachine, false, 24))
         rental4.`return`(collectionMachine)
         rental4.cancel()
-        val rental5 = rentalRepository.save(Rental(user, cup5, vendingMachine, false, 24))
-        val rental6 = rentalRepository.save(Rental(user, cup6, vendingMachine, false, 24))
+        rentalRepository.save(Rental(user, cup5, vendingMachine, false, 24))
+        rentalRepository.save(Rental(user, cup6, vendingMachine, false, 24))
 
         val now = YearMonth.now()
         clear()
@@ -715,7 +715,7 @@ class RentalServiceTest : BaseServiceTest() {
             )
 
         assertThat(result.size).isEqualTo(1)
-        assertThat(result.first().totalPointAmount).isEqualTo(4L)
+        assertThat(result.first().totalPointAmount).isEqualTo(8L)
         assertThat(result.first().confirmedCount).isEqualTo(2)
         assertThat(result.first().succeededCount).isEqualTo(1)
         assertThat(result.first().failedCount).isEqualTo(2)
