@@ -7,8 +7,8 @@ import com.liah.doribottle.domain.payment.PaymentType
 import com.liah.doribottle.domain.task.TaskType
 import com.liah.doribottle.domain.user.BlockedCauseType
 import com.liah.doribottle.service.notification.NotificationService
+import com.liah.doribottle.service.payment.PaymentGatewayService
 import com.liah.doribottle.service.payment.PaymentService
-import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.payment.dto.PaymentMethodDto
 import com.liah.doribottle.service.rental.RentalService
 import com.liah.doribottle.service.task.TaskService
@@ -17,7 +17,7 @@ import com.liah.doribottle.service.user.UserService
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.UUID
 
 @Component
 class Scheduler(
@@ -25,13 +25,13 @@ class Scheduler(
     private val rentalService: RentalService,
     private val paymentService: PaymentService,
     private val userService: UserService,
-    private val tosspaymentsService: TosspaymentsService,
-    private val notificationService: NotificationService
+    private val paymentGatewayService: PaymentGatewayService,
+    private val notificationService: NotificationService,
 ) {
     @SchedulerLock(
         name = "scheduledTask",
         lockAtLeastFor = "PT60S",
-        lockAtMostFor = "PT60S"
+        lockAtMostFor = "PT60S",
     )
     @Scheduled(fixedDelay = 60000)
     fun scheduledTask() {
@@ -40,8 +40,12 @@ class Scheduler(
             taskService.delete(task.id)
             runCatching {
                 when (task.type) {
-                    TaskType.RENTAL_OVERDUE -> { overdueRental(task) }
-                    TaskType.RENTAL_REMIND -> { remindRental(task) }
+                    TaskType.RENTAL_OVERDUE -> {
+                        overdueRental(task)
+                    }
+                    TaskType.RENTAL_REMIND -> {
+                        remindRental(task)
+                    }
                 }
             }
         }
@@ -59,14 +63,16 @@ class Scheduler(
 
     private fun remindRental(task: TaskDto) {
         val rental = rentalService.get(task.targetId)
-        notificationService.saveAll(listOf(
-            NotificationIndividual(
-                userId = rental.user.id,
-                type = NotificationType.NEAR_EXPIRATION,
-                targetId = rental.id,
-                rental.no
-            )
-        ))
+        notificationService.saveAll(
+            listOf(
+                NotificationIndividual(
+                    userId = rental.user.id,
+                    type = NotificationType.NEAR_EXPIRATION,
+                    targetId = rental.id,
+                    rental.no,
+                ),
+            ),
+        )
         notificationService.alert(rental.user.id)
     }
 
@@ -75,15 +81,16 @@ class Scheduler(
      */
 
     private fun payToLostCup(userId: UUID) {
-        val paymentMethod = runCatching {
-            paymentService.getDefaultMethod(userId)
-        }.getOrNull()
+        val paymentMethod =
+            runCatching {
+                paymentService.getDefaultMethod(userId)
+            }.getOrNull()
 
         if (paymentMethod == null) {
             userService.block(
                 id = userId,
                 blockedCauseType = BlockedCauseType.LOST_CUP_PENALTY,
-                blockedCauseDescription = null
+                blockedCauseDescription = null,
             )
             return
         }
@@ -93,37 +100,38 @@ class Scheduler(
 
     private fun billing(
         userId: UUID,
-        paymentMethod: PaymentMethodDto
+        paymentMethod: PaymentMethodDto,
     ) {
-        val paymentId = paymentService.create(
-            userId = userId,
-            price = DoriConstant.LOST_CUP_PRICE,
-            type = PaymentType.LOST_CUP,
-            card = paymentMethod.card
-        )
+        val paymentId =
+            paymentService.create(
+                userId = userId,
+                price = DoriConstant.LOST_CUP_PRICE,
+                type = PaymentType.LOST_CUP,
+                card = paymentMethod.card,
+            )
 
         runCatching {
-            tosspaymentsService.executeBilling(
+            paymentGatewayService.executeBilling(
                 billingKey = paymentMethod.billingKey,
                 userId = userId,
                 price = DoriConstant.LOST_CUP_PRICE,
                 paymentId = paymentId,
-                paymentType = PaymentType.LOST_CUP
+                paymentType = PaymentType.LOST_CUP,
             )
         }.onSuccess { result ->
             paymentService.updateResult(
                 id = paymentId,
-                result = result
+                result = result,
             )
         }.onFailure {
             paymentService.updateResult(
                 id = paymentId,
-                result = null
+                result = null,
             )
             userService.block(
                 id = userId,
                 blockedCauseType = BlockedCauseType.LOST_CUP_PENALTY,
-                blockedCauseDescription = null
+                blockedCauseDescription = null,
             )
         }
     }

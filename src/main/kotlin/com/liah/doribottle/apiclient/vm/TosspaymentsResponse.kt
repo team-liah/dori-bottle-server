@@ -1,5 +1,6 @@
-package com.liah.doribottle.service.payment.dto
+package com.liah.doribottle.apiclient.vm
 
+import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import java.time.Instant
 
 data class TosspaymentsResponse(
@@ -38,7 +39,7 @@ data class TosspaymentsResponse(
     val vat: Int?, // 부가세
     val taxFreeAmount: Int?, // 결제 금액 중 면세 금액
     val taxExemptionAmount: Int?, // 과세를 제외한 결제 금액
-    val method: String? // 결제수단
+    val method: String?, // 결제수단
 ) {
     fun toPaymentResultDto() = PaymentResultDto(paymentKey, approvedAt, receipt?.url, cancels?.firstOrNull()?.transactionKey)
 }
@@ -55,11 +56,11 @@ data class TosspaymentsCardResponse(
     val cardType: String?,
     val ownerType: String?,
     val acquireStatus: String?,
-    val amount: Int?
+    val amount: Int?,
 )
 
 data class TosspaymentsReceiptResponse(
-    val url: String?
+    val url: String?,
 )
 
 data class TosspaymentsPaymentCancelResponse(
@@ -71,16 +72,18 @@ data class TosspaymentsPaymentCancelResponse(
     val easyPayDiscountAmount: Int?, // 간편결제 서비스의 포인트, 쿠폰, 즉시할인과 같은 적립식 결제수단에서 취소된 금액
     val canceledAt: Instant?, // 결제 취소가 일어난 날짜와 시간 정보
     val transactionKey: String?, // 취소 건의 키 값
-    val receiptKey: String? // 취소 건의 현금영수증 키 값
+    val receiptKey: String?, // 취소 건의 현금영수증 키 값
 )
 
 data class TosspaymentsPaymentFailureResponse(
     val code: String?,
-    val message: String?
+    val message: String?,
 )
 
 enum class TosspaymentsPaymentType {
-    NORMAL, BILLING, BRANDPAY
+    NORMAL,
+    BILLING,
+    BRANDPAY,
 }
 
 enum class TosspaymentsPaymentStatus {
@@ -91,5 +94,5 @@ enum class TosspaymentsPaymentStatus {
     CANCELED, // 승인된 결제가 취소된 상태
     PARTIAL_CANCELED, // 승인된 결제가 부분 취소된 상태
     ABORTED, // 결제 승인이 실패한 상태
-    EXPIRED // 결제 유효 시간 30분이 지나 거래가 취소된 상태
+    EXPIRED, // 결제 유효 시간 30분이 지나 거래가 취소된 상태
 }

@@ -1,32 +1,39 @@
-package com.liah.doribottle.service.payment
+package com.liah.doribottle.apiclient
 
+import com.liah.doribottle.apiclient.vm.TosspaymentsBillingExecuteRequest
+import com.liah.doribottle.apiclient.vm.TosspaymentsBillingKeyIssueRequest
+import com.liah.doribottle.apiclient.vm.TosspaymentsBillingKeyIssueResponse
+import com.liah.doribottle.apiclient.vm.TosspaymentsPaymentCancelRequest
+import com.liah.doribottle.apiclient.vm.TosspaymentsResponse
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
 import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.config.properties.AppProperties
-import com.liah.doribottle.service.payment.dto.*
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class TosspaymentsApiClient(
-    appProperties: AppProperties
+    appProperties: AppProperties,
 ) {
     private val baseUrl = appProperties.tosspayments.baseUrl
     private val secretKey = appProperties.tosspayments.secretKey
-    private val billingKeyIssueRequestUri = "${baseUrl}/v1/billing/authorizations/issue"
-    private fun billingExecuteRequestUri(billingKey: String) = "${baseUrl}/v1/billing/${billingKey}"
-    private fun paymentCancelRequestUri(paymentKey: String) = "${baseUrl}/v1/payments/${paymentKey}/cancel"
+    private val billingKeyIssueRequestUri = "$baseUrl/v1/billing/authorizations/issue"
+
+    private fun billingExecuteRequestUri(billingKey: String) = "$baseUrl/v1/billing/$billingKey"
+
+    private fun paymentCancelRequestUri(paymentKey: String) = "$baseUrl/v1/payments/$paymentKey/cancel"
 
     fun issueBillingKey(
         authKey: String,
-        customerKey: String
+        customerKey: String,
     ): TosspaymentsBillingKeyIssueResponse? {
-        val request = TosspaymentsBillingKeyIssueRequest(
-            authKey = authKey,
-            customerKey = customerKey
-        )
+        val request =
+            TosspaymentsBillingKeyIssueRequest(
+                authKey = authKey,
+                customerKey = customerKey,
+            )
 
         return WebClient.create()
             .post()
@@ -45,14 +52,15 @@ class TosspaymentsApiClient(
         customerKey: String,
         amount: Long,
         orderId: String,
-        orderName: String
+        orderName: String,
     ): TosspaymentsResponse? {
-        val request = TosspaymentsBillingExecuteRequest(
-            customerKey = customerKey,
-            amount = amount,
-            orderId = orderId,
-            orderName = orderName
-        )
+        val request =
+            TosspaymentsBillingExecuteRequest(
+                customerKey = customerKey,
+                amount = amount,
+                orderId = orderId,
+                orderName = orderName,
+            )
 
         return WebClient.create()
             .post()
@@ -68,11 +76,12 @@ class TosspaymentsApiClient(
 
     fun cancelPayment(
         paymentKey: String,
-        cancelReason: String
+        cancelReason: String,
     ): TosspaymentsResponse? {
-        val request = TosspaymentsPaymentCancelRequest(
-            cancelReason = cancelReason
-        )
+        val request =
+            TosspaymentsPaymentCancelRequest(
+                cancelReason = cancelReason,
+            )
 
         return WebClient.create()
             .post()

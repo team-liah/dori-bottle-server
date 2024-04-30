@@ -12,11 +12,11 @@ import com.liah.doribottle.domain.user.Gender.MALE
 import com.liah.doribottle.domain.user.PenaltyType.*
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
+import com.liah.doribottle.messaging.AwsSqsSender
+import com.liah.doribottle.messaging.vm.PointSaveMessage
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
-import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -33,7 +33,9 @@ import java.util.*
 
 class UserServiceTest : BaseServiceTest() {
     @Autowired private lateinit var userService: UserService
+
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var groupRepository: GroupRepository
 
     @MockBean
@@ -42,14 +44,14 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 조회")
     @Test
     fun get() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         clear()
 
-        //when
+        // when
         val result = userService.get(user.id)
 
-        //then
+        // then
         assertThat(result.loginId).isEqualTo(USER_LOGIN_ID)
         assertThat(result.name).isEqualTo("Tester 1")
         assertThat(result.phoneNumber).isEqualTo(USER_LOGIN_ID)
@@ -61,17 +63,17 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 조회 - TC2")
     @Test
     fun getTc2() {
-        //given
+        // given
         val group = groupRepository.save(Group("리아", COMPANY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
         user.updateGroup(group)
         clear()
 
-        //when
+        // when
         val result = userService.get(user.id)
 
-        //then
+        // then
         assertThat(result.loginId).isEqualTo(USER_LOGIN_ID)
         assertThat(result.name).isEqualTo("Tester 1")
         assertThat(result.phoneNumber).isEqualTo(USER_LOGIN_ID)
@@ -91,7 +93,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 조회 - TC3")
     @Test
     fun getTc3() {
-        //given
+        // given
         val group = groupRepository.save(Group("리아", COMPANY, 30))
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester 1", USER_LOGIN_ID, Role.USER))
         user.imposePenalty(DAMAGED_CUP, "의도적인 컵 파손")
@@ -99,10 +101,10 @@ class UserServiceTest : BaseServiceTest() {
         user.updateGroup(group)
         clear()
 
-        //when
+        // when
         val result = userService.get(user.id)
 
-        //then
+        // then
         assertThat(result.loginId).isEqualTo(USER_LOGIN_ID)
         assertThat(result.name).isEqualTo("Tester 1")
         assertThat(result.phoneNumber).isEqualTo(USER_LOGIN_ID)
@@ -131,9 +133,10 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 조회 예외")
     @Test
     fun getException() {
-        val exception = assertThrows<NotFoundException> {
-            userService.get(UUID.randomUUID())
-        }
+        val exception =
+            assertThrows<NotFoundException> {
+                userService.get(UUID.randomUUID())
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.USER_NOT_FOUND)
         assertThat(exception.message).isEqualTo(ErrorCode.USER_NOT_FOUND.message)
     }
@@ -141,17 +144,18 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 목록 조회")
     @Test
     fun getAll() {
-        //given
+        // given
         insertUsers()
         clear()
 
-        //when
-        val result = userService.getAll(
-            name = "Tester",
-            pageable = Pageable.ofSize(3)
-        )
+        // when
+        val result =
+            userService.getAll(
+                name = "Tester",
+                pageable = Pageable.ofSize(3),
+            )
 
-        //then
+        // then
         assertThat(result)
             .extracting("loginId")
             .containsExactly("010-0000-0001", "010-0000-0002", "010-0000-0003")
@@ -196,7 +200,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("초대코드 등록")
     @Test
     fun registerInvitationCode() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
@@ -206,11 +210,11 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
-        //when
+        // when
         userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         clear()
 
-        //then
+        // then
         val findInviter = userRepository.findByIdOrNull(inviter.id)
         val findInvitee = userRepository.findByIdOrNull(invitee.id)
 
@@ -223,7 +227,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("초대코드 등록 TC2")
     @Test
     fun registerInvitationCodeTc2() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         inviter.register()
@@ -233,7 +237,7 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
-        //when
+        // when
         userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         clear()
 
@@ -248,7 +252,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("초대코드 등록 TC3")
     @Test
     fun registerInvitationCodeTc3() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
         (0..3).forEach { _ -> inviter.increaseInvitationCount() } // +4
@@ -259,7 +263,7 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(invitee)
         clear()
 
-        //when
+        // when
         userService.registerInvitationCode(invitee.id, inviter.invitationCode)
         clear()
 
@@ -274,49 +278,52 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("초대코드 등록 예외")
     @Test
     fun registerInvitationCodeException() {
-        //given
+        // given
         val invitee = User("010-0000-0001", "invitee", "010-0000-0001", Role.USER)
         invitee.register()
         userRepository.save(invitee)
         clear()
 
-        //when, then
-        val exception1 = assertThrows<NotFoundException> {
-            userService.registerInvitationCode(invitee.id, "DummyCode")
-        }
+        // when, then
+        val exception1 =
+            assertThrows<NotFoundException> {
+                userService.registerInvitationCode(invitee.id, "DummyCode")
+            }
         assertThat(exception1.errorCode).isEqualTo(ErrorCode.INVITER_NOT_FOUND)
 
-        val exception2 = assertThrows<BusinessException> {
-            userService.registerInvitationCode(invitee.id, invitee.invitationCode)
-        }
+        val exception2 =
+            assertThrows<BusinessException> {
+                userService.registerInvitationCode(invitee.id, invitee.invitationCode)
+            }
         assertThat(exception2.errorCode).isEqualTo(ErrorCode.INVITER_NOT_ALLOWED)
 
-        val exception3 = assertThrows<BusinessException> {
-            val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
-            inviter.register()
-            userRepository.save(inviter)
+        val exception3 =
+            assertThrows<BusinessException> {
+                val inviter = User(USER_LOGIN_ID, "inviter", USER_LOGIN_ID, Role.USER)
+                inviter.register()
+                userRepository.save(inviter)
 
-            invitee.setInviter(inviter)
-            userRepository.save(invitee)
-            clear()
+                invitee.setInviter(inviter)
+                userRepository.save(invitee)
+                clear()
 
-            userService.registerInvitationCode(invitee.id, inviter.invitationCode)
-        }
+                userService.registerInvitationCode(invitee.id, inviter.invitationCode)
+            }
         assertThat(exception3.errorCode).isEqualTo(ErrorCode.INVITER_ALREADY_REGISTERED)
     }
 
     @DisplayName("유저 페널티 부과")
     @Test
     fun imposePenalty() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         clear()
 
-        //when
+        // when
         userService.imposePenalty(user.id, DAMAGED_CUP, null)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.penalties)
@@ -327,7 +334,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 페널티 부과 TC2")
     @Test
     fun imposePenaltyTc2() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         user.imposePenalty(NON_MANNER, null)
@@ -336,11 +343,11 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(user)
         clear()
 
-        //when
+        // when
         userService.imposePenalty(user.id, DAMAGED_CUP, null)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.penalties)
@@ -356,18 +363,18 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 페널티 제거")
     @Test
     fun removePenalty() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         userRepository.save(user)
         val penaltyId = user.penalties.first().id
         clear()
 
-        //when
+        // when
         userService.removePenalty(user.id, penaltyId)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.penalties).isEmpty()
@@ -376,7 +383,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 페널티 제거 TC2")
     @Test
     fun removePenaltyTc2() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         user.imposePenalty(DAMAGED_CUP, null)
@@ -387,11 +394,11 @@ class UserServiceTest : BaseServiceTest() {
         val penaltyId = user.penalties.first().id
         clear()
 
-        //when
+        // when
         userService.removePenalty(user.id, penaltyId)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.penalties)
@@ -405,7 +412,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 페널티 제거 TC3")
     @Test
     fun removePenaltyTc3() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         user.imposePenalty(DAMAGED_CUP, null)
@@ -417,11 +424,11 @@ class UserServiceTest : BaseServiceTest() {
         val penaltyId = user.penalties.first().id
         clear()
 
-        //when
+        // when
         userService.removePenalty(user.id, penaltyId)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.penalties)
@@ -437,15 +444,15 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 블락")
     @Test
     fun block() {
-        //given
+        // given
         val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
         clear()
 
-        //when
+        // when
         userService.block(user.id, LOST_CUP_PENALTY, null)
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.blocked).isTrue()
@@ -457,7 +464,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 블락 해제")
     @Test
     fun unblock() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         user.imposePenalty(DAMAGED_CUP, null)
@@ -469,11 +476,11 @@ class UserServiceTest : BaseServiceTest() {
         val blockedCauseIds = user.blockedCauses.map { it.id }
         clear()
 
-        //when
+        // when
         userService.unblock(user.id, blockedCauseIds.toSet())
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.blocked).isFalse()
@@ -486,7 +493,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 블락 해제 TC2")
     @Test
     fun unblockTc2() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.block(LOST_CUP_PENALTY, "cup1 분실")
         user.block(LOST_CUP_PENALTY, "cup2 분실")
@@ -494,11 +501,11 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(user)
         clear()
 
-        //when
+        // when
         userService.unblock(user.id, setOf(blockedCauseId))
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.blocked).isTrue()
@@ -513,7 +520,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 블락 해제 TC3")
     @Test
     fun unblockTc3() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.block(LOST_CUP_PENALTY, "cup1 분실")
         user.block(LOST_CUP_PENALTY, "cup2 분실")
@@ -521,11 +528,11 @@ class UserServiceTest : BaseServiceTest() {
         userRepository.save(user)
         clear()
 
-        //when
+        // when
         userService.unblock(user.id, blockedCauseIds.toSet())
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.blocked).isFalse()
@@ -535,7 +542,7 @@ class UserServiceTest : BaseServiceTest() {
     @DisplayName("유저 블락 해제 TC4")
     @Test
     fun unblockTc4() {
-        //given
+        // given
         val user = User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER)
         user.imposePenalty(DAMAGED_CUP, null)
         user.imposePenalty(DAMAGED_CUP, null)
@@ -548,11 +555,11 @@ class UserServiceTest : BaseServiceTest() {
         val lostCupBlockedCauseIds = user.blockedCauses.filter { it.type == LOST_CUP_PENALTY }.map { it.id }
         clear()
 
-        //when
+        // when
         userService.unblock(user.id, lostCupBlockedCauseIds.toSet())
         clear()
 
-        //then
+        // then
         val findUser = userRepository.findByIdOrNull(user.id)
 
         assertThat(findUser?.blocked).isTrue()

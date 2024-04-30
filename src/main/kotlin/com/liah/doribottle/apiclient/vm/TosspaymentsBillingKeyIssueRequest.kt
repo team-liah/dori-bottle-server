@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.payment.dto
+package com.liah.doribottle.apiclient.vm
 
 data class TosspaymentsBillingKeyIssueRequest(
     val authKey: String,

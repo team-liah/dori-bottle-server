@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.sms.dto
+package com.liah.doribottle.apiclient.vm
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
@@ -9,20 +9,20 @@ data class NcloudSmsSendRequest(
     val countryCode: String = "82",
     val from: String,
     val content: String,
-    val messages: List<Message>
+    val messages: List<Message>,
 ) {
     data class Message(
         val to: String,
-        val content: String? = null
+        val content: String? = null,
     )
 
     constructor(
         from: String,
         to: String,
-        content: String
-    ): this(
+        content: String,
+    ) : this(
         from = from,
         content = content,
-        messages = listOf(Message(to))
+        messages = listOf(Message(to)),
     )
 }
