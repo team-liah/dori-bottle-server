@@ -41,7 +41,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.BaseServiceTest
-import com.liah.doribottle.service.payment.TosspaymentsService
+import com.liah.doribottle.service.payment.PaymentGatewayService
 import com.liah.doribottle.service.payment.dto.BillingInfo
 import com.liah.doribottle.service.payment.dto.CardDto
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
@@ -101,7 +101,7 @@ class PaymentControllerTest : BaseControllerTest() {
     private lateinit var cupRepository: CupRepository
 
     @MockBean
-    private lateinit var mockTosspaymentsService: TosspaymentsService
+    private lateinit var mockPaymentGatewayService: PaymentGatewayService
 
     @AfterEach
     internal fun destroy() {
@@ -128,7 +128,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
-        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockPaymentGatewayService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -144,7 +144,7 @@ class PaymentControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -181,7 +181,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
-        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockPaymentGatewayService.executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -197,7 +197,7 @@ class PaymentControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(720L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -230,7 +230,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
-        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
+        given(mockPaymentGatewayService.executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT)))
             .willThrow(BillingExecuteException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -248,7 +248,7 @@ class PaymentControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
             .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(900L), any<UUID>(), eq(SAVE_POINT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -285,7 +285,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
-        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockPaymentGatewayService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -299,7 +299,7 @@ class PaymentControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -336,7 +336,7 @@ class PaymentControllerTest : BaseControllerTest() {
             PaymentMethod(user, billingKey, TOSS_PAYMENTS, CARD, Card(KOOKMIN, KOOKMIN, "12341234", CREDIT, PERSONAL), true, Instant.now()),
         )
 
-        given(mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
+        given(mockPaymentGatewayService.executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT)))
             .willThrow(BillingExecuteException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -352,7 +352,7 @@ class PaymentControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("code", `is`(ErrorCode.BILLING_EXECUTE_ERROR.code)))
             .andExpect(jsonPath("message", `is`(ErrorCode.BILLING_EXECUTE_ERROR.message)))
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(46000L), any<UUID>(), eq(UNBLOCK_ACCOUNT))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -460,7 +460,7 @@ class PaymentControllerTest : BaseControllerTest() {
         payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
         paymentRepository.save(payment)
 
-        given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+        given(mockPaymentGatewayService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -474,7 +474,7 @@ class PaymentControllerTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .cancelPayment(eq(paymentKey), eq("포인트 적립 취소"))
 
         val findPayment = paymentRepository.findAll().firstOrNull()
@@ -508,7 +508,7 @@ class PaymentControllerTest : BaseControllerTest() {
         payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
         paymentRepository.save(payment)
 
-        given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
+        given(mockPaymentGatewayService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소")))
             .willThrow(PaymentCancelException())
 
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
@@ -533,7 +533,7 @@ class PaymentControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
         val body = PaymentMethodRegisterRequest(TOSS_PAYMENTS, "dummyAuthKey")
 
-        given(mockTosspaymentsService.issueBillingKey("dummyAuthKey", user.id))
+        given(mockPaymentGatewayService.issueBillingKey("dummyAuthKey", user.id))
             .willReturn(
                 BillingInfo("dummyBillingKey", TOSS_PAYMENTS, CARD, CardDto(HYUNDAI, HYUNDAI, "1234", CREDIT, PERSONAL), Instant.now()),
             )

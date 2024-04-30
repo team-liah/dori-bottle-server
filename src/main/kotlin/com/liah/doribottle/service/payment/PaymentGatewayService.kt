@@ -1,22 +1,23 @@
 package com.liah.doribottle.service.payment
 
+import com.liah.doribottle.apiclient.TosspaymentsApiClient
 import com.liah.doribottle.common.error.exception.BillingExecuteException
 import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
 import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.domain.payment.PaymentType
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.UUID
 
 @Service
-class TosspaymentsService(
-    private val tosspaymentsApiClient: TosspaymentsApiClient
+class PaymentGatewayService(
+    private val tosspaymentsApiClient: TosspaymentsApiClient,
 ) {
     fun issueBillingKey(
         authKey: String,
-        userId: UUID
+        userId: UUID,
     ) = tosspaymentsApiClient.issueBillingKey(
         authKey = authKey,
-        customerKey = userId.toString()
+        customerKey = userId.toString(),
     )?.toBillingInfo() ?: throw BillingKeyIssuanceException()
 
     fun executeBilling(
@@ -24,20 +25,20 @@ class TosspaymentsService(
         userId: UUID,
         price: Long,
         paymentId: UUID,
-        paymentType: PaymentType
+        paymentType: PaymentType,
     ) = tosspaymentsApiClient.executeBilling(
         billingKey = billingKey,
         customerKey = userId.toString(),
         amount = price,
         orderId = paymentId.toString(),
-        orderName = paymentType.title
+        orderName = paymentType.title,
     )?.toPaymentResultDto() ?: throw BillingExecuteException()
 
     fun cancelPayment(
         paymentKey: String,
-        cancelReason: String
+        cancelReason: String,
     ) = tosspaymentsApiClient.cancelPayment(
         paymentKey = paymentKey,
-        cancelReason = cancelReason
+        cancelReason = cancelReason,
     )?.toPaymentResultDto() ?: throw PaymentCancelException()
 }

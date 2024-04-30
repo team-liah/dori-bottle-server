@@ -1,14 +1,14 @@
-package com.liah.doribottle.service.sms
+package com.liah.doribottle.apiclient
 
+import com.liah.doribottle.apiclient.vm.NcloudSmsSendRequest
+import com.liah.doribottle.apiclient.vm.NcloudSmsSendResponse
 import com.liah.doribottle.config.properties.AppProperties
-import com.liah.doribottle.service.sms.dto.NcloudSmsSendRequest
-import com.liah.doribottle.service.sms.dto.NcloudSmsSendResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.Instant
-import java.util.*
+import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -37,17 +37,18 @@ class NcloudApiClient(
             url: String,
             timestamp: String,
             accessKey: String,
-            secretKey: String
+            secretKey: String,
         ): String {
-            val message = StringBuilder()
-                .append(method)
-                .append(SPACE)
-                .append(url)
-                .append(NEW_LINE)
-                .append(timestamp)
-                .append(NEW_LINE)
-                .append(accessKey)
-                .toString()
+            val message =
+                StringBuilder()
+                    .append(method)
+                    .append(SPACE)
+                    .append(url)
+                    .append(NEW_LINE)
+                    .append(timestamp)
+                    .append(NEW_LINE)
+                    .append(accessKey)
+                    .toString()
 
             val signingKey = SecretKeySpec(secretKey.toByteArray(Charsets.UTF_8), ALGORITHM)
             val mac = Mac.getInstance(ALGORITHM)

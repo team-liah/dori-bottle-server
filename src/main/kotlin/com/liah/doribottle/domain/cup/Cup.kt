@@ -2,20 +2,23 @@ package com.liah.doribottle.domain.cup
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
-import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.common.SoftDeleteEntity
-import com.liah.doribottle.domain.cup.CupStatus.*
 import com.liah.doribottle.service.cup.dto.CupDto
-import jakarta.persistence.*
-import java.util.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Index
+import jakarta.persistence.Table
+import java.util.UUID
 
 @Entity
 @Table(
     name = "cup",
-    indexes = [Index(name = "IDX_CUP_RFID", columnList = "rfid")]
+    indexes = [Index(name = "IDX_CUP_RFID", columnList = "rfid")],
 )
 class Cup(
-    rfid: String
+    rfid: String,
 ) : SoftDeleteEntity() {
     @Column(nullable = false, unique = true)
     var rfid: String = rfid
@@ -23,14 +26,13 @@ class Cup(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: CupStatus = AVAILABLE
+    var status: CupStatus = CupStatus.AVAILABLE
         protected set
 
-    fun toDto() = CupDto(id, rfid, status, createdDate, lastModifiedDate)
-
     override fun delete() {
-        if (verifyOnLoan())
+        if (verifyOnLoan()) {
             throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
+        }
 
         this.rfid = "Deleted ${UUID.randomUUID()}"
         super.delete()
@@ -38,7 +40,7 @@ class Cup(
 
     fun update(
         rfid: String,
-        status: CupStatus
+        status: CupStatus,
     ) {
         this.rfid = rfid
         this.status = status
@@ -46,17 +48,27 @@ class Cup(
 
     fun loan() {
         if (!verifyAvailable()) throw BusinessException(ErrorCode.CUP_LOAN_NOT_ALLOWED)
-        this.status = ON_LOAN
+        this.status = CupStatus.ON_LOAN
     }
 
     fun `return`() {
-        this.status = RETURNED
+        this.status = CupStatus.RETURNED
     }
 
     fun lost() {
-        this.status = LOST
+        this.status = CupStatus.LOST
     }
 
-    private fun verifyOnLoan() = status == ON_LOAN
-    private fun verifyAvailable() = status == AVAILABLE
+    private fun verifyOnLoan() = status == CupStatus.ON_LOAN
+
+    private fun verifyAvailable() = status == CupStatus.AVAILABLE
+
+    fun toDto() =
+        CupDto(
+            id = id,
+            rfid = rfid,
+            status = status,
+            createdDate = createdDate,
+            lastModifiedDate = lastModifiedDate,
+        )
 }

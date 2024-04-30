@@ -25,13 +25,14 @@ fun <T> JPQLQuery<T>.paging(pageable: Pageable): JPQLQuery<T> {
 fun <T> JPQLQuery<T>.sorting(sort: Sort): JPQLQuery<T> {
     val projection = metadata.projection
     if (sort.isSorted && projection != null) {
-        val orders = sort.map {
-            val direction = if (it.isAscending) Order.ASC else Order.DESC
-            val prop = it.property
-            val orderByExpression = PathBuilder(projection.type, projection.toString())
+        val orders =
+            sort.map {
+                val direction = if (it.isAscending) Order.ASC else Order.DESC
+                val prop = it.property
+                val orderByExpression = PathBuilder(projection.type, projection.toString())
 
-            OrderSpecifier(direction, orderByExpression.get(prop) as Expression<Comparable<Any>>)
-        }.toList().toTypedArray()
+                OrderSpecifier(direction, orderByExpression.get(prop) as Expression<Comparable<Any>>)
+            }.toList().toTypedArray()
 
         this.orderBy(*orders)
     }
@@ -40,9 +41,10 @@ fun <T> JPQLQuery<T>.sorting(sort: Sort): JPQLQuery<T> {
 }
 
 fun <T> JPQLQuery<T>.toPage(pageable: Pageable): Page<T> {
-    val queryResults = this.paging(pageable)
-        .sorting(pageable.sort)
-        .fetchResults()
+    val queryResults =
+        this.paging(pageable)
+            .sorting(pageable.sort)
+            .fetchResults()
 
     return PageImpl(queryResults.results, pageable, queryResults.total)
 }

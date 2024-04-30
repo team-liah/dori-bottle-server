@@ -11,11 +11,11 @@ import com.liah.doribottle.domain.user.PenaltyType.*
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.messaging.AwsSqsSender
+import com.liah.doribottle.messaging.vm.PointSaveMessage
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.notification.AlertRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.me.vm.InvitationCodeRegisterRequest
 import com.liah.doribottle.web.v1.me.vm.ProfileUpdateRequest
@@ -42,8 +42,11 @@ class MeControllerTest : BaseControllerTest() {
     private val endPoint = "/api/v1/me"
 
     @Autowired private lateinit var userRepository: UserRepository
+
     @Autowired private lateinit var refreshTokenRepository: RefreshTokenRepository
+
     @Autowired private lateinit var groupRepository: GroupRepository
+
     @Autowired private lateinit var alertRepository: AlertRepository
 
     @MockBean
@@ -78,7 +81,7 @@ class MeControllerTest : BaseControllerTest() {
             get(endPoint)
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("id", `is`(user.id.toString())))
@@ -98,7 +101,7 @@ class MeControllerTest : BaseControllerTest() {
             get(endPoint)
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("id", `is`(user.id.toString())))
@@ -114,10 +117,10 @@ class MeControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
-            get("${endPoint}/profile")
+            get("$endPoint/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("id", `is`(user.id.toString())))
@@ -144,10 +147,10 @@ class MeControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
-            get("${endPoint}/profile")
+            get("$endPoint/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("id", `is`(user.id.toString())))
@@ -164,7 +167,12 @@ class MeControllerTest : BaseControllerTest() {
             .andExpect(jsonPath("penalties", `is`(emptyList<Any>())))
             .andExpect(jsonPath("blocked", `is`(true)))
             .andExpect(jsonPath("blockedCauses[*].clearPrice", `is`(listOf(8000, 8000))))
-            .andExpect(jsonPath("blockedCauses[*].type", `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name))))
+            .andExpect(
+                jsonPath(
+                    "blockedCauses[*].type",
+                    `is`(listOf(BlockedCauseType.LOST_CUP_PENALTY.name, BlockedCauseType.LOST_CUP_PENALTY.name)),
+                ),
+            )
     }
 
     @DisplayName("프로필 조회 - TC3")
@@ -182,10 +190,10 @@ class MeControllerTest : BaseControllerTest() {
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
         mockMvc.perform(
-            get("${endPoint}/profile")
+            get("$endPoint/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("id", `is`(user.id.toString())))
@@ -212,11 +220,11 @@ class MeControllerTest : BaseControllerTest() {
         val body = ProfileUpdateRequest("Updated Name", MALE, "19970224")
 
         mockMvc.perform(
-            put("${endPoint}/profile")
+            put("$endPoint/profile")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -224,7 +232,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("초대코드 등록")
     @Test
     fun registerInvitationCode() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
@@ -233,13 +241,13 @@ class MeControllerTest : BaseControllerTest() {
         userRepository.save(inviter)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/invitation-code")
+            post("$endPoint/invitation-code")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
@@ -255,7 +263,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("초대코드 등록 TC2")
     @Test
     fun registerInvitationCodeTc2() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
@@ -266,13 +274,13 @@ class MeControllerTest : BaseControllerTest() {
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/invitation-code")
+            post("$endPoint/invitation-code")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
@@ -288,7 +296,7 @@ class MeControllerTest : BaseControllerTest() {
     @DisplayName("초대코드 등록 TC3")
     @Test
     fun registerInvitationCodeTc3() {
-        //given
+        // given
         doNothing().`when`(mockAwsSqsSender).send(any<PointSaveMessage>())
         val cookie = createAccessTokenCookie(user.id, user.loginId, user.name, user.role)
 
@@ -300,13 +308,13 @@ class MeControllerTest : BaseControllerTest() {
         userRepository.save(user)
         val body = InvitationCodeRegisterRequest(inviter.invitationCode)
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            post("${endPoint}/invitation-code")
+            post("$endPoint/invitation-code")
                 .cookie(cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
 
