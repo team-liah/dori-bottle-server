@@ -4,11 +4,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "app")
 data class AppProperties(
+    val web: Web,
     val auth: AuthProperties,
     val ncloud: Ncloud,
     val tosspayments: Tosspayments,
     val aws: Aws,
+    val slack: Slack,
 ) {
+    data class Web(
+        val baseUrl: String,
+        val adminBaseUrl: String,
+    )
+
     data class AuthProperties(
         val jwt: Jwt,
         val refreshJwt: RefreshJwt,
@@ -37,7 +44,7 @@ data class AppProperties(
             data class Sms(
                 val servicePath: String,
                 val serviceId: String,
-                val callingNumber: String
+                val callingNumber: String,
             )
         }
     }
@@ -59,4 +66,8 @@ data class AppProperties(
             val bucketName: String,
         )
     }
+
+    data class Slack(
+        val webhookUrl: String,
+    )
 }
