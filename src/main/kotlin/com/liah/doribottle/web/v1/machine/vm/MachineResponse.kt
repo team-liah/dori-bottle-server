@@ -4,7 +4,7 @@ import com.liah.doribottle.domain.machine.MachineState
 import com.liah.doribottle.domain.machine.MachineType
 import com.liah.doribottle.service.common.AddressDto
 import com.liah.doribottle.service.common.LocationDto
-import java.util.*
+import java.util.UUID
 
 data class MachineResponse(
     val id: UUID,
