@@ -5,18 +5,20 @@ import com.liah.doribottle.apiclient.vm.TosspaymentsBillingKeyIssueRequest
 import com.liah.doribottle.apiclient.vm.TosspaymentsBillingKeyIssueResponse
 import com.liah.doribottle.apiclient.vm.TosspaymentsPaymentCancelRequest
 import com.liah.doribottle.apiclient.vm.TosspaymentsResponse
-import com.liah.doribottle.common.error.exception.BillingExecuteException
-import com.liah.doribottle.common.error.exception.BillingKeyIssuanceException
-import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.config.properties.AppProperties
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class TosspaymentsApiClient(
     appProperties: AppProperties,
-) {
+    webClient: WebClient,
+) : BaseApiClient(webClient) {
+    companion object {
+        const val BASIC_AUTH_HEADER = "Authorization"
+    }
+
     private val baseUrl = appProperties.tosspayments.baseUrl
     private val secretKey = appProperties.tosspayments.secretKey
     private val billingKeyIssueRequestUri = "$baseUrl/v1/billing/authorizations/issue"
@@ -35,16 +37,15 @@ class TosspaymentsApiClient(
                 customerKey = customerKey,
             )
 
-        return WebClient.create()
-            .post()
-            .uri(billingKeyIssueRequestUri)
-            .headers { header -> header.setBasicAuth(secretKey) }
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(TosspaymentsBillingKeyIssueResponse::class.java)
-            .doOnError { throw BillingKeyIssuanceException() }
-            .block()
+        val headers = LinkedMultiValueMap<String, String>()
+        headers.add(BASIC_AUTH_HEADER, "Basic $secretKey")
+
+        return retrievePostForMono(
+            uri = billingKeyIssueRequestUri,
+            headers = headers,
+            requestBody = request,
+            responseType = TosspaymentsBillingKeyIssueResponse::class.java,
+        ).block()
     }
 
     fun executeBilling(
@@ -62,16 +63,15 @@ class TosspaymentsApiClient(
                 orderName = orderName,
             )
 
-        return WebClient.create()
-            .post()
-            .uri(billingExecuteRequestUri(billingKey))
-            .headers { header -> header.setBasicAuth(secretKey) }
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(TosspaymentsResponse::class.java)
-            .doOnError { throw BillingExecuteException() }
-            .block()
+        val headers = LinkedMultiValueMap<String, String>()
+        headers.add(BASIC_AUTH_HEADER, "Basic $secretKey")
+
+        return retrievePostForMono(
+            uri = billingExecuteRequestUri(billingKey),
+            headers = headers,
+            requestBody = request,
+            responseType = TosspaymentsResponse::class.java,
+        ).block()
     }
 
     fun cancelPayment(
@@ -83,15 +83,14 @@ class TosspaymentsApiClient(
                 cancelReason = cancelReason,
             )
 
-        return WebClient.create()
-            .post()
-            .uri(paymentCancelRequestUri(paymentKey))
-            .headers { header -> header.setBasicAuth(secretKey) }
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(TosspaymentsResponse::class.java)
-            .doOnError { throw PaymentCancelException() }
-            .block()
+        val headers = LinkedMultiValueMap<String, String>()
+        headers.add(BASIC_AUTH_HEADER, "Basic $secretKey")
+
+        return retrievePostForMono(
+            uri = paymentCancelRequestUri(paymentKey),
+            headers = headers,
+            requestBody = request,
+            responseType = TosspaymentsResponse::class.java,
+        ).block()
     }
 }
