@@ -16,7 +16,7 @@ import com.liah.doribottle.repository.payment.PaymentCategoryRepository
 import com.liah.doribottle.repository.payment.PaymentRepository
 import com.liah.doribottle.repository.point.PointRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.payment.TosspaymentsService
+import com.liah.doribottle.service.payment.PaymentGatewayService
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.admin.payment.vm.PaymentCategoryRegisterOrUpdateRequest
@@ -58,7 +58,7 @@ class PaymentResourceTest : BaseControllerTest() {
     private lateinit var pointRepository: PointRepository
 
     @MockBean
-    private lateinit var mockTosspaymentsService: TosspaymentsService
+    private lateinit var mockPaymentGatewayService: PaymentGatewayService
 
     @AfterEach
     internal fun destroy() {
@@ -198,7 +198,7 @@ class PaymentResourceTest : BaseControllerTest() {
         payment.updateResult(PaymentResult(paymentKey, Instant.now(), "", null), point)
         paymentRepository.save(payment)
 
-        given(mockTosspaymentsService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)")))
+        given(mockPaymentGatewayService.cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)")))
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, cancelKey))
 
         // when, then
@@ -209,7 +209,7 @@ class PaymentResourceTest : BaseControllerTest() {
         )
             .andExpect(status().isOk)
 
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .cancelPayment(eq(paymentKey), eq("포인트 적립 취소 (관리자)"))
 
         val findPayment = paymentRepository.findAll().firstOrNull()

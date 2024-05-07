@@ -30,6 +30,9 @@ logging.level:
   org.hibernate.SQL: debug
 
 app:
+  web:
+    base-url: https://www.doribottle-id.co.kr
+    admin-base-url: https://www.admin.doribottle-id.co.kr
   auth:
     jwt:
       base64-secret: ${JWT_SECRET}
@@ -55,6 +58,8 @@ app:
       queue-name: point-save-queue.fifo
     s3:
       bucket-name: doribottle-asset
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL}
   schedule:
     enabled: true
 

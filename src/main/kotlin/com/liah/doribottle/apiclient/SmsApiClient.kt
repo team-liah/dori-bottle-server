@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.sms
+package com.liah.doribottle.apiclient
 
 interface SmsApiClient {
     fun sendSms(
