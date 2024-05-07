@@ -35,6 +35,9 @@ logging.level:
   org.hibernate.SQL: debug
 
 app:
+  web:
+    base-url: https://www.doribottle-id.co.kr
+    admin-base-url: https://www.admin.doribottle-id.co.kr
   auth:
     jwt:
       base64-secret: dummyKeyC928D0F74BF2705749E0A843A4E716D0F147D6C6476534C3B1FBC4717C9B4539
@@ -60,6 +63,8 @@ app:
       queue-name: dummyQueue
     s3:
       bucket-name: dummyBucket
+  slack:
+    webhook-url: dummyUrl
   schedule:
     enabled: false
 

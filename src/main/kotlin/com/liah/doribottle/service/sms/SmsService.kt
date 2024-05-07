@@ -1,18 +1,19 @@
 package com.liah.doribottle.service.sms
 
+import com.liah.doribottle.apiclient.NcloudApiClient
 import org.springframework.stereotype.Service
 
 @Service
 class SmsService(
-    private val ncloudApiClient: NcloudApiClient
+    private val ncloudApiClient: NcloudApiClient,
 ) {
     fun sendAuthSms(
         phoneNumber: String,
-        authCode: String
+        authCode: String,
     ) {
         ncloudApiClient.sendSms(
             to = phoneNumber.replace("-", ""),
-            content = smsAuthCodeTemplate(authCode)
+            content = smsAuthCodeTemplate(authCode),
         )
     }
 

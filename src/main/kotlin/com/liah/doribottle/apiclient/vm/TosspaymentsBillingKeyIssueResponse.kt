@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.payment.dto
+package com.liah.doribottle.apiclient.vm
 
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentMethodType
@@ -6,6 +6,8 @@ import com.liah.doribottle.domain.payment.card.CardOwnerType
 import com.liah.doribottle.domain.payment.card.CardProvider
 import com.liah.doribottle.domain.payment.card.CardType
 import com.liah.doribottle.extension.findBy
+import com.liah.doribottle.service.payment.dto.BillingInfo
+import com.liah.doribottle.service.payment.dto.CardDto
 import java.time.Instant
 
 data class TosspaymentsBillingKeyIssueResponse(

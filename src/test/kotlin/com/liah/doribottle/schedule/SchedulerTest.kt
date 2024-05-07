@@ -35,7 +35,7 @@ import com.liah.doribottle.repository.rental.RentalRepository
 import com.liah.doribottle.repository.task.TaskRepository
 import com.liah.doribottle.repository.user.BlockedCauseRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.payment.TosspaymentsService
+import com.liah.doribottle.service.payment.PaymentGatewayService
 import com.liah.doribottle.service.payment.dto.PaymentResultDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -74,7 +74,7 @@ class SchedulerTest {
     @Autowired private lateinit var cupRepository: CupRepository
 
     @MockBean
-    private lateinit var mockTosspaymentsService: TosspaymentsService
+    private lateinit var mockPaymentGatewayService: PaymentGatewayService
 
     @AfterEach
     internal fun destroy() {
@@ -109,7 +109,13 @@ class SchedulerTest {
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
         given(
-            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+            mockPaymentGatewayService.executeBilling(
+                eq(billingKey),
+                eq(user.id),
+                eq(DoriConstant.LOST_CUP_PRICE),
+                any<UUID>(),
+                eq(LOST_CUP),
+            ),
         )
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
@@ -117,7 +123,7 @@ class SchedulerTest {
         scheduler.scheduledTask()
 
         // then
-        verify(mockTosspaymentsService, times(2))
+        verify(mockPaymentGatewayService, times(2))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
@@ -180,7 +186,13 @@ class SchedulerTest {
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
         given(
-            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+            mockPaymentGatewayService.executeBilling(
+                eq(billingKey),
+                eq(user.id),
+                eq(DoriConstant.LOST_CUP_PRICE),
+                any<UUID>(),
+                eq(LOST_CUP),
+            ),
         )
             .willReturn(PaymentResultDto(paymentKey, Instant.now(), null, null))
 
@@ -188,7 +200,7 @@ class SchedulerTest {
         scheduler.scheduledTask()
 
         // then
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findPayments = paymentRepository.findAll()
@@ -247,7 +259,7 @@ class SchedulerTest {
         taskRepository.save(Task(rental2.expiredDate, TaskType.RENTAL_OVERDUE, rental2.id))
 
         given(
-            mockTosspaymentsService.executeBilling(
+            mockPaymentGatewayService.executeBilling(
                 eq(billingKey),
                 eq(user1.id),
                 eq(DoriConstant.LOST_CUP_PRICE),
@@ -261,7 +273,7 @@ class SchedulerTest {
         scheduler.scheduledTask()
 
         // then
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user1.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser1 = userRepository.findByIdOrNull(user1.id)
@@ -324,7 +336,13 @@ class SchedulerTest {
         taskRepository.save(Task(rental.expiredDate, TaskType.RENTAL_OVERDUE, rental.id))
 
         given(
-            mockTosspaymentsService.executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP)),
+            mockPaymentGatewayService.executeBilling(
+                eq(billingKey),
+                eq(user.id),
+                eq(DoriConstant.LOST_CUP_PRICE),
+                any<UUID>(),
+                eq(LOST_CUP),
+            ),
         )
             .willThrow(BillingExecuteException())
 
@@ -332,7 +350,7 @@ class SchedulerTest {
         scheduler.scheduledTask()
 
         // then
-        verify(mockTosspaymentsService, times(1))
+        verify(mockPaymentGatewayService, times(1))
             .executeBilling(eq(billingKey), eq(user.id), eq(DoriConstant.LOST_CUP_PRICE), any<UUID>(), eq(LOST_CUP))
 
         val findUser = userRepository.findByIdOrNull(user.id)

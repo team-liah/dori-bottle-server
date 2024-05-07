@@ -7,13 +7,13 @@ import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.domain.user.*
+import com.liah.doribottle.messaging.AwsSqsSender
+import com.liah.doribottle.messaging.vm.PointSaveMessage
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.rental.RentalQueryRepository
 import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.account.dto.AuthDto
-import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
@@ -31,7 +31,7 @@ class AccountService(
     private val loginIdChangeRepository: LoginIdChangeRepository,
     private val awsSqsSender: AwsSqsSender,
     private val tokenProvider: TokenProvider,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
 ) {
     @Transactional
     fun register(
@@ -41,12 +41,14 @@ class AccountService(
         gender: Gender? = null,
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
-        agreedTermsOfMarketing: Boolean
+        agreedTermsOfMarketing: Boolean,
     ): UUID {
-        val user = userRepository.findByLoginId(loginId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        if (user.role == Role.USER)
+        val user =
+            userRepository.findByLoginId(loginId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        if (user.role == Role.USER) {
             throw BadRequestException(ErrorCode.USER_ALREADY_REGISTERED)
+        }
 
         user.update(name, birthDate, gender, user.description)
         user.agreeOnTerms(agreedTermsOfService, agreedTermsOfPrivacy, agreedTermsOfMarketing)
@@ -57,8 +59,8 @@ class AccountService(
                 userId = user.id,
                 saveType = PointSaveType.REWARD,
                 eventType = PointEventType.SAVE_REGISTER_REWARD,
-                saveAmounts = DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS
-            )
+                saveAmounts = DoriConstant.SAVE_REGISTER_REWARD_AMOUNTS,
+            ),
         )
 
         return user.id
@@ -67,10 +69,11 @@ class AccountService(
     @Transactional
     fun saveOrUpdatePassword(
         loginId: String,
-        loginPassword: String
+        loginPassword: String,
     ): UUID {
-        val user = userRepository.findByLoginId(loginId)
-            ?: userRepository.save(User(loginId, "일반 사용자", loginId, Role.GUEST))
+        val user =
+            userRepository.findByLoginId(loginId)
+                ?: userRepository.save(User(loginId, "일반 사용자", loginId, Role.GUEST))
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         user.updatePassword(encryptedPassword)
@@ -80,10 +83,11 @@ class AccountService(
 
     fun auth(
         loginId: String,
-        loginPassword: String
+        loginPassword: String,
     ): AuthDto {
-        val user = userRepository.findByLoginId(loginId)
-            ?: throw UnauthorizedException()
+        val user =
+            userRepository.findByLoginId(loginId)
+                ?: throw UnauthorizedException()
 
         verifyLoginPassword(user, loginPassword)
         verifyAccount(user)
@@ -91,45 +95,49 @@ class AccountService(
         user.authSuccess()
         userRepository.save(user)
 
-        val accessToken = tokenProvider.generateAccessToken(
-            id = user.id,
-            loginId = user.loginId,
-            name = user.name,
-            role = user.role
-        )
-        val refreshToken = tokenProvider.generateRefreshToken(
-            userId = user.id.toString()
-        )
+        val accessToken =
+            tokenProvider.generateAccessToken(
+                id = user.id,
+                loginId = user.loginId,
+                name = user.name,
+                role = user.role,
+            )
+        val refreshToken =
+            tokenProvider.generateRefreshToken(
+                userId = user.id.toString(),
+            )
 
         return AuthDto(accessToken, refreshToken)
     }
 
-    fun refreshAuth(
-        refreshToken: String?
-    ): AuthDto {
-        val validRefreshToken = refreshToken?.let { tokenProvider.getRefreshToken(it) }
-            ?: throw UnauthorizedException()
-        val user = userRepository.findByIdOrNull(UUID.fromString(validRefreshToken.userId))
-            ?: throw UnauthorizedException()
+    fun refreshAuth(refreshToken: String?): AuthDto {
+        val validRefreshToken =
+            refreshToken?.let { tokenProvider.getRefreshToken(it) }
+                ?: throw UnauthorizedException()
+        val user =
+            userRepository.findByIdOrNull(UUID.fromString(validRefreshToken.userId))
+                ?: throw UnauthorizedException()
 
         verifyAccount(user)
 
-        val accessToken = tokenProvider.generateAccessToken(
-            id = user.id,
-            loginId = user.loginId,
-            name = user.name,
-            role = user.role
-        )
-        val newRefreshToken = refresh(
-            origin = validRefreshToken.refreshToken!!,
-            userId = user.id
-        )
+        val accessToken =
+            tokenProvider.generateAccessToken(
+                id = user.id,
+                loginId = user.loginId,
+                name = user.name,
+                role = user.role,
+            )
+        val newRefreshToken =
+            refresh(
+                origin = validRefreshToken.refreshToken!!,
+                userId = user.id,
+            )
         return AuthDto(accessToken, newRefreshToken)
     }
 
     private fun refresh(
         origin: String,
-        userId: UUID
+        userId: UUID,
     ): String {
         tokenProvider.expireRefreshToken(origin)
         return tokenProvider.generateRefreshToken(userId.toString())
@@ -137,8 +145,9 @@ class AccountService(
 
     @Transactional(readOnly = true)
     fun preAuth(doriUser: DoriUser): String {
-        val user = userRepository.findByIdOrNull(doriUser.id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(doriUser.id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         verifyCanRent(user)
 
@@ -148,11 +157,12 @@ class AccountService(
     private fun verifyCanRent(user: User) {
         if (user.blocked) {
             val existsFivePenalties = user.blockedCauses.find { it.type == BlockedCauseType.FIVE_PENALTIES } != null
-            val errorCode = if (existsFivePenalties) {
-                ErrorCode.BLOCKED_USER_ACCESS_DENIED
-            } else {
-                ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP
-            }
+            val errorCode =
+                if (existsFivePenalties) {
+                    ErrorCode.BLOCKED_USER_ACCESS_DENIED
+                } else {
+                    ErrorCode.BLOCKED_USER_ACCESS_DENIED_LOST_CUP
+                }
             throw ForbiddenException(errorCode)
         }
         paymentMethodRepository.findFirstByUserIdAndDefault(user.id, true)
@@ -161,39 +171,45 @@ class AccountService(
 
     private fun verifyLoginPassword(
         user: User,
-        loginPassword: String
+        loginPassword: String,
     ) {
-        if (user.loginExpirationDate == null
-            || user.loginExpirationDate!! < Instant.now())
+        if (user.loginExpirationDate == null ||
+            user.loginExpirationDate!! < Instant.now()
+        ) {
             throw BadCredentialsException("Login request is expired or does not exist.")
-        if (!passwordEncoder.matches(loginPassword, user.loginPassword))
+        }
+        if (!passwordEncoder.matches(loginPassword, user.loginPassword)) {
             throw BadCredentialsException("Invalid login password.")
+        }
     }
 
     private fun verifyAccount(user: User) {
-        if (!user.active)
+        if (!user.active) {
             throw DisabledException("Account is disabled.")
+        }
     }
 
     @Transactional
     fun inactivate(
         id: UUID,
-        reason: String? = null
+        reason: String? = null,
     ) {
-       val user = userRepository.findByIdOrNull(id)
-           ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
-       val existProceedingRental = rentalQueryRepository.existsConfirmedByUserId(id)
-       if (existProceedingRental)
-           throw BusinessException(ErrorCode.USER_INACTIVATE_NOT_ALLOWED)
+        val existProceedingRental = rentalQueryRepository.existsConfirmedByUserId(id)
+        if (existProceedingRental) {
+            throw BusinessException(ErrorCode.USER_INACTIVATE_NOT_ALLOWED)
+        }
 
-       user.inactivate(reason)
+        user.inactivate(reason)
     }
 
     fun createLoginIdChange(
         userId: UUID,
         toLoginId: String,
-        authCode: String
+        authCode: String,
     ) {
         verifyDuplicatedLoginId(toLoginId)
 
@@ -201,20 +217,21 @@ class AccountService(
             LoginIdChange(
                 userId = userId.toString(),
                 toLoginId = toLoginId,
-                authCode = authCode
-            )
+                authCode = authCode,
+            ),
         )
     }
 
     fun changeLoginId(
         userId: UUID,
-        authCode: String
+        authCode: String,
     ) {
         val toLoginId = verifyAndGetToLoginId(userId, authCode)
         verifyDuplicatedLoginId(toLoginId)
 
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(userId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.updateLoginId(toLoginId)
         userRepository.save(user)
@@ -222,13 +239,14 @@ class AccountService(
 
     private fun verifyAndGetToLoginId(
         userId: UUID,
-        authCode: String
+        authCode: String,
     ): String {
         val id = userId.toString()
         val loginIdChange = loginIdChangeRepository.findByIdOrNull(id)
         val toLoginId = loginIdChange?.toLoginId
-        if (loginIdChange?.authCode != authCode || toLoginId == null)
+        if (loginIdChange?.authCode != authCode || toLoginId == null) {
             throw BusinessException(ErrorCode.LOGIN_ID_NOT_ALLOWED)
+        }
 
         loginIdChangeRepository.deleteById(id)
 
@@ -249,9 +267,7 @@ class AccountService(
 
     // TODO: Remove
     @Transactional
-    fun createDummyUser(
-        loginId: String
-    ) {
+    fun createDummyUser(loginId: String) {
         val user = userRepository.findByLoginId(loginId)
         if (user == null) {
             userRepository.save(User(loginId, "강백호", loginId, Role.GUEST))
@@ -261,18 +277,21 @@ class AccountService(
 
     // TODO: Remove
     fun dummyAuth(): AuthDto {
-        val user = userRepository.findByLoginId("010-7777-7777")
-            ?: throw UnauthorizedException()
+        val user =
+            userRepository.findByLoginId("010-7777-7777")
+                ?: throw UnauthorizedException()
 
-        val accessToken = tokenProvider.generateAccessToken(
-            user.id,
-            user.loginId,
-            user.name,
-            user.role
-        )
-        val refreshToken = tokenProvider.generateRefreshToken(
-            user.id.toString()
-        )
+        val accessToken =
+            tokenProvider.generateAccessToken(
+                user.id,
+                user.loginId,
+                user.name,
+                user.role,
+            )
+        val refreshToken =
+            tokenProvider.generateRefreshToken(
+                user.id.toString(),
+            )
         return AuthDto(accessToken, refreshToken)
     }
 }

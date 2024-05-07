@@ -22,6 +22,8 @@ import com.liah.doribottle.domain.user.LoginIdChange
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.extension.convertAnyToString
+import com.liah.doribottle.messaging.AwsSqsSender
+import com.liah.doribottle.messaging.vm.PointSaveMessage
 import com.liah.doribottle.repository.inquiry.InquiryRepository
 import com.liah.doribottle.repository.payment.PaymentMethodRepository
 import com.liah.doribottle.repository.point.PointRepository
@@ -29,8 +31,6 @@ import com.liah.doribottle.repository.user.LoginIdChangeRepository
 import com.liah.doribottle.repository.user.UserRepository
 import com.liah.doribottle.service.inquiry.dto.BankAccountDto
 import com.liah.doribottle.service.sms.SmsService
-import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.web.BaseControllerTest
 import com.liah.doribottle.web.v1.account.vm.*
 import jakarta.servlet.http.Cookie
