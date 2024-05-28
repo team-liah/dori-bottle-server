@@ -4,7 +4,7 @@ import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.constant.AuthorityConstant
 import com.liah.doribottle.domain.user.Admin
 import org.springframework.security.core.context.SecurityContextHolder
-import java.util.*
+import java.util.UUID
 
 fun currentUser() = getPrincipal()
 
