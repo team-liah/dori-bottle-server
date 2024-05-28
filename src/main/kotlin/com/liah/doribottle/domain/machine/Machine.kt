@@ -1,17 +1,24 @@
 package com.liah.doribottle.domain.machine
 
+import com.liah.doribottle.apiclient.vm.SlackMessageType
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.constant.DoriConstant
 import com.liah.doribottle.domain.common.Address
 import com.liah.doribottle.domain.common.Location
 import com.liah.doribottle.domain.common.SoftDeleteEntity
-import com.liah.doribottle.domain.machine.MachineState.NORMAL
+import com.liah.doribottle.event.Events
 import com.liah.doribottle.service.machine.dto.MachineDto
 import com.liah.doribottle.service.machine.dto.MachineSimpleDto
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Index
+import jakarta.persistence.Table
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(
@@ -53,17 +60,38 @@ class Machine(
 
     @Column(nullable = false)
     var cupAmounts: Int = 0
-        protected set
+        protected set(value) {
+            val notifyLackOfCup = field > value && this.type == MachineType.VENDING && field.toFloat() / this.capacity < 0.1
+            val notifyFullOfCup = field < value && this.type == MachineType.COLLECTION && field.toFloat() / this.capacity > 0.9
+
+            field = value
+
+            if (notifyLackOfCup) {
+                Events.notifySlack(SlackMessageType.MACHINE_LACK_OF_CUP, this.toDto())
+            }
+            if (notifyFullOfCup) {
+                Events.notifySlack(SlackMessageType.MACHINE_FULL_OF_CUP, this.toDto())
+            }
+        }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var state: MachineState = NORMAL
-        protected set
+    var state: MachineState = MachineState.NORMAL
+        protected set(value) {
+            val notifyStateChange = field != value
+
+            field = value
+
+            if (notifyStateChange) {
+                Events.notifySlack(SlackMessageType.MACHINE_STATE_CHANGE, this.toDto())
+            }
+        }
 
     @Column
     var imageUrl: String? = imageUrl
         protected set
 
+    // 컵 대여에 필요한 포인트 개수
     @Column
     var rentCupAmounts: Long? = rentCupAmounts
         get() {
@@ -75,6 +103,7 @@ class Machine(
         }
         protected set
 
+    // 얼음컵 대여에 필요한 포인트 개수
     @Column
     var rentIceCupAmounts: Long? = rentIceCupAmounts
         get() {
@@ -135,7 +164,22 @@ class Machine(
     }
 
     fun toDto() =
-        MachineDto(id, no, name, type, address.toDto(), location.toDto(), capacity, cupAmounts, state, imageUrl, rentCupAmounts, rentIceCupAmounts, createdDate, lastModifiedDate)
+        MachineDto(
+            id = id,
+            no = no,
+            name = name,
+            type = type,
+            address = address.toDto(),
+            location = location.toDto(),
+            capacity = capacity,
+            cupAmounts = cupAmounts,
+            state = state,
+            imageUrl = imageUrl,
+            rentCupAmounts = rentCupAmounts,
+            rentIceCupAmounts = rentIceCupAmounts,
+            createdDate = createdDate,
+            lastModifiedDate = lastModifiedDate,
+        )
 
     fun toSimpleDto() = MachineSimpleDto(id, type, location.toDto(), state)
 }

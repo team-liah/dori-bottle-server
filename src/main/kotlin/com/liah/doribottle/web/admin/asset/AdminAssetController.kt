@@ -13,8 +13,8 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/admin/api/asset")
-class AssetController(
-    private val awsS3Service: AwsS3Service
+class AdminAssetController(
+    private val awsS3Service: AwsS3Service,
 ) {
     @Operation(summary = "에셋 업로드")
     @PostMapping(value = ["/upload"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

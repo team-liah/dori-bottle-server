@@ -12,11 +12,11 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.PenaltyType
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.event.Events
+import com.liah.doribottle.messaging.AwsSqsSender
+import com.liah.doribottle.messaging.vm.PointSaveMessage
 import com.liah.doribottle.repository.group.GroupRepository
 import com.liah.doribottle.repository.user.UserQueryRepository
 import com.liah.doribottle.repository.user.UserRepository
-import com.liah.doribottle.service.sqs.AwsSqsSender
-import com.liah.doribottle.service.sqs.dto.PointSaveMessage
 import com.liah.doribottle.service.user.dto.UserDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -31,7 +31,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val userQueryRepository: UserQueryRepository,
     private val groupRepository: GroupRepository,
-    private val awsSqsSender: AwsSqsSender
+    private val awsSqsSender: AwsSqsSender,
 ) {
     @Transactional(readOnly = true)
     fun get(id: UUID) = userQueryRepository.get(id).toDetailDto()
@@ -45,7 +45,7 @@ class UserService(
         active: Boolean? = null,
         blocked: Boolean? = null,
         groupId: UUID? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<UserDto> {
         return userQueryRepository.getAll(
             name = name,
@@ -55,7 +55,7 @@ class UserService(
             active = active,
             blocked = blocked,
             groupId = groupId,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
     }
 
@@ -65,14 +65,16 @@ class UserService(
         birthDate: String? = null,
         gender: Gender? = null,
         description: String? = null,
-        groupId: UUID? = null
+        groupId: UUID? = null,
     ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val group = groupId?.let {
-            groupRepository.findByIdOrNull(groupId)
-                ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
-        }
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val group =
+            groupId?.let {
+                groupRepository.findByIdOrNull(groupId)
+                    ?: throw NotFoundException(ErrorCode.GROUP_NOT_FOUND)
+            }
 
         user.update(name, birthDate, gender, description)
         user.updateGroup(group)
@@ -80,12 +82,14 @@ class UserService(
 
     fun registerInvitationCode(
         inviteeId: UUID,
-        invitationCode: String
+        invitationCode: String,
     ) {
-        val invitee = userRepository.findByIdOrNull(inviteeId)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-        val inviter = userRepository.findByInvitationCode(invitationCode)
-            ?: throw NotFoundException(ErrorCode.INVITER_NOT_FOUND)
+        val invitee =
+            userRepository.findByIdOrNull(inviteeId)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val inviter =
+            userRepository.findByInvitationCode(invitationCode)
+                ?: throw NotFoundException(ErrorCode.INVITER_NOT_FOUND)
 
         // invitee reward
         rewardInvitee(invitee, inviter)
@@ -96,7 +100,7 @@ class UserService(
 
     private fun rewardInvitee(
         invitee: User,
-        inviter: User
+        inviter: User,
     ) {
         invitee.setInviter(inviter)
         awsSqsSender.send(
@@ -104,14 +108,12 @@ class UserService(
                 invitee.id,
                 PointSaveType.REWARD,
                 PointEventType.SAVE_REGISTER_INVITER_REWARD,
-                DoriConstant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS
-            )
+                DoriConstant.SAVE_REGISTER_INVITER_REWARD_AMOUNTS,
+            ),
         )
     }
 
-    private fun rewardInviter(
-        inviter: User
-    ) {
+    private fun rewardInviter(inviter: User) {
         inviter.increaseInvitationCount()
         val inviteRewardAmounts = DoriConstant.SAVE_INVITE_REWARD_AMOUNTS_MAP[inviter.invitationCount]
         if (inviteRewardAmounts != null) {
@@ -120,8 +122,8 @@ class UserService(
                     inviter.id,
                     PointSaveType.REWARD,
                     PointEventType.SAVE_INVITE_REWARD,
-                    inviteRewardAmounts
-                )
+                    inviteRewardAmounts,
+                ),
             )
         }
     }
@@ -129,10 +131,11 @@ class UserService(
     fun imposePenalty(
         id: UUID,
         penaltyType: PenaltyType,
-        penaltyCause: String? = null
+        penaltyCause: String? = null,
     ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.imposePenalty(penaltyType, penaltyCause)
 
@@ -141,17 +144,18 @@ class UserService(
                 userId = user.id,
                 type = NotificationType.PENALTY,
                 targetId = null,
-                penaltyType.title
-            )
+                penaltyType.title,
+            ),
         )
     }
 
     fun removePenalty(
         id: UUID,
-        penaltyId: UUID
+        penaltyId: UUID,
     ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.removePenalty(penaltyId)
 
@@ -159,28 +163,30 @@ class UserService(
             NotificationIndividual(
                 userId = user.id,
                 type = NotificationType.PENALTY_CANCEL,
-                targetId = null
-            )
+                targetId = null,
+            ),
         )
     }
 
     fun block(
         id: UUID,
         blockedCauseType: BlockedCauseType,
-        blockedCauseDescription: String? = null
+        blockedCauseDescription: String? = null,
     ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         user.block(blockedCauseType, blockedCauseDescription)
     }
 
     fun unblock(
         id: UUID,
-        blockedCauseIds: Set<UUID>
+        blockedCauseIds: Set<UUID>,
     ) {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val user =
+            userRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         blockedCauseIds.forEach { blockedCauseId ->
             user.unblock(blockedCauseId)

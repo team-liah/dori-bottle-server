@@ -1,6 +1,11 @@
 package com.liah.doribottle.web.v1.payment
 
-import com.liah.doribottle.common.error.exception.*
+import com.liah.doribottle.common.error.exception.BillingExecuteException
+import com.liah.doribottle.common.error.exception.BusinessException
+import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.common.error.exception.ForbiddenException
+import com.liah.doribottle.common.error.exception.NotFoundException
+import com.liah.doribottle.common.error.exception.PaymentCancelException
 import com.liah.doribottle.common.pageable.CustomPage
 import com.liah.doribottle.domain.payment.PaymentMethodProviderType
 import com.liah.doribottle.domain.payment.PaymentStatus
@@ -9,25 +14,36 @@ import com.liah.doribottle.domain.point.PointEventType
 import com.liah.doribottle.domain.point.PointSaveType
 import com.liah.doribottle.extension.currentUserId
 import com.liah.doribottle.service.group.GroupService
+import com.liah.doribottle.service.payment.PaymentGatewayService
 import com.liah.doribottle.service.payment.PaymentService
-import com.liah.doribottle.service.payment.TosspaymentsService
 import com.liah.doribottle.service.point.PointService
 import com.liah.doribottle.service.user.UserService
-import com.liah.doribottle.web.v1.payment.vm.*
+import com.liah.doribottle.web.v1.payment.vm.PayToSavePointRequest
+import com.liah.doribottle.web.v1.payment.vm.PaymentCategorySearchResponse
+import com.liah.doribottle.web.v1.payment.vm.PaymentMethodRegisterRequest
+import com.liah.doribottle.web.v1.payment.vm.PaymentMethodSearchResponse
+import com.liah.doribottle.web.v1.payment.vm.PaymentSearchResponse
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/payment")
 class PaymentController(
     private val paymentService: PaymentService,
-    private val tosspaymentsService: TosspaymentsService,
+    private val paymentGatewayService: PaymentGatewayService,
     private val pointService: PointService,
     private val userService: UserService,
     private val groupService: GroupService,
@@ -51,7 +67,7 @@ class PaymentController(
             )
 
         runCatching {
-            tosspaymentsService.executeBilling(
+            paymentGatewayService.executeBilling(
                 billingKey = method.billingKey,
                 userId = currentUserId,
                 price = price,
@@ -101,7 +117,7 @@ class PaymentController(
             )
 
         runCatching {
-            tosspaymentsService.executeBilling(
+            paymentGatewayService.executeBilling(
                 billingKey = method.billingKey,
                 userId = currentUserId,
                 price = price,
@@ -158,7 +174,7 @@ class PaymentController(
         val paymentResult = payment.result ?: throw NotFoundException(ErrorCode.PAYMENT_NOT_FOUND)
 
         runCatching {
-            tosspaymentsService.cancelPayment(
+            paymentGatewayService.cancelPayment(
                 paymentKey = paymentResult.paymentKey,
                 cancelReason = "포인트 적립 취소",
             )
@@ -181,7 +197,7 @@ class PaymentController(
         val billingInfo =
             when (request.providerType!!) {
                 PaymentMethodProviderType.TOSS_PAYMENTS -> {
-                    tosspaymentsService.issueBillingKey(
+                    paymentGatewayService.issueBillingKey(
                         authKey = request.authKey!!,
                         userId = currentUserId()!!,
                     )

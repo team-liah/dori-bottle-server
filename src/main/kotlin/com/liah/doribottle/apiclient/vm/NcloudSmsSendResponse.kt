@@ -1,4 +1,4 @@
-package com.liah.doribottle.service.sms.dto
+package com.liah.doribottle.apiclient.vm
 
 import java.time.LocalDateTime
 
