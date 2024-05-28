@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multi
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-class AssetControllerTest : BaseControllerTest() {
+class AdminAssetControllerTest : BaseControllerTest() {
     private val endPoint = "/admin/api/asset"
 
     @MockBean
@@ -29,15 +29,15 @@ class AssetControllerTest : BaseControllerTest() {
     @WithMockDoriUser(loginId = "admin", role = Role.ADMIN)
     @Test
     fun upload() {
-        //given
+        // given
         val file = MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".toByteArray())
         given(awsS3Service.uploadWithPublicRead(file, "admin"))
             .willReturn(AwsS3UploadResultDto("dummyKey", "dummyUrl"))
 
-        //when, then
+        // when, then
         mockMvc.perform(
-            multipart("${endPoint}/upload")
-                .file(file)
+            multipart("$endPoint/upload")
+                .file(file),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("key", `is`("dummyKey")))
