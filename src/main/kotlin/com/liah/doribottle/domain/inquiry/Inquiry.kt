@@ -14,7 +14,6 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType.LAZY
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
@@ -33,9 +32,8 @@ class Inquiry(
     val content: String? = null,
     @Embedded
     val target: InquiryTarget? = null,
-    @Lob
     @Convert(converter = StringListConverter::class)
-    @Column
+    @Column(length = 1000)
     val imageUrls: List<String>? = null,
 ) : PrimaryKeyEntity() {
     @Column
