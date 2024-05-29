@@ -5,7 +5,7 @@ import com.liah.doribottle.domain.inquiry.InquiryType
 import com.liah.doribottle.service.user.dto.UserSimpleDto
 import com.liah.doribottle.web.v1.inquiry.vm.InquirySearchResponse
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class InquiryDto(
     val id: UUID,

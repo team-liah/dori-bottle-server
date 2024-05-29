@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import java.util.*
+import java.util.UUID
 
 class InquiryServiceTest : BaseServiceTest() {
     @Autowired
@@ -61,6 +61,41 @@ class InquiryServiceTest : BaseServiceTest() {
         assertThat(findInquiry?.target?.id).isEqualTo(targetDto.id)
         assertThat(findInquiry?.target?.classType).isEqualTo(targetDto.classType)
         assertThat(findInquiry?.imageUrls).isEqualTo(listOf("test"))
+        assertThat(findInquiry?.answer).isNull()
+        assertThat(findInquiry?.status).isEqualTo(PROCEEDING)
+    }
+
+    @DisplayName("문의 등록 TC2")
+    @Test
+    fun register_Tc2() {
+        // given
+        val user = userRepository.save(User(USER_LOGIN_ID, "Tester", USER_LOGIN_ID, Role.USER))
+        val targetDto = InquiryTargetDto(UUID.randomUUID(), "Test")
+        clear()
+
+        // when
+        val id =
+            inquiryService.register(
+                user.id,
+                REFUND,
+                BankAccountDto("국민", "943202-00-120364", "김동준"),
+                "버블 환불",
+                targetDto,
+                emptyList(),
+            )
+        clear()
+
+        // then
+        val findInquiry = inquiryRepository.findByIdOrNull(id)
+        assertThat(findInquiry?.user?.id).isEqualTo(user.id)
+        assertThat(findInquiry?.type).isEqualTo(REFUND)
+        assertThat(findInquiry?.bankAccount?.bank).isEqualTo("국민")
+        assertThat(findInquiry?.bankAccount?.accountNumber).isEqualTo("943202-00-120364")
+        assertThat(findInquiry?.bankAccount?.accountHolder).isEqualTo("김동준")
+        assertThat(findInquiry?.content).isEqualTo("버블 환불")
+        assertThat(findInquiry?.target?.id).isEqualTo(targetDto.id)
+        assertThat(findInquiry?.target?.classType).isEqualTo(targetDto.classType)
+        assertThat(findInquiry?.imageUrls).isEmpty()
         assertThat(findInquiry?.answer).isNull()
         assertThat(findInquiry?.status).isEqualTo(PROCEEDING)
     }
