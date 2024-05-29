@@ -6,8 +6,17 @@ import com.liah.doribottle.domain.inquiry.InquiryStatus.PROCEEDING
 import com.liah.doribottle.domain.inquiry.InquiryStatus.SUCCEEDED
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.service.inquiry.dto.InquiryDto
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType.LAZY
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 
 @Entity
 @Table(name = "inquiry")
@@ -24,6 +33,7 @@ class Inquiry(
     val content: String? = null,
     @Embedded
     val target: InquiryTarget? = null,
+    @Lob
     @Convert(converter = StringListConverter::class)
     @Column
     val imageUrls: List<String>? = null,
