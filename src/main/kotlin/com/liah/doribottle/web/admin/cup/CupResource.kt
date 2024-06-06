@@ -1,11 +1,14 @@
 package com.liah.doribottle.web.admin.cup
 
 import com.liah.doribottle.common.pageable.CustomPage
+import com.liah.doribottle.config.security.DoriUser
 import com.liah.doribottle.service.cup.CupService
 import com.liah.doribottle.service.cup.dto.CupDto
-import com.liah.doribottle.service.cup.dto.CupRevisionDto
+import com.liah.doribottle.service.user.AdminService
+import com.liah.doribottle.service.user.UserService
 import com.liah.doribottle.web.admin.cup.vm.CupPatchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupRegisterRequest
+import com.liah.doribottle.web.admin.cup.vm.CupRevisionSearchResponse
 import com.liah.doribottle.web.admin.cup.vm.CupSearchRequest
 import com.liah.doribottle.web.admin.cup.vm.CupUpdateRequest
 import io.swagger.v3.oas.annotations.Operation
@@ -32,6 +35,8 @@ import java.util.UUID
 @RequestMapping("/admin/api/cup")
 class CupResource(
     private val cupService: CupService,
+    private val adminService: AdminService,
+    private val userService: UserService,
 ) {
     @Operation(summary = "컵 등록")
     @PostMapping
@@ -110,13 +115,36 @@ class CupResource(
         @RequestParam(required = false, defaultValue = "0") page: Int,
         @RequestParam(required = false, defaultValue = "10") size: Int,
         @RequestParam(required = false, defaultValue = "DESC") direction: Sort.Direction,
-    ): CustomPage<CupRevisionDto> {
+    ): CustomPage<CupRevisionSearchResponse> {
         val pageable =
             when (direction) {
                 Sort.Direction.ASC -> PageRequest.of(page, size, RevisionSort.asc())
                 Sort.Direction.DESC -> PageRequest.of(page, size, RevisionSort.desc())
             }
 
-        return CustomPage.of(cupService.getAllRevisions(id, pageable))
+        val revisions = cupService.getAllRevisions(id, pageable)
+
+        val createdByList = revisions.mapNotNull { revision -> revision.createdBy }.distinct()
+        val lastModifiedByList = revisions.mapNotNull { revision -> revision.lastModifiedBy }.distinct()
+        val userMap = userService.getAllByIds(createdByList + lastModifiedByList).associateBy { it.id }
+        val adminMap = adminService.getAllByIds(createdByList + lastModifiedByList).associateBy { it.id }
+
+        fun extractDoriUser(userId: UUID?): DoriUser? {
+            return when (userId) {
+                in userMap -> userMap[userId]?.let { user -> DoriUser.fromUser(user) }
+                in adminMap -> adminMap[userId]?.let { admin -> DoriUser.fromAdmin(admin) }
+                else -> null
+            }
+        }
+
+        val response =
+            revisions.map { revision ->
+                CupRevisionSearchResponse.fromDto(
+                    dto = revision,
+                    extractDoriUser = ::extractDoriUser,
+                )
+            }
+
+        return CustomPage.of(response)
     }
 }

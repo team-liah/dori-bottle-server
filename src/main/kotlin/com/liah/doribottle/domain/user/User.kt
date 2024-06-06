@@ -14,18 +14,18 @@ import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.FetchType.LAZY
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(
     name = "`user`",
-    indexes = [Index(name = "IDX_USER_LOGIN_ID", columnList = "loginId")]
+    indexes = [Index(name = "IDX_USER_LOGIN_ID", columnList = "loginId")],
 )
 class User(
     loginId: String,
     name: String,
     phoneNumber: String,
-    role: Role
+    role: Role,
 ) : PrimaryKeyEntity() {
     @Column(nullable = false, unique = true)
     var loginId: String = loginId
@@ -117,7 +117,7 @@ class User(
 
     @OneToMany(mappedBy = "user", fetch = LAZY, cascade = [ALL], orphanRemoval = true)
     protected val mutableBlockedCauses: MutableList<BlockedCause> = mutableListOf()
-    val blockedCauses: List<BlockedCause> get() =  mutableBlockedCauses
+    val blockedCauses: List<BlockedCause> get() = mutableBlockedCauses
 
     fun updateLoginId(loginId: String) {
         this.loginId = loginId
@@ -138,7 +138,7 @@ class User(
         name: String,
         birthDate: String? = null,
         gender: Gender? = null,
-        description: String? = null
+        description: String? = null,
     ) {
         this.name = name
         this.birthDate = birthDate
@@ -154,7 +154,7 @@ class User(
     fun agreeOnTerms(
         agreedTermsOfService: Boolean,
         agreedTermsOfPrivacy: Boolean,
-        agreedTermsOfMarketing: Boolean
+        agreedTermsOfMarketing: Boolean,
     ) {
         when (agreedTermsOfService) {
             true -> this.agreedTermsOfServiceDate = Instant.now()
@@ -170,16 +170,20 @@ class User(
         }
     }
 
-    fun updateGroup(
-        group: Group? = null
-    ) {
+    fun updateGroup(group: Group? = null) {
         this.group = group
     }
 
     fun setInviter(inviter: User) {
         if (this.id == inviter.id) throw BusinessException(ErrorCode.INVITER_NOT_ALLOWED)
         if (this.inviterId != null) throw BusinessException(ErrorCode.INVITER_ALREADY_REGISTERED)
-        if (this.registeredDate!!.until(Instant.now(), ChronoUnit.DAYS) > 30) throw BusinessException(ErrorCode.INVITER_REGISTRATION_OVERDUE)
+        if (this.registeredDate!!.until(
+                Instant.now(),
+                ChronoUnit.DAYS,
+            ) > 30
+        ) {
+            throw BusinessException(ErrorCode.INVITER_REGISTRATION_OVERDUE)
+        }
 
         this.inviterId = inviter.id
     }
@@ -190,7 +194,7 @@ class User(
 
     fun imposePenalty(
         penaltyType: PenaltyType,
-        penaltyCause: String? = null
+        penaltyCause: String? = null,
     ) {
         this.mutablePenalties.add(Penalty(this, penaltyType, penaltyCause))
 
@@ -199,9 +203,7 @@ class User(
         }
     }
 
-    fun removePenalty(
-        penaltyId: UUID
-    ) {
+    fun removePenalty(penaltyId: UUID) {
         val penalty = penalties.find { it.id == penaltyId } ?: return
 
         if (!penalty.disabled && isBlockBoundary()) {
@@ -223,15 +225,13 @@ class User(
 
     fun block(
         blockedCauseType: BlockedCauseType,
-        blockedCauseDescription: String? = null
+        blockedCauseDescription: String? = null,
     ) {
         this.blocked = true
         this.mutableBlockedCauses.add(BlockedCause(this, blockedCauseType, blockedCauseDescription))
     }
 
-    fun unblock(
-        blockedCauseId: UUID
-    ) {
+    fun unblock(blockedCauseId: UUID) {
         val blockCause = blockedCauses.find { it.id == blockedCauseId }
 
         this.mutableBlockedCauses.remove(blockCause)
@@ -253,7 +253,52 @@ class User(
         this.inactivateReason = reason
     }
 
-    fun toDto() = UserDto(id, loginId, name, phoneNumber, invitationCode, birthDate, gender, role, active, registeredDate, group?.toDto(), createdDate, lastModifiedDate)
-    fun toDetailDto() = UserDetailDto(id, loginId, name, phoneNumber, invitationCode, invitationCount, inviterId, birthDate, gender, role, active, inactivateReason, registeredDate, description, group?.toDto(), penalties.map { it.toDto() }, blocked, if (blocked) { blockedCauses.map { it.toDto() } } else { emptyList() }, createdDate, lastModifiedDate)
+    fun toDto() =
+        UserDto(
+            id,
+            loginId,
+            name,
+            phoneNumber,
+            invitationCode,
+            birthDate,
+            gender,
+            role,
+            active,
+            registeredDate,
+            group?.toDto(),
+            createdDate,
+            lastModifiedDate,
+        )
+
+    fun toDetailDto() =
+        UserDetailDto(
+            id,
+            loginId,
+            name,
+            phoneNumber,
+            invitationCode,
+            invitationCount,
+            inviterId,
+            birthDate,
+            gender,
+            role,
+            active,
+            inactivateReason,
+            registeredDate,
+            description,
+            group?.toDto(),
+            penalties.map {
+                it.toDto()
+            },
+            blocked,
+            if (blocked) {
+                blockedCauses.map { it.toDto() }
+            } else {
+                emptyList()
+            },
+            createdDate,
+            lastModifiedDate,
+        )
+
     fun toSimpleDto() = UserSimpleDto(id, loginId, name, phoneNumber)
 }

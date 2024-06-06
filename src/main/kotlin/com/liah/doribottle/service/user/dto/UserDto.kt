@@ -4,7 +4,7 @@ import com.liah.doribottle.domain.user.Gender
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.service.group.dto.GroupDto
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class UserDto(
     val id: UUID,
@@ -19,5 +19,5 @@ data class UserDto(
     val registeredDate: Instant?,
     val group: GroupDto?,
     val createdDate: Instant,
-    val lastModifiedDate: Instant
+    val lastModifiedDate: Instant,
 )
