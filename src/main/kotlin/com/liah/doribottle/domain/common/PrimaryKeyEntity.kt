@@ -2,7 +2,12 @@ package com.liah.doribottle.domain.common
 
 import com.github.f4b6a3.ulid.UlidCreator
 import com.liah.doribottle.extension.currentUserId
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.Id
+import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.PostLoad
+import jakarta.persistence.PostPersist
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
@@ -12,7 +17,8 @@ import org.springframework.data.domain.Persistable
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.io.Serializable
 import java.time.Instant
-import java.util.*
+import java.util.Objects
+import java.util.UUID
 import kotlin.jvm.Transient
 
 @MappedSuperclass
