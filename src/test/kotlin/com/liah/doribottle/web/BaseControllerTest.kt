@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.util.*
+import java.util.UUID
 
 @ActiveProfiles("test")
 @Import(TestcontainersConfig::class)
@@ -29,17 +29,20 @@ class BaseControllerTest {
 
     @Autowired
     protected lateinit var context: WebApplicationContext
+
     @Autowired
     private lateinit var tokenProvider: TokenProvider
+
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
     @BeforeEach
     internal fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .apply<DefaultMockMvcBuilder?>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply<DefaultMockMvcBuilder?>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
     }
 
     companion object {
@@ -54,7 +57,7 @@ class BaseControllerTest {
         id: UUID,
         loginId: String,
         name: String,
-        role: Role
+        role: Role,
     ): Cookie {
         val accessToken = tokenProvider.generateAccessToken(id, loginId, name, role)
 

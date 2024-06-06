@@ -17,7 +17,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.LinkedMultiValueMap
@@ -28,7 +32,6 @@ class CupResourceTest : BaseControllerTest() {
 
     @Autowired
     private lateinit var cupRepository: CupRepository
-
 
     @AfterEach
     internal fun destroy() {
@@ -45,7 +48,7 @@ class CupResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -60,7 +63,7 @@ class CupResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isForbidden)
             .andExpect(jsonPath("message", `is`(ErrorCode.ACCESS_DENIED.message)))
@@ -77,7 +80,7 @@ class CupResourceTest : BaseControllerTest() {
             post(endPoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("message", `is`(ErrorCode.CUP_ALREADY_REGISTERED.message)))
@@ -99,7 +102,7 @@ class CupResourceTest : BaseControllerTest() {
             get(endPoint)
                 .params(params)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("content[*].rfid", `is`(expectValue)))
@@ -120,9 +123,9 @@ class CupResourceTest : BaseControllerTest() {
     fun get() {
         val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
         mockMvc.perform(
-            get("${endPoint}/${cup.id}")
+            get("$endPoint/${cup.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("rfid", `is`("A1:A1:A1:A1")))
@@ -137,10 +140,10 @@ class CupResourceTest : BaseControllerTest() {
         val body = CupUpdateRequest("B1:B1:B1:B1", CupStatus.LOST)
 
         mockMvc.perform(
-            put("${endPoint}/${cup.id}")
+            put("$endPoint/${cup.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -153,10 +156,10 @@ class CupResourceTest : BaseControllerTest() {
         val body = CupPatchRequest(null, CupStatus.LOST)
 
         mockMvc.perform(
-            patch("${endPoint}/${cup.id}")
+            patch("$endPoint/${cup.id}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(body.convertAnyToString())
+                .content(body.convertAnyToString()),
         )
             .andExpect(status().isOk)
     }
@@ -168,10 +171,76 @@ class CupResourceTest : BaseControllerTest() {
         val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
 
         mockMvc.perform(
-            delete("${endPoint}/${cup.id}")
+            delete("$endPoint/${cup.id}")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
+    }
+
+    @DisplayName("컵 수정 이력 조회 DESC")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getAllRevisions_orderByDesc() {
+        // given
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+
+        cup.update("B1:B1:B1:B1", CupStatus.LOST)
+        cupRepository.save(cup)
+
+        cup.delete()
+        cupRepository.save(cup)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("page", "0")
+        params.add("size", "3")
+        params.add("direction", "DESC")
+
+        val expectRfid = listOf("Deleted ${cup.id}", "B1:B1:B1:B1", "A1:A1:A1:A1")
+        val expectStatus = listOf(CupStatus.LOST.name, CupStatus.LOST.name, CupStatus.AVAILABLE.name)
+
+        // when, then
+        mockMvc.perform(
+            get("$endPoint/${cup.id}/revisions")
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].rfid", `is`(expectRfid)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
+    }
+
+    @DisplayName("컵 수정 이력 조회 ASC")
+    @WithMockDoriUser(loginId = ADMIN_LOGIN_ID, role = Role.ADMIN)
+    @Test
+    fun getAllRevisions_orderByAsc() {
+        // given
+        val cup = cupRepository.save(Cup("A1:A1:A1:A1"))
+
+        cup.update("B1:B1:B1:B1", CupStatus.LOST)
+        cupRepository.save(cup)
+
+        cup.delete()
+        cupRepository.save(cup)
+
+        val params: MultiValueMap<String, String> = LinkedMultiValueMap()
+        params.add("page", "0")
+        params.add("size", "3")
+        params.add("direction", "ASC")
+
+        val expectRfid = listOf("A1:A1:A1:A1", "B1:B1:B1:B1", "Deleted ${cup.id}")
+        val expectStatus = listOf(CupStatus.AVAILABLE.name, CupStatus.LOST.name, CupStatus.LOST.name)
+
+        // when, then
+        mockMvc.perform(
+            get("$endPoint/${cup.id}/revisions")
+                .params(params)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("content[*].rfid", `is`(expectRfid)))
+            .andExpect(jsonPath("content[*].status", `is`(expectStatus)))
     }
 }

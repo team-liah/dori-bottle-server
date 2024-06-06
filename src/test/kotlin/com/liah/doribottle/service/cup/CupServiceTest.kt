@@ -3,7 +3,7 @@ package com.liah.doribottle.service.cup
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
 import com.liah.doribottle.domain.cup.Cup
-import com.liah.doribottle.domain.cup.CupStatus.*
+import com.liah.doribottle.domain.cup.CupStatus
 import com.liah.doribottle.repository.cup.CupRepository
 import com.liah.doribottle.service.BaseServiceTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,97 +17,99 @@ import org.springframework.data.repository.findByIdOrNull
 class CupServiceTest : BaseServiceTest() {
     @Autowired
     private lateinit var cupRepository: CupRepository
+
     @Autowired
     private lateinit var cupService: CupService
 
     @DisplayName("컵 등록")
     @Test
     fun register() {
-        //when
+        // when
         val id = cupService.register(RFID)
         clear()
 
-        //then
+        // then
         val findCup = cupRepository.findById(id).orElse(null)
         assertThat(findCup.rfid).isEqualTo(RFID)
-        assertThat(findCup.status).isEqualTo(AVAILABLE)
+        assertThat(findCup.status).isEqualTo(CupStatus.AVAILABLE)
     }
 
     @DisplayName("컵 등록 예외")
     @Test
     fun registerException() {
-        //given
+        // given
         cupRepository.save(Cup(RFID))
         clear()
 
-        //when, then
-        val exception = assertThrows<BusinessException> {
-            cupService.register(RFID)
-        }
+        // when, then
+        val exception =
+            assertThrows<BusinessException> {
+                cupService.register(RFID)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_ALREADY_REGISTERED)
     }
 
     @DisplayName("컵 조회")
     @Test
     fun get() {
-        //given
+        // given
         val cup = cupRepository.save(Cup(RFID))
         clear()
 
-        //when
+        // when
         val result = cupService.get(cup.id)
 
-        //then
+        // then
         assertThat(result.rfid).isEqualTo(RFID)
-        assertThat(result.status).isEqualTo(AVAILABLE)
+        assertThat(result.status).isEqualTo(CupStatus.AVAILABLE)
     }
 
     @DisplayName("RFID 컵 조회")
     @Test
     fun getByRfid() {
-        //given
+        // given
         cupRepository.save(Cup(RFID))
         clear()
 
-        //when
+        // when
         val cup = cupService.getByRfid(RFID)
 
-        //then
+        // then
         assertThat(cup.rfid).isEqualTo(RFID)
-        assertThat(cup.status).isEqualTo(AVAILABLE)
+        assertThat(cup.status).isEqualTo(CupStatus.AVAILABLE)
     }
 
     @DisplayName("컵 수정")
     @Test
     fun update() {
-        //given
+        // given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
         clear()
 
-        //when
-        cupService.update(id, "TEST", LOST)
+        // when
+        cupService.update(id, "TEST", CupStatus.LOST)
         clear()
 
-        //then
+        // then
         val findCup = cupRepository.findByIdOrNull(id)
         assertThat(findCup?.rfid).isEqualTo("TEST")
-        assertThat(findCup?.status).isEqualTo(LOST)
+        assertThat(findCup?.status).isEqualTo(CupStatus.LOST)
     }
 
     @DisplayName("컵 제거")
     @Test
     fun remove() {
-        //given
+        // given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
         clear()
 
-        //when
+        // when
         cupService.remove(id)
         clear()
 
-        //then
+        // then
         val findCup = cupRepository.findByIdOrNull(id)
         assertThat(findCup?.deleted).isTrue()
     }
@@ -115,25 +117,26 @@ class CupServiceTest : BaseServiceTest() {
     @DisplayName("컵 제거 예외")
     @Test
     fun removeException() {
-        //given
+        // given
         val cup = cupRepository.save(Cup(RFID))
         val id = cup.id
-        cup.update(RFID, AVAILABLE)
+        cup.update(RFID, CupStatus.AVAILABLE)
         cup.loan()
 
         clear()
 
-        //when, then
-        val exception = assertThrows<BusinessException> {
-            cupService.remove(id)
-        }
+        // when, then
+        val exception =
+            assertThrows<BusinessException> {
+                cupService.remove(id)
+            }
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CUP_DELETE_NOT_ALLOWED)
     }
 
     @DisplayName("컵 목록 조회")
     @Test
     fun getAll() {
-        //given
+        // given
         cupRepository.save(Cup("B1:B1:B1:B1"))
         cupRepository.save(Cup("C1:C1:C1:C1"))
         cupRepository.save(Cup("D1:D1:D1:D1"))
@@ -142,13 +145,14 @@ class CupServiceTest : BaseServiceTest() {
         cupRepository.save(Cup("G1:G1:G1:G1"))
         clear()
 
-        //when
-        val result = cupService.getAll(
-            status = AVAILABLE,
-            pageable = Pageable.ofSize(3)
-        )
+        // when
+        val result =
+            cupService.getAll(
+                status = CupStatus.AVAILABLE,
+                pageable = Pageable.ofSize(3),
+            )
 
-        //then
+        // then
         assertThat(result.totalElements).isEqualTo(6)
         assertThat(result.totalPages).isEqualTo(2)
         assertThat(result)
