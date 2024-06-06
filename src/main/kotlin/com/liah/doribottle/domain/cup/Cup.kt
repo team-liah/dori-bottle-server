@@ -10,8 +10,10 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Index
 import jakarta.persistence.Table
+import org.hibernate.envers.Audited
 import java.util.UUID
 
+@Audited
 @Entity
 @Table(
     name = "cup",
