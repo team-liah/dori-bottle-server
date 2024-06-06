@@ -22,7 +22,7 @@ import java.util.*
 class AdminService(
     private val adminRepository: AdminRepository,
     private val adminQueryRepository: AdminQueryRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
 ) {
     fun register(
         loginId: String,
@@ -32,23 +32,24 @@ class AdminService(
         email: String? = null,
         phoneNumber: String? = null,
         description: String? = null,
-        gender: Gender? = null
+        gender: Gender? = null,
     ): UUID {
         verifyDuplicatedLoginId(loginId)
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
-        val admin = adminRepository.save(
-            Admin(
-                loginId = loginId,
-                loginPassword = encryptedPassword,
-                name = name,
-                role = role,
-                email = email,
-                phoneNumber = phoneNumber,
-                description = description,
-                gender = gender
+        val admin =
+            adminRepository.save(
+                Admin(
+                    loginId = loginId,
+                    loginPassword = encryptedPassword,
+                    name = name,
+                    role = role,
+                    email = email,
+                    phoneNumber = phoneNumber,
+                    description = description,
+                    gender = gender,
+                ),
             )
-        )
 
         return admin.id
     }
@@ -58,7 +59,7 @@ class AdminService(
         loginId: String,
         loginPassword: String,
         name: String,
-        role: Role
+        role: Role,
     ) {
         if (!adminRepository.existsById(id)) {
             verifyDuplicatedLoginId(loginId)
@@ -70,16 +71,16 @@ class AdminService(
 
     private fun verifyDuplicatedLoginId(loginId: String) {
         val admin = adminRepository.findByLoginId(loginId)
-        if (admin != null)
+        if (admin != null) {
             throw BusinessException(ErrorCode.USER_ALREADY_REGISTERED)
+        }
     }
 
     @Transactional(readOnly = true)
-    fun get(
-        id: UUID
-    ): AdminDto {
-        val admin = adminRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+    fun get(id: UUID): AdminDto {
+        val admin =
+            adminRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         return admin.toDto()
     }
@@ -90,15 +91,20 @@ class AdminService(
         name: String? = null,
         role: Role? = null,
         deleted: Boolean? = null,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<AdminDto> {
         return adminQueryRepository.getAll(
             loginId = loginId,
             name = name,
             role = role,
             deleted = deleted,
-            pageable = pageable
+            pageable = pageable,
         ).map { it.toDto() }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllByIds(ids: List<UUID>): List<AdminDto> {
+        return adminRepository.findAllById(ids).map { it.toDto() }
     }
 
     fun update(
@@ -108,10 +114,11 @@ class AdminService(
         email: String? = null,
         phoneNumber: String? = null,
         description: String? = null,
-        gender: Gender? = null
+        gender: Gender? = null,
     ) {
-        val admin = adminRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val admin =
+            adminRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         admin.update(
             loginId = loginId,
@@ -119,28 +126,28 @@ class AdminService(
             email = email,
             phoneNumber = phoneNumber,
             description = description,
-            gender = gender
+            gender = gender,
         )
     }
 
     fun updatePassword(
         id: UUID,
-        loginPassword: String
+        loginPassword: String,
     ) {
-        val admin = adminRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+        val admin =
+            adminRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         val encryptedPassword = passwordEncoder.encode(loginPassword)
         admin.updatePassword(
-            loginPassword = encryptedPassword
+            loginPassword = encryptedPassword,
         )
     }
 
-    fun delete(
-        id: UUID
-    ) {
-        val admin = adminRepository.findByIdOrNull(id)
-            ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+    fun delete(id: UUID) {
+        val admin =
+            adminRepository.findByIdOrNull(id)
+                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
 
         admin.delete()
     }

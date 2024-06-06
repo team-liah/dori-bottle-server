@@ -23,7 +23,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.util.UUID
 
 @Service
 @Transactional
@@ -35,6 +35,11 @@ class UserService(
 ) {
     @Transactional(readOnly = true)
     fun get(id: UUID) = userQueryRepository.get(id).toDetailDto()
+
+    @Transactional(readOnly = true)
+    fun getAllByIds(ids: List<UUID>): List<UserDto> {
+        return userRepository.findAllById(ids).map { it.toDto() }
+    }
 
     @Transactional(readOnly = true)
     fun getAll(
