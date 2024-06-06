@@ -2,6 +2,7 @@ package com.liah.doribottle.domain.cup
 
 import com.liah.doribottle.common.error.exception.BusinessException
 import com.liah.doribottle.common.error.exception.ErrorCode
+import com.liah.doribottle.domain.common.PrimaryKeyEntity
 import com.liah.doribottle.domain.common.SoftDeleteEntity
 import com.liah.doribottle.service.cup.dto.CupDto
 import jakarta.persistence.Column
@@ -10,10 +11,12 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Index
 import jakarta.persistence.Table
+import org.hibernate.envers.AuditOverride
 import org.hibernate.envers.Audited
-import java.util.UUID
 
 @Audited
+@AuditOverride(forClass = PrimaryKeyEntity::class)
+@AuditOverride(forClass = SoftDeleteEntity::class)
 @Entity
 @Table(
     name = "cup",
@@ -36,7 +39,7 @@ class Cup(
             throw BusinessException(ErrorCode.CUP_DELETE_NOT_ALLOWED)
         }
 
-        this.rfid = "Deleted ${UUID.randomUUID()}"
+        this.rfid = "Deleted $id"
         super.delete()
     }
 
