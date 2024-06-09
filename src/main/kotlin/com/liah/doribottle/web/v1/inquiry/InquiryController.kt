@@ -11,7 +11,11 @@ import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction.DESC
 import org.springframework.data.web.PageableDefault
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/inquiry")
@@ -24,7 +28,7 @@ class InquiryController(
         @Valid @RequestBody request: InquiryRegisterRequest,
     ) {
         inquiryService.register(
-            userId = currentUserId()!!,
+            userId = currentUserId(),
             type = request.type!!,
             bankAccount = request.bankAccountDto,
             content = request.content,

@@ -5,6 +5,7 @@ import com.liah.doribottle.domain.inquiry.Inquiry
 import com.liah.doribottle.domain.inquiry.InquiryStatus.PROCEEDING
 import com.liah.doribottle.domain.inquiry.InquiryStatus.SUCCEEDED
 import com.liah.doribottle.domain.inquiry.InquiryType.REFUND
+import com.liah.doribottle.domain.inquiry.InquiryType.SALES
 import com.liah.doribottle.domain.user.Role
 import com.liah.doribottle.domain.user.User
 import com.liah.doribottle.repository.inquiry.InquiryRepository
@@ -100,6 +101,26 @@ class InquiryServiceTest : BaseServiceTest() {
         assertThat(findInquiry?.status).isEqualTo(PROCEEDING)
     }
 
+    @DisplayName("문의 등록 TC3")
+    @Test
+    fun register_Tc3() {
+        // given, when
+        val id =
+            inquiryService.register(
+                type = SALES,
+            )
+        clear()
+
+        // then
+        val findInquiry = inquiryRepository.findByIdOrNull(id)
+        assertThat(findInquiry?.user).isNull()
+        assertThat(findInquiry?.type).isEqualTo(SALES)
+        assertThat(findInquiry?.target).isNull()
+        assertThat(findInquiry?.imageUrls).isNull()
+        assertThat(findInquiry?.answer).isNull()
+        assertThat(findInquiry?.status).isEqualTo(PROCEEDING)
+    }
+
     @DisplayName("문의 목록 조회")
     @Test
     fun getAll() {
@@ -150,7 +171,7 @@ class InquiryServiceTest : BaseServiceTest() {
         val result = inquiryService.get(inquiry.id)
 
         // then
-        assertThat(result.user.id).isEqualTo(user.id)
+        assertThat(result.user?.id).isEqualTo(user.id)
         assertThat(result.type).isEqualTo(REFUND)
         assertThat(result.bankAccount?.bank).isEqualTo("국민")
         assertThat(result.bankAccount?.accountNumber).isEqualTo("943202-00-120364")
