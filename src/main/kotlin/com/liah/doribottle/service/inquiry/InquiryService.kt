@@ -16,7 +16,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.util.UUID
 
 @Service
 @Transactional
@@ -26,7 +26,7 @@ class InquiryService(
     private val userRepository: UserRepository,
 ) {
     fun register(
-        userId: UUID,
+        userId: UUID? = null,
         type: InquiryType,
         bankAccount: BankAccountDto? = null,
         content: String? = null,
@@ -34,9 +34,10 @@ class InquiryService(
         imageUrls: List<String>? = null,
     ): UUID {
         val user =
-            userRepository.findByIdOrNull(userId)
-                ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
-
+            userId?.let {
+                userRepository.findByIdOrNull(userId)
+                    ?: throw NotFoundException(ErrorCode.USER_NOT_FOUND)
+            }
         val inquiry =
             inquiryRepository.save(
                 Inquiry(

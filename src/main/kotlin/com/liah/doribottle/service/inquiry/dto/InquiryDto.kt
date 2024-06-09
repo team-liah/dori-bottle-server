@@ -9,7 +9,7 @@ import java.util.UUID
 
 data class InquiryDto(
     val id: UUID,
-    val user: UserSimpleDto,
+    val user: UserSimpleDto?,
     val type: InquiryType,
     val bankAccount: BankAccountDto?,
     val content: String?,
