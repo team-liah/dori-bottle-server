@@ -58,6 +58,22 @@ class InquiryControllerTest : BaseControllerTest() {
             .andExpect(status().isOk)
     }
 
+    @DisplayName("도입문의 등록")
+    @Test
+    fun register_sales() {
+        // given
+        val body = InquiryRegisterRequest(InquiryType.SALES, null, null, null, null)
+
+        // when, then
+        mockMvc.perform(
+            post(endPoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(body.convertAnyToString()),
+        )
+            .andExpect(status().isOk)
+    }
+
     @DisplayName("문의 목록 조회")
     @Test
     fun getAll() {

@@ -20,9 +20,9 @@ import jakarta.persistence.Table
 @Entity
 @Table(name = "inquiry")
 class Inquiry(
-    @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: User,
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "user_id")
+    val user: User? = null,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: InquiryType,
@@ -52,7 +52,7 @@ class Inquiry(
     fun toDto() =
         InquiryDto(
             id = id,
-            user = user.toSimpleDto(),
+            user = user?.toSimpleDto(),
             type = type,
             bankAccount = bankAccount?.toDto(),
             content = content,
